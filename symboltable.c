@@ -250,6 +250,7 @@ void recursiveCheckOverload(ASTNode* outputParam, SymbolTable* table)      //wil
         else{
             dupOutputParamErrorFound = true;
             //semantic error : declaration of variable inside function that shares same name as outputParameter
+            printf("\nSEMANTIC ERROR\n");
             return;
         }
     }
@@ -395,7 +396,7 @@ void processAST(ASTNode* node, SymbolTable* curr){
                 while(outputParamHead != NULL){     //check all outputParamNodes in linkedlist
                     dupOutputParamErrorFound = false;
                     if(outputParamHead->type == nullNode)
-						outputParamHead = outputParamHead->next;
+						break;
 					else {
                     	recursiveCheckOverload(outputParamHead, newTable);  //also pass error object
                     	outputParamHead = outputParamHead->next;
@@ -446,14 +447,16 @@ void processAST(ASTNode* node, SymbolTable* curr){
                 
                 // we can check declaration of outputparmeters by traversing thorugh newTable
                 ASTNode* outputParamHead = node->sc->rs->rs;    //points to first outputParamNode
-                while(outputParamHead != NULL){     //check all outputParamNodes in linkedlist
-                    dupOutputParamErrorFound = false;
-                    if(outputParamHead->type == nullNode)
-						continue;
-					else
-                    	recursiveCheckOverload(outputParamHead, newTable);  //also pass error object
-                    outputParamHead = outputParamHead->next;
-                }
+                	while(outputParamHead != NULL){     //check all outputParamNodes in linkedlist
+		                dupOutputParamErrorFound = false;
+		                if(outputParamHead->type == nullNode)
+							break;
+						else
+		                	recursiveCheckOverload(outputParamHead, newTable);  //also pass error object
+		                outputParamHead = outputParamHead->next;
+		            
+                	}
+               
             }
 
             else{
@@ -533,6 +536,7 @@ void processAST(ASTNode* node, SymbolTable* curr){
         }
         case whileLoopNode:{    //for whileLoopNodes
             //1. create a new table for whileLoop's scope
+            printf("\nWHILE LOOP ENTRY\n");
             SymbolTable* newTable = createSymbolTable(whileLoopBlock);
             //set newTable.scope.block_scope equal to curr block
             Scope scp;
@@ -612,8 +616,9 @@ void processAST(ASTNode* node, SymbolTable* curr){
         case caseNode:{
             //just process the statements in this case block
             //now process the statements in the module
-            ASTNode* traverse = node->sc->rs->rs->rs;
+            ASTNode* traverse = node->sc->rs;
             while(traverse != NULL){
+            	printf("yes yes yesss\n");
                 processAST(traverse, curr);
                 traverse = traverse->next;
             }
@@ -741,6 +746,8 @@ void processAST(ASTNode* node, SymbolTable* curr){
         }
         case nullNode: {
             //do nothing
+            
+            printf("NULL NODE");
             break;
         }
     }
