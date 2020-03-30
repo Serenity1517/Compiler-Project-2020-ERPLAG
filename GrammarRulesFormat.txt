@@ -1,0 +1,6 @@
+The Rules Should be written with format :
+    [<NONTERMINAL>] --> list of [<NONTERMINAL> | TERMINAL ]
+        NOTE: There should be a space after each Terminal.
+
+NOTE: Each rule should start in a newline
+NOTE: There should be an extra line in the end of the grammar file

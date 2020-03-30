@@ -1,0 +1,19 @@
+Understanding language features                 January 31
+Constructing hand drawn DFA for lexer           February 6
+Lexical Analysis Module Development             February 8
+Testing of lexer with given test cases          February 9
+Grammar Modifications                           February 13
+Grammar Representation (for Parser)             February 14
+FIRST and FOLLOW sets implementation            February 14
+Predictive Parsing Table Creation               February 15
+Testing the table creation                      February 15
+Stack ADT and Parsing                           February 17
+Tree ADT and error reporting                    February 18
+Parse tree creation while parsing               February 19
+Testing (with given test cases)                 February 20
+Testing (With self created test cases)          February 21
+Documentation of the code                       February 22
+Testing Error reporting                         February 23
+Parse tree printing etc.                        February 23
+Any other (coding details etc.)                 February 24
+Ready to Submit the code                        February 24

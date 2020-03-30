@@ -1,0 +1,16 @@
+Understanding the problem and modules                               March 11
+Design of Semantic rules for AST creation                             March 16
+Abstract syntax tree construction                                            March 18
+Design of suitable data structure for Symbol table                  March 19
+Symbol table implementation                                                  March 20
+Type checker implementation                                                 March 22
+Learning of ISA of NASM simulator (http://www.nasm.us/)     March 23
+Semantic rules implementation                                               March 24
+Design of rules for code generation                                        March 26
+Code generation implementation                                           March 28
+Code generation for dynamic type checking                          March 29
+Testing with your own test cases                                            March 31
+Testing with the test cases uploaded later                              April 1
+Integration of stage1 and stage 2                                           April 2
+Compatibility checks and any pending issue                         April 3
+Ready to submit code                                                            April 3

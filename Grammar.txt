@@ -1,0 +1,103 @@
+<program> --> <moduleDeclarations><otherModules><driverModule><otherModules>
+<moduleDeclarations> --> <moduleDeclaration><moduleDeclarations>
+<moduleDeclarations> --> #
+<moduleDeclaration> --> DECLARE MODULE ID SEMICOL
+<otherModules> --> <module><otherModules>
+<otherModules> --> #
+<driverModule> --> DRIVERDEF DRIVER PROGRAM DRIVERENDDEF <moduleDef>
+<module> --> DEF MODULE ID ENDDEF TAKES INPUT SQBO <input_plist> SQBC SEMICOL <ret><moduleDef>
+<ret> --> RETURNS SQBO <output_plist> SQBC SEMICOL
+<ret> --> #
+<input_plist> --> ID COLON <dataType><N1>
+<N1> --> COMMA ID COLON <dataType><N1>
+<N1> --> #
+<output_plist> --> ID COLON <type><N2>
+<N2> --> COMMA ID COLON <type><N2>
+<N2> --> #
+<dataType> --> ARRAY SQBO <range_arrays> SQBC OF <type>
+<dataType> --> INTEGER
+<dataType> --> REAL
+<dataType> --> BOOLEAN
+<range_arrays> --> <Index> RANGEOP <Index>
+<type> --> INTEGER
+<type> --> REAL
+<type> --> BOOLEAN
+<moduleDef> --> START <statements> END
+<statements> --> <statement><statements>
+<statements> --> #
+<statement> --> <ioStmt>
+<statement> --> <simpleStmt>
+<statement> --> <declareStmt>
+<statement> --> <conditionalStmt>
+<statement> --> <iterative>
+<iterative> --> FOR BO ID IN <range> BC START <statements> END
+<iterative> --> WHILE BO <arithOrBoolExpr> BC START <statements> END
+<ioStmt> --> GET_VALUE BO ID BC SEMICOL
+<ioStmt> --> PRINT BO <var> BC SEMICOL
+<var> --> <var_id_num>
+<var> --> <boolConstt>
+<whichId> --> SQBO <Index> SQBC
+<whichId> --> #
+<simpleStmt> --> <assignmentStmt>
+<simpleStmt> --> <moduleReuseStmt>
+<assignmentStmt> --> ID <whichStmt>
+<whichStmt> --> <lvalueIDStmt>
+<whichStmt> --> <lvalueARRStmt>
+<lvalueIDStmt> --> ASSIGNOP <expression> SEMICOL
+<lvalueARRStmt> --> SQBO <Index> SQBC ASSIGNOP <expression> SEMICOL
+<Index> --> NUM
+<Index> --> ID
+<moduleReuseStmt> --> <optional> USE MODULE ID WITH PARAMETERS <idList> SEMICOL
+<optional> --> SQBO <idList> SQBC ASSIGNOP
+<optional> --> #
+<idList> --> ID <N3>
+<N3> --> COMMA ID <N3>
+<N3> --> #
+<expression> --> <arithOrBoolExpr>
+<expression> --> <U>
+<U> --> <op1> <new_NT>
+<new_NT> --> BO <arithmeticExpr> BC
+<new_NT> --> <var_id_num>
+<arithOrBoolExpr> --> <AnyTerm><N7>
+<N7> --> <logicalOp><AnyTerm><N7>
+<N7> --> #
+<AnyTerm> --> <arithmeticExpr> <N8>
+<AnyTerm> --> <boolConstt>
+<boolConstt> --> TRUE
+<boolConstt> --> FALSE
+<N8> --> <relationalOp> <arithmeticExpr>
+<N8> --> #
+<arithmeticExpr> --> <term><N4>
+<N4> --> <op1><term><N4>
+<N4> --> #
+<term> --> <factor><N5>
+<N5> --> <op2><factor><N5>
+<N5> --> #
+<factor> --> BO <arithOrBoolExpr> BC
+<factor> --> <var_id_num>
+<var_id_num> --> ID <whichId>
+<var_id_num> --> NUM
+<var_id_num> --> RNUM
+<op1> --> PLUS
+<op1> --> MINUS
+<op2> --> MUL
+<op2> --> DIV
+<logicalOp> --> AND
+<logicalOp> --> OR
+<relationalOp> --> LT
+<relationalOp> --> LE
+<relationalOp> --> GT
+<relationalOp> --> GE
+<relationalOp> --> EQ
+<relationalOp> --> NE
+<declareStmt> --> DECLARE <idList> COLON <dataType> SEMICOL
+<conditionalStmt> --> SWITCH BO ID BC START <caseStmts><Default> END
+<caseStmts> --> CASE <value> COLON <statements> BREAK SEMICOL <N9>
+<N9> --> CASE <value> COLON <statements> BREAK SEMICOL <N9>
+<N9> --> #
+<value> --> NUM
+<value> --> TRUE
+<value> --> FALSE
+<Default> --> DEFAULT COLON <statements> BREAK SEMICOL
+<Default> --> #
+<range> --> NUM RANGEOP NUM

@@ -1,0 +1,43 @@
+
+----	-1	EPSILON	 RULE NO !!!! -1	----	moduleDeclarations	yes	
+---- ---- ---- ---- RULE NO !!! 2	program	no moduleDeclarations	
+---- ---- ---- ---- RULE NO !!! 0	ROOT	no program	
+----	-1	EPSILON	 RULE NO !!!! -1	----	otherModules	yes	
+---- ---- ---- ---- RULE NO !!! 5	program	no otherModules	
+<<<	2	DRIVERDEF	 RULE NO !!!! -1	----	driverModule	yes	
+---- ---- ---- ---- RULE NO !!! 6	program	no driverModule	
+driver	2	DRIVER	 RULE NO !!!! -1	----	driverModule	yes	
+program	2	PROGRAM	 RULE NO !!!! -1	----	driverModule	yes	
+>>>	2	DRIVERENDDEF	 RULE NO !!!! -1	----	driverModule	yes	
+start	3	START	 RULE NO !!!! -1	----	moduleDef	yes	
+---- ---- ---- ---- RULE NO !!! 24	driverModule	no moduleDef	
+----	-1	EPSILON	 RULE NO !!!! -1	----	statements	yes	
+---- ---- ---- ---- RULE NO !!! 26	moduleDef	no statements	
+end	5	END	 RULE NO !!!! -1	----	moduleDef	yes	
+<<	6	DEF	 RULE NO !!!! -1	----	module	yes	
+---- ---- ---- ---- RULE NO !!! 7	otherModules	no module	
+module	6	MODULE	 RULE NO !!!! -1	----	module	yes	
+empty	6	ID	 RULE NO !!!! -1	----	module	yes	
+>>	6	ENDDEF	 RULE NO !!!! -1	----	module	yes	
+takes	7	TAKES	 RULE NO !!!! -1	----	module	yes	
+input	7	INPUT	 RULE NO !!!! -1	----	module	yes	
+[	7	SQBO	 RULE NO !!!! -1	----	module	yes	
+a	7	ID	 RULE NO !!!! -1	----	input_plist	yes	
+---- ---- ---- ---- RULE NO !!! 10	module	no input_plist	
+:	7	COLON	 RULE NO !!!! -1	----	input_plist	yes	
+boolean	7	BOOLEAN	 RULE NO !!!! -1	----	dataType	yes	
+---- ---- ---- ---- RULE NO !!! 19	input_plist	no dataType	
+----	-1	EPSILON	 RULE NO !!!! -1	----	N1	yes	
+---- ---- ---- ---- RULE NO !!! 12	input_plist	no N1	
+]	7	SQBC	 RULE NO !!!! -1	----	module	yes	
+;	7	SEMICOL	 RULE NO !!!! -1	----	module	yes	
+----	-1	EPSILON	 RULE NO !!!! -1	----	ret	yes	
+---- ---- ---- ---- RULE NO !!! 9	module	no ret	
+start	8	START	 RULE NO !!!! -1	----	moduleDef	yes	
+---- ---- ---- ---- RULE NO !!! 24	module	no moduleDef	
+----	-1	EPSILON	 RULE NO !!!! -1	----	statements	yes	
+---- ---- ---- ---- RULE NO !!! 26	moduleDef	no statements	
+end	10	END	 RULE NO !!!! -1	----	moduleDef	yes	
+---- ---- ---- ---- RULE NO !!! 4	program	no otherModules	
+----	-1	EPSILON	 RULE NO !!!! -1	----	otherModules	yes	
+---- ---- ---- ---- RULE NO !!! 5	otherModules	no otherModules	

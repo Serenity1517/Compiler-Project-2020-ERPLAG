@@ -1,0 +1,765 @@
+<program> --> <moduleDeclarations><otherModules><driverModule><otherModules%>
+    {
+        <moduleDeclarations>.inh = NULL;
+        <otherModules>.inh = NULL;
+        <otherModules%>.inh = NULL;
+        <program>.syn = new ProgramNode(<moduleDeclarations>.syn, <otherModules>.syn, <driverModule>.syn, <otherModules%>.syn);
+        free(<moduleDeclarations>);
+        free(<otherModules>);
+        free(<driverModule>);
+        free(<otherModules%>);
+    }
+
+<moduleDeclarations> --> <moduleDeclaration><moduleDeclarations%>
+    {
+        <moduleDeclarations%>.inh = <moduleDeclaration>.syn;
+        free(<moduleDeclaration>);
+        insertAtBeginning(<moduleDeclarations>.inh,<moduleDeclarations%>.syn);
+        <moduleDeclarations>.syn = <moduleDeclarations%>.syn;
+        free(<moduleDeclarations%>);
+    }
+
+<moduleDeclarations> --> #
+    {
+        <moduleDeclarations>.syn = <moduleDeclarations>.inh;
+    }
+
+<moduleDeclaration> --> DECLARE MODULE ID SEMICOL
+    {
+        <moduleDeclaration>.syn = new IdNode(ID.tkn);
+        free(DECLARE);
+        free(MODULE);
+        free(SEMICOL);
+        free(ID);
+    }
+
+<otherModules> --> <module><otherModules%>
+    {
+        <otherModules%>.inh = <module>.syn;
+        free(<module>);
+        insertAtBeginning(<otherModules>.inh,<otherModules%>.syn);
+        <otherModules>.syn = <otherModules%>.syn;
+        free(<otherModules%>); 
+    }
+
+<otherModules> --> #
+    {
+        <otherModules>.syn = <otherModules>.inh;
+    }
+
+<driverModule> --> DRIVERDEF DRIVER PROGRAM DRIVERENDDEF <moduleDef>
+    {
+        <driverModule>.syn = <moduleDef>.syn;
+        free(DRIVERDEF);
+        free(DRIVER);
+        free(PROGRAM);
+        free(DRIVERENDDEF);
+    }
+
+<module> --> DEF MODULE ID ENDDEF TAKES INPUT SQBO <input_plist> SQBC SEMICOL <ret><moduleDef>
+    {
+        <module>.syn = new ModuleNode(new IdNode(ID.tkn), <input_plist>.syn, <ret>.syn, <moduleDef>.syn);
+        free(DEF);
+        free(MODULE);
+    }
+
+<ret> --> RETURNS SQBO <output_plist> SQBC SEMICOL
+    {
+        <ret>.syn = <output_plist>.syn;
+        free(RETURNS);
+        free(SQBO);
+        free(<output_plist>);
+        free(SQBC);
+        free(SEMICOL);
+    }
+
+<ret> --> #
+    {
+        <ret>.syn = NULL;
+    }
+
+<input_plist> --> ID COLON <dataType><N1>
+    {
+        <N1>.inh = new InputParamNode(ID.tkn, <dataType>.syn);
+        free(ID);
+        free(COLON);
+        free(<dataType>);
+        <input_plist>.syn = <N1>.syn;
+        free(<N1>);
+    } 
+
+<N1> --> COMMA ID COLON <dataType><N1%>
+    {
+        <N1%>.inh = new InputParamNode(ID.tkn, <dataType>.syn);
+        free(ID);
+        free(COMMA);
+        free(COLON);
+        insertAtBeginning(<N1>.inh, <N1%>.syn);     //insert N1.inh at beginning of synthesized list N1%.syn
+        <N1>.syn = <N1%>.syn;
+        free(<N1%>);
+    }
+
+<N1> --> #
+    {
+        <N1>.syn = <N1>.inh;
+    }
+
+<output_plist> --> ID COLON <type><N2>
+    {
+        <N2>.inh = new OutputParamNode(ID.tkn, <type>.syn);
+        free(ID);
+        free(COLON);
+        free(<type>);
+        <output_plist>.syn = <N2>.syn;
+        free(<N2>);
+    }
+
+<N2> --> COMMA ID COLON <type><N2%>
+    {
+        <N2%>.inh = new OutputParamNode(ID.tkn,<type>.syn);
+        free(ID);
+        free(COMMA);
+        free(COLON);
+        insertAtBeginning(<N2>.inh, <N2%>.syn);     //insert N2.inh at beginning of synthesized list N2%.syn
+        <N2>.syn = <N2%>.syn;
+        free(<N2%>);
+    }
+    
+<N2> --> #
+    {
+        <N2>.syn = <N2>.inh;
+    }
+
+<dataType> --> ARRAY SQBO <range_arrays> SQBC OF <type>
+    {
+        <dataType>.syn = new ArrayTypeNode(<range_arrays>.syn, <type>.syn);
+        free(ARRAY);
+        free(SQBO);
+        free(SQBC);
+        free(OF);
+        free(<range_arrays>);
+        free(<type>);
+    }
+
+<dataType> --> INTEGER
+    {
+        <dataType>.syn = new TypeNode(INTEGER.tkn);
+        free(INTEGER);
+    }
+
+<dataType> --> REAL
+    {
+        <dataType>.syn = new TypeNode(REAL.tkn);
+        free(REAL);
+    }
+
+<dataType> --> BOOLEAN
+    {
+        <dataType>.syn = new TypeNode(BOOLEAN.tkn);
+        free(BOOLEAN);
+    }
+
+<range_arrays> --> <Index> RANGEOP <Index%>
+    {
+        <range_arrays>.syn = new RangeNode(<Index>.syn, <Index%>.syn);
+        free(<Index>);
+        free(RANGEOP);
+        free(<Index%>);
+    }
+    
+<type> --> INTEGER
+    {
+        <type>.syn = new TypeNode(INTEGER.tkn);
+        free(INTEGER);
+    }
+    
+<type> --> REAL
+    {
+        <type>.syn = new TypeNode(REAL.tkn);
+        free(REAL);
+    }
+    
+<type> --> BOOLEAN
+    {
+        <type>.syn = new TypeNode(BOOLEAN.tkn);
+        free(BOOLEAN);
+    }
+
+<moduleDef> --> START <statements> END
+    {
+        <statements>.inh = NULL;
+        <moduleDef>.syn = <statements>.syn
+        free(START);
+        free(END);
+        free(<statements>);
+    }
+    
+<statements> --> <statement><statements%>
+    {
+        <statements%>.inh = <statement>.syn;
+        free(<statement>);
+        insertAtBeginning(<statements>.inh, <statements%>.syn);
+        <statements>.syn = <statements%>.syn;
+        free(<statements%>);
+    }
+
+<statements> --> #
+    {
+        <statements>.syn = <statements>.inh;
+    }
+
+<statement> --> <ioStmt>
+    {
+        <statement>.syn = <ioStmt>.syn;
+        free(<ioStmt>);
+    }
+    
+<statement> --> <simpleStmt>
+    {
+        <statement>.syn = <simpleStmt>.syn;
+        free(<simpleStmt>);
+    }
+
+<statement> --> <declareStmt>
+    {
+        <statement>.syn = <declareStmt>.syn;
+        free(<declareStmt>);
+    }
+
+<statement> --> <conditionalStmt>
+    {
+        <statement>.syn = <conditionalStmt>.syn;
+        free(<conditionalStmt>);
+    }
+
+<statement> --> <iterative>
+    {
+        <statement>.syn = <iterative>.syn;
+        free(<iterative>);
+    }
+
+<iterative> --> FOR BO ID IN <range> BC START <statements> END
+    {
+        <statements>.inh = NULL;
+        <iterative>.syn = new ForLoopNode(ID.tkn, <range>.syn, <statements>.syn);
+        free(FOR);
+        free(BO);
+        free(ID);
+        free(IN);
+        free(<range>);
+        free(BC);
+        free(START);
+        free(<statements>);
+        free(END);
+    } 
+       
+<iterative> --> WHILE BO <arithOrBoolExpr> BC START <statements> END
+    {
+        <statements>.inh = NULL;
+        <iterative>.syn = new WhileLoopNode(<arithOrBoolExpr>.syn,<statements>.syn);
+        free(WHILE);
+        free(BO);
+        free(BC);
+        free(START);
+        free(<arithOrBoolExpr>);
+        free(<statememts>);
+        free(END);
+    }
+
+<ioStmt> --> GET_VALUE BO ID BC SEMICOL
+    {
+        <ioStmt>.syn = new InputIONode(ID.tkn);
+        free(GET_VALUE);
+        free(BO);
+        free(BC);
+        free(SEMICOL);
+        free(ID);
+    }
+
+<ioStmt> --> PRINT BO <var> BC SEMICOL
+    {
+        <ioStmt>.syn = new OutputIONode(<var>.syn);
+        free(PRINT);
+        free(BO);
+        free(BC);
+        free(SEMICOL);
+        free(<var>);
+    }
+
+<var> --> <var_id_num>
+    {
+        <var>.syn = <var_id_num>.syn;
+        free(<var_id_num>);
+    }
+
+<var> --> <boolConstt>
+    {
+        <var>.syn = <boolConstt>.syn;
+        free(<boolConstt>);
+    }
+
+<whichId> --> SQBO <Index> SQBC
+    {
+        free(SQBO);
+        free(SQBC);
+        <whichId>.syn = new ArrayIdNode(<whichId>.inh, <Index>.syn);
+        free(<Index>);    
+    }
+
+<whichId> --> #
+    {
+        <whichId>.syn = <whichID>.inh;
+    }
+
+<simpleStmt> --> <assignmentStmt>
+    {
+        <simpleStmt>.syn = <assignmentStmt>.syn;
+        free(<assignmentStmt>);
+    }
+    
+<simpleStmt> --> <moduleReuseStmt>
+    {
+        <simpleStmt>.syn = <moduleReuseStmt>.syn;
+        free(<moduleReuseStmt>);
+    }
+
+<assignmentStmt> --> ID <whichStmt>
+    {
+        <whichStmt>.inh = new IdNode(ID.tkn);
+        free(ID);
+        <assignmentStmt>.syn = <whichStmt>.syn;
+        free(<whichStmt>);
+    }
+
+<whichStmt> --> <lvalueIDStmt>
+    {
+        <lvalueIDStmt>.inh = <whichStmt>.inh;
+        <whichStmt>.syn = <lvalueIDStmt>.syn;
+        free(<lvalueARRStmt>);
+    }
+
+<whichStmt> --> <lvalueARRStmt>
+    {
+        <lvalueARRStmt>.inh = <whichStmt>.inh;
+        <whichStmt>.syn = <lvalueARRStmt>.syn;
+        free(<lvalueARRStmt>);
+    }
+
+<lvalueIDStmt> --> ASSIGNOP <expression> SEMICOL
+    {
+        <lvalueIDStmt>.syn = new AssignmentNode(<lvalueIDStmt>.inh,<expression>.syn);     //AssignmentNode(LHS, RHS)
+        free(ASSIGNOP);
+        free(SEMICOL);
+        free(<expression>);
+    }
+
+<lvalueARRStmt> --> SQBO <Index> SQBC ASSIGNOP <expression> SEMICOL
+    {
+        <lvalueARRStmt>.syn = new AssignmentNode(new ArrayIdNode(<lvalueARRStmt>.inh, <Index>.syn), <expression>.syn);
+        free(SQBO);
+        free(<Index>);
+        free(SQBC);
+        free(ASSIGNOP);
+        free(<expression>);
+        free(SEMICOL);
+    }
+    
+<Index> --> NUM
+    {
+        <Index>.syn = new NumNode(NUM.tkn);
+        free(NUM);
+    }
+
+<Index> --> ID
+    {
+        <Index>.syn = new IdNode(ID.tkn);
+        free(ID);
+    }
+
+<moduleReuseStmt> --> <optional> USE MODULE ID WITH PARAMETERS <idList> SEMICOL
+    {
+        <optional>.inh = NULL;      //initialize with empty list of return Ids
+        <moduleReuseStmt>.syn = new FunctionCallNode(<optional>.syn, ID.tkn, <idList>.syn);  
+        free(USE);
+        free(MODULE);
+        free(WITH);
+        free(PARAMETERS);
+        free(SEMICOL);
+        free(<idList>);
+        free(ID);
+        free(<optional>);
+    }
+
+<optional> --> SQBO <idList> SQBC ASSIGNOP          //<optional> stores return value of function
+    {
+        <optional>.syn = <idList>.syn;
+        free(SQBO);
+        free(SQBC);
+        free(ASSIGNOP);
+        free(idList);
+    }
+
+<optional> --> #            //void function
+    {
+        <optional>.syn = <optional>.inh; 
+    }
+
+<idList> --> ID <N3>          
+    {
+        <N3>.inh = new IdNode(ID.tkn);
+        free(ID);
+        <idList>.syn = <N3>.syn;        //<N3>.syn points to first astNode in list of IDs   a,b,c,d      
+        free(<N3>);
+    }
+    
+<N3> --> COMMA ID <N3%>
+    {
+        <N3%>.inh = new IdNode(ID.tkn);         //IdNode structure has a astNode* next pointer for storing linkedlist
+        free(ID);
+        free(COMMA);
+        insertAtBeginning(<N3>.inh, <N3%>.syn); //insert N3.inh at beginning of synthesized list N3%.syn
+        <N3>.syn = <N3%>.syn;
+        free(<N3%>);        
+    }
+    
+<N3> --> #
+    {
+        <N3>.syn = <N3>.inh;
+    }
+    
+<expression> --> <arithOrBoolExpr>
+    {
+        <expression>.syn = <arithOrBoolExpr>.syn;
+        free(<arithOrBoolExpr>);
+    }
+    
+<expression> --> <U>
+    {
+         <expression>.syn = <U>.syn; 
+         free(<U>);  
+    }
+    
+<U> --> <op1> <new_NT>
+    {
+        addChildren(<op1>.syn, NULL, <new_NT>.syn);     // unary operator node has only one child
+        <U>.syn = <op1>.syn;
+        free(<new_NT>);
+        free(<op1>);
+    }
+    
+<new_NT> --> BO <arithmeticExpr> BC
+    {
+        <new_NT>.syn = <arithmeticExpr>.syn;
+        free(<arithmeticExpr>);
+    }
+
+<new_NT> --> <var_id_num>
+    {
+        <new_NT>.syn = <var_id_num>.syn;
+        free(<var_id_num>);
+    }
+
+<arithOrBoolExpr> --> <AnyTerm><N7>
+    {
+        <N7>.inh = <AnyTerm>.syn;
+        free(<AnyTerm>);
+        <arithOrBoolExpr>.syn = <N7>.syn;
+        free(<N7>);   
+    }
+
+<N7> --> <logicalOp><AnyTerm><N7%>
+    {
+        addChildren(<logicalOp>.syn, <N7>.inh, <AnyTerm>.syn);
+        free(<AnyTerm>);
+        <N7%>.inh =  <logicalOp>.syn;
+        free(<logicalOp>);
+        <N7>.syn = <N7%>.syn;
+        free(<N7%>);
+    }
+
+<N7> --> #
+    {
+        <N7>.syn = <N7>.inh;
+    }
+    
+<AnyTerm> --> <arithmeticExpr> <N8>
+    {
+        <N8>.inh = <arithmeticExpr>.syn;
+        free(<arithmeticExpr>);
+        <AnyTerm>.syn = <N8>.syn;
+        free(<N8>);
+    }
+    
+<AnyTerm> --> <boolConstt> 
+    {
+        <AnyTerm>.syn = <boolConstt>.syn;
+        free(<boolConstt>);
+    }
+    
+<boolConstt> --> TRUE
+    {
+        <boolConstt>.syn  = new BoolNode(TRUE.tkn);
+        free(TRUE);
+    }
+
+<boolConstt> --> FALSE
+    {
+        <boolConstt>.syn  = new BoolNode(FALSE.tkn);
+        free(FALSE);
+    }
+
+<N8> --> <relationalOp> <arithmeticExpr>
+    {   
+        addChildren(<relationalOp>.syn, <N8>.inh, <arithmeticExpr>.syn);        //addChildren(root,left,right)
+        <N8>.syn =  <relationalOp>.syn       // a+c OR a+b
+        free(<relationalOp>);
+        free(<arithmeticExpr>);
+    }
+
+<N8> --> #
+    {
+        <N8>.syn = <N8>.inh;
+    }
+
+<arithmeticExpr> --> <term><N4>
+    {
+        <N4>.inh = <term>.syn;
+        free(<term>);
+        <arithmeticExpr>.syn = <N4>.syn;
+        free(<N4>);
+    }
+
+<N4> --> <op1><term><N4%>
+    {
+        addChildren(<op1>.syn, <N4>.inh, <term>.syn);
+        free(<term>);
+        <N4%>.inh = <op1>.syn;
+        free(<op1>);
+        <N4>.syn = <N4%>.syn;
+        free(<N4%>);
+    }
+    
+<N4> --> #
+    {
+        <N4>.syn = <N4>.inh;
+    }
+
+<term> --> <factor><N5>
+    {
+        <N5>.inh = <factor>.syn;
+        free(<factor>);
+        <term>.syn = <N5>.syn; 
+        free(<N5>);
+    }
+    
+<N5> --> <op2><factor><N5%>
+    {  
+        addChildren(<op2>.syn,<N5>.inh,<factor>.syn);   // addChildren(root,left,right);
+        free(<factor>);
+        <N5%>.inh = <op2>.syn;    
+        free(<op2>);
+        <N5>.syn = <N5%>.syn;
+        free(<N5%>);
+    }
+
+<N5> --> #
+    {
+        <N5>.syn = <N5>.inh;
+    }
+
+<factor> --> BO <arithOrBoolExpr> BC
+    {
+        <factor.syn = <arithOrBoolExpr>.syn;
+        free(<arithOrBoolExpr>);
+    }
+
+<factor> --> <var_id_num>
+    {
+        <factor>.syn = <var_id_num>.syn;
+        free(<var_id_num>);
+    }
+
+<var_id_num> --> ID <whichId>
+    {
+        <whichId>.inh = new IdNode(ID.tkn);
+        free(ID);        
+        <var_id_num>.syn = <whichId>.syn;   
+        free(<whichId>);
+    }
+
+<var_id_num> --> NUM                
+    {
+        <var_id_num>.syn = new NumNode(NUM.tkn);
+        free(NUM);
+    }
+
+<var_id_num> --> RNUM
+    {
+        <var_id_num>.syn = new NumNode(RNUM.tkn);
+        free(RNUM);
+    }
+
+<op1> --> PLUS
+    {
+        <op1>.syn = new OpNode(PLUS.tkn);
+        free(PLUS);
+    }
+
+<op1> --> MINUS
+    {
+        <op1>.syn = new OpNode(MINUS.tkn);
+        free(MINUS);
+    }
+
+<op2> --> MUL
+    {
+        <op2>.syn = new OpNode(MUL.tkn);
+        free(MUL);
+    }
+
+<op2> --> DIV
+    {
+        <op2>.syn = new OpNode(DIV.tkn);
+        free(DIV);
+    }
+
+<logicalOp> --> AND
+    {
+        <logicalOp>.syn = new OpNode(AND.tkn);
+        free(AND);
+    }
+
+<logicalOp> --> OR
+    {
+        <logicalOp>.syn = new OpNode(OR.tkn);
+        free(OR);
+    }
+
+<relationalOp> --> LT
+    {
+        <relationalOp>.syn = new OpNode(LT.tkn);
+        free(LT);
+    }
+
+<relationalOp> --> LE
+    {
+        <relationalOp>.syn = new OpNode(LE.tkn);
+        free(LE);
+    }
+
+<relationalOp> --> GT
+    {
+        <relationalOp>.syn = new OpNode(GT.tkn);
+        free(GT);
+    }
+    
+<relationalOp> --> GE
+    {
+        <relationalOp>.syn = new OpNode(GE.tkn);
+        free(GE);
+    }
+
+<relationalOp> --> EQ
+    {
+        <relationalOp>.syn = new OpNode(EQ.tkn);
+        free(EQ);
+    }
+
+<relationalOp> --> NE
+    {
+        <relationalOp>.syn = new OpNode(NE.tkn);
+        free(NE);
+    }
+
+<declareStmt> --> DECLARE <idList> COLON <dataType> SEMICOL
+    {
+        <declareStmt>.syn = new DeclareNode(<dataType>.syn,<idList>.syn);
+    } 
+<conditionalStmt> --> SWITCH BO ID BC START <caseStmts><Default> END
+    {
+        <conditionalStmt>.syn = new ConditionalNode(ID.tkn, <caseStmts>.syn, <Default>.syn);
+        free(SWITCH);
+        free(BO);
+        free(ID);
+        free(BC);
+        free(START);
+        free(<caseStmts>);
+        free(<Default>);
+        free(END);
+    }
+    
+<caseStmts> --> CASE <value> COLON <statements> BREAK SEMICOL <N9>
+    {
+        <statements>.inh = NULL;
+        <N9>.inh = new CaseNode(<statements>.syn,<value>.syn);
+        free(CASE);
+        free(<value>);
+        free(COLON);
+        free(<statements>);
+        free(BREAK);
+        free(SEMICOL);
+        <caseStmts>.syn = <N9>.syn;
+        free(<N9>);
+    }
+
+<N9> --> CASE <value> COLON <statements> BREAK SEMICOL <N9%>    
+    {
+        <statements>.inh = NULL;
+        <N9%>.inh = new CaseNode(<statements>.syn, <value>.syn);
+        free(CASE);
+        free(<value>);
+        free(COLON);
+        free(<statements>);
+        free(BREAK);
+        free(SEMICOL);
+        insertAtBeginning(<N9>.inh, <N9%>.syn);
+        <N9>.syn = <N9%>.syn;
+        free(<N9%>);
+    }
+
+<N9> --> #
+    {
+        <N9>.syn = <N9>.inh;
+    }
+
+<value> --> NUM
+    {
+        <value>.syn = new NumNode(NUM.tkn);
+        free(NUM);
+    }
+
+<value> --> TRUE
+    {
+        <value>.syn = new BoolNode(TRUE.tkn);
+        free(TRUE);
+    }
+
+<value> --> FALSE
+    {
+        <value>.syn = new BoolNode(FALSE.tkn);
+        free(FALSE);
+    }
+
+<Default> --> DEFAULT COLON <statements> BREAK SEMICOL
+    {
+        <statements>.inh = NULL;
+        <Default>.syn = new CaseNode(<statements>.syn, NULL);
+        free(DEFAULT);
+        free(COLON);
+        free(BREAK);
+        free(SEMICOL);
+        free(<statements>);
+    }
+    
+<Default> --> #
+    {
+        <Default>.syn = NULL;
+    }
+
+<range> --> NUM RANGEOP NUM%
+    {
+        <range>.syn = new RangeNode(NUM.tkn, NUM%.tkn);
+        free(NUM);
+        free(RANGEOP);
+        free(NUM%);
+    }

@@ -1,0 +1,1008 @@
+
+Token no. 1
+	is_num : 0
+	is_err : 0
+	token : DEF
+	lexeme : <<
+	line_no : 1
+	value : -26579856.000000
+	error : (null)
+
+Token no. 2
+	is_num : 0
+	is_err : 0
+	token : MODULE
+	lexeme : module
+	line_no : 1
+	value : 0.000000
+	error : (null)
+
+Token no. 3
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : mod1
+	line_no : 1
+	value : 0.000000
+	error : (null)
+
+Token no. 4
+	is_num : 0
+	is_err : 0
+	token : ENDEF
+	lexeme : >>
+	line_no : 1
+	value : 0.000000
+	error : (null)
+
+Token no. 5
+	is_num : 0
+	is_err : 0
+	token : TAKES
+	lexeme : takes
+	line_no : 2
+	value : 13666349240354452000000000000000000.000000
+	error : (null)
+
+Token no. 6
+	is_num : 0
+	is_err : 0
+	token : INPUT
+	lexeme : input
+	line_no : 2
+	value : 17591662500959318000000.000000
+	error : (null)
+
+Token no. 7
+	is_num : 0
+	is_err : 0
+	token : SQBO
+	lexeme : [
+	line_no : 2
+	value : 73029867154281698000000.000000
+	error : (null)
+
+Token no. 8
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : index
+	line_no : 2
+	value : 14293747630080.000000
+	error : (null)
+
+Token no. 9
+	is_num : 0
+	is_err : 0
+	token : COLON
+	lexeme : :
+	line_no : 2
+	value : 206913536.000000
+	error : (null)
+
+Token no. 10
+	is_num : 0
+	is_err : 0
+	token : INTEGER
+	lexeme : integer
+	line_no : 2
+	value : 8814961098752.000000
+	error : (null)
+
+Token no. 11
+	is_num : 0
+	is_err : 0
+	token : COMMA
+	lexeme : ,
+	line_no : 2
+	value : 2204616097792.000000
+	error : (null)
+
+Token no. 12
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : val_
+	line_no : 2
+	value : 0.000000
+	error : (null)
+
+Token no. 13
+	is_num : 0
+	is_err : 0
+	token : COLON
+	lexeme : :
+	line_no : 2
+	value : 0.000000
+	error : (null)
+
+Token no. 14
+	is_num : 0
+	is_err : 0
+	token : INTEGER
+	lexeme : integer
+	line_no : 2
+	value : 0.000000
+	error : (null)
+
+Token no. 15
+	is_num : 0
+	is_err : 0
+	token : SQBC
+	lexeme : ]
+	line_no : 2
+	value : 0.000000
+	error : (null)
+
+Token no. 16
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 2
+	value : 0.000000
+	error : (null)
+
+Token no. 17
+	is_num : 0
+	is_err : 0
+	token : COMMENTMARK
+	lexeme : ****
+	line_no : 3
+	value : 0.000000
+	error : (null)
+
+Token no. 18
+	is_num : 0
+	is_err : 0
+	token : START
+	lexeme : start
+	line_no : 4
+	value : 0.000000
+	error : (null)
+
+Token no. 19
+	is_num : 0
+	is_err : 0
+	token : DECLARE
+	lexeme : declare
+	line_no : 5
+	value : 0.000000
+	error : (null)
+
+Token no. 20
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : i_1
+	line_no : 5
+	value : 0.000000
+	error : (null)
+
+Token no. 21
+	is_num : 0
+	is_err : 0
+	token : COLON
+	lexeme : :
+	line_no : 5
+	value : 0.000000
+	error : (null)
+
+Token no. 22
+	is_num : 0
+	is_err : 0
+	token : INTEGER
+	lexeme : integer
+	line_no : 5
+	value : 0.000000
+	error : (null)
+
+Token no. 23
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 5
+	value : 0.000000
+	error : (null)
+
+Token no. 24
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : i_1
+	line_no : 6
+	value : 0.000000
+	error : (null)
+
+Token no. 25
+	is_num : 0
+	is_err : 0
+	token : ASSIGNOP
+	lexeme : :=
+	line_no : 6
+	value : 0.000000
+	error : (null)
+
+Token no. 26
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : val_
+	line_no : 6
+	value : 0.000000
+	error : (null)
+
+Token no. 27
+	is_num : 0
+	is_err : 0
+	token : PLUS
+	lexeme : +
+	line_no : 6
+	value : 0.000000
+	error : (null)
+
+Token no. 28
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : index
+	line_no : 6
+	value : 0.000000
+	error : (null)
+
+Token no. 29
+	is_num : 0
+	is_err : 0
+	token : MINUS
+	lexeme : -
+	line_no : 6
+	value : 0.000000
+	error : (null)
+
+Token no. 30
+	is_num : 1
+	is_err : 0
+	token : NUM
+	lexeme : 4
+	line_no : 6
+	value : 4.000000
+	error : (null)
+
+Token no. 31
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 6
+	value : 0.000000
+	error : (null)
+
+Token no. 32
+	is_num : 0
+	is_err : 0
+	token : PRINT
+	lexeme : print
+	line_no : 7
+	value : 0.000000
+	error : (null)
+
+Token no. 33
+	is_num : 0
+	is_err : 0
+	token : BO
+	lexeme : (
+	line_no : 7
+	value : 0.000000
+	error : (null)
+
+Token no. 34
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : i_1
+	line_no : 7
+	value : 0.000000
+	error : (null)
+
+Token no. 35
+	is_num : 0
+	is_err : 0
+	token : BC
+	lexeme : )
+	line_no : 7
+	value : 0.000000
+	error : (null)
+
+Token no. 36
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 7
+	value : 0.000000
+	error : (null)
+
+Token no. 37
+	is_num : 0
+	is_err : 0
+	token : END
+	lexeme : end
+	line_no : 8
+	value : 0.000000
+	error : (null)
+
+Token no. 38
+	is_num : 0
+	is_err : 0
+	token : DEF
+	lexeme : <<
+	line_no : 9
+	value : 0.000000
+	error : (null)
+
+Token no. 39
+	is_num : 0
+	is_err : 0
+	token : DRIVER
+	lexeme : driver
+	line_no : 9
+	value : 0.000000
+	error : (null)
+
+Token no. 40
+	is_num : 0
+	is_err : 0
+	token : PROGRAM
+	lexeme : program
+	line_no : 9
+	value : 0.000000
+	error : (null)
+
+Token no. 41
+	is_num : 0
+	is_err : 0
+	token : ENDEF
+	lexeme : >>
+	line_no : 9
+	value : 0.000000
+	error : (null)
+
+Token no. 42
+	is_num : 0
+	is_err : 0
+	token : START
+	lexeme : start
+	line_no : 10
+	value : 0.000000
+	error : (null)
+
+Token no. 43
+	is_num : 0
+	is_err : 0
+	token : DECLARE
+	lexeme : declare
+	line_no : 11
+	value : 0.000000
+	error : (null)
+
+Token no. 44
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : a
+	line_no : 11
+	value : 0.000000
+	error : (null)
+
+Token no. 45
+	is_num : 0
+	is_err : 0
+	token : COMMA
+	lexeme : ,
+	line_no : 11
+	value : 0.000000
+	error : (null)
+
+Token no. 46
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : b
+	line_no : 11
+	value : 0.000000
+	error : (null)
+
+Token no. 47
+	is_num : 0
+	is_err : 0
+	token : COMMA
+	lexeme : ,
+	line_no : 11
+	value : 0.000000
+	error : (null)
+
+Token no. 48
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : dummy
+	line_no : 11
+	value : 0.000000
+	error : (null)
+
+Token no. 49
+	is_num : 0
+	is_err : 0
+	token : COLON
+	lexeme : :
+	line_no : 11
+	value : 0.000000
+	error : (null)
+
+Token no. 50
+	is_num : 0
+	is_err : 0
+	token : INTEGER
+	lexeme : integer
+	line_no : 11
+	value : 0.000000
+	error : (null)
+
+Token no. 51
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 11
+	value : 0.000000
+	error : (null)
+
+Token no. 52
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : a
+	line_no : 12
+	value : 0.000000
+	error : (null)
+
+Token no. 53
+	is_num : 0
+	is_err : 0
+	token : ASSIGNOP
+	lexeme : :=
+	line_no : 12
+	value : 0.000000
+	error : (null)
+
+Token no. 54
+	is_num : 1
+	is_err : 0
+	token : NUM
+	lexeme : 48
+	line_no : 12
+	value : 48.000000
+	error : (null)
+
+Token no. 55
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 12
+	value : 0.000000
+	error : (null)
+
+Token no. 56
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : b
+	line_no : 13
+	value : 0.000000
+	error : (null)
+
+Token no. 57
+	is_num : 0
+	is_err : 0
+	token : ASSIGNOP
+	lexeme : :=
+	line_no : 13
+	value : 0.000000
+	error : (null)
+
+Token no. 58
+	is_num : 1
+	is_err : 0
+	token : NUM
+	lexeme : 10
+	line_no : 13
+	value : 10.000000
+	error : (null)
+
+Token no. 59
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 13
+	value : 0.000000
+	error : (null)
+
+Token no. 60
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : dummy
+	line_no : 14
+	value : 0.000000
+	error : (null)
+
+Token no. 61
+	is_num : 0
+	is_err : 0
+	token : ASSIGNOP
+	lexeme : :=
+	line_no : 14
+	value : 0.000000
+	error : (null)
+
+Token no. 62
+	is_num : 1
+	is_err : 0
+	token : NUM
+	lexeme : 100
+	line_no : 14
+	value : 100.000000
+	error : (null)
+
+Token no. 63
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 14
+	value : 0.000000
+	error : (null)
+
+Token no. 64
+	is_num : 0
+	is_err : 0
+	token : DECLARE
+	lexeme : declare
+	line_no : 15
+	value : 0.000000
+	error : (null)
+
+Token no. 65
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : flag
+	line_no : 15
+	value : 0.000000
+	error : (null)
+
+Token no. 66
+	is_num : 0
+	is_err : 0
+	token : COLON
+	lexeme : :
+	line_no : 15
+	value : 0.000000
+	error : (null)
+
+Token no. 67
+	is_num : 0
+	is_err : 0
+	token : BOOLEAN
+	lexeme : boolean
+	line_no : 15
+	value : 0.000000
+	error : (null)
+
+Token no. 68
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 15
+	value : 0.000000
+	error : (null)
+
+Token no. 69
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : flag
+	line_no : 16
+	value : 0.000000
+	error : (null)
+
+Token no. 70
+	is_num : 0
+	is_err : 0
+	token : ASSIGNOP
+	lexeme : :=
+	line_no : 16
+	value : 0.000000
+	error : (null)
+
+Token no. 71
+	is_num : 0
+	is_err : 0
+	token : BO
+	lexeme : (
+	line_no : 16
+	value : 0.000000
+	error : (null)
+
+Token no. 72
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : a
+	line_no : 16
+	value : 0.000000
+	error : (null)
+
+Token no. 73
+	is_num : 0
+	is_err : 0
+	token : GE
+	lexeme : >=
+	line_no : 16
+	value : 0.000000
+	error : (null)
+
+Token no. 74
+	is_num : 1
+	is_err : 0
+	token : NUM
+	lexeme : 30
+	line_no : 16
+	value : 30.000000
+	error : (null)
+
+Token no. 75
+	is_num : 0
+	is_err : 0
+	token : BC
+	lexeme : )
+	line_no : 16
+	value : 0.000000
+	error : (null)
+
+Token no. 76
+	is_num : 0
+	is_err : 0
+	token : AND
+	lexeme : AND
+	line_no : 16
+	value : 0.000000
+	error : (null)
+
+Token no. 77
+	is_num : 0
+	is_err : 0
+	token : BO
+	lexeme : (
+	line_no : 16
+	value : 0.000000
+	error : (null)
+
+Token no. 78
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : b
+	line_no : 16
+	value : 0.000000
+	error : (null)
+
+Token no. 79
+	is_num : 0
+	is_err : 0
+	token : LT
+	lexeme : <
+	line_no : 16
+	value : 0.000000
+	error : (null)
+
+Token no. 80
+	is_num : 1
+	is_err : 0
+	token : NUM
+	lexeme : 30
+	line_no : 16
+	value : 30.000000
+	error : (null)
+
+Token no. 81
+	is_num : 0
+	is_err : 0
+	token : BC
+	lexeme : )
+	line_no : 16
+	value : 0.000000
+	error : (null)
+
+Token no. 82
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 16
+	value : 0.000000
+	error : (null)
+
+Token no. 83
+	is_num : 0
+	is_err : 0
+	token : SWITCH
+	lexeme : switch
+	line_no : 17
+	value : 0.000000
+	error : (null)
+
+Token no. 84
+	is_num : 0
+	is_err : 0
+	token : BO
+	lexeme : (
+	line_no : 17
+	value : 0.000000
+	error : (null)
+
+Token no. 85
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : flag
+	line_no : 17
+	value : 0.000000
+	error : (null)
+
+Token no. 86
+	is_num : 0
+	is_err : 0
+	token : BC
+	lexeme : )
+	line_no : 17
+	value : 0.000000
+	error : (null)
+
+Token no. 87
+	is_num : 0
+	is_err : 0
+	token : START
+	lexeme : start
+	line_no : 18
+	value : 0.000000
+	error : (null)
+
+Token no. 88
+	is_num : 0
+	is_err : 0
+	token : CASE
+	lexeme : case
+	line_no : 19
+	value : 0.000000
+	error : (null)
+
+Token no. 89
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : FALSE
+	line_no : 19
+	value : 0.000000
+	error : (null)
+
+Token no. 90
+	is_num : 0
+	is_err : 0
+	token : COLON
+	lexeme : :
+	line_no : 19
+	value : 0.000000
+	error : (null)
+
+Token no. 91
+	is_num : 0
+	is_err : 0
+	token : PRINT
+	lexeme : print
+	line_no : 19
+	value : 0.000000
+	error : (null)
+
+Token no. 92
+	is_num : 0
+	is_err : 0
+	token : BO
+	lexeme : (
+	line_no : 19
+	value : 0.000000
+	error : (null)
+
+Token no. 93
+	is_num : 1
+	is_err : 0
+	token : NUM
+	lexeme : 100
+	line_no : 19
+	value : 100.000000
+	error : (null)
+
+Token no. 94
+	is_num : 0
+	is_err : 0
+	token : BC
+	lexeme : )
+	line_no : 19
+	value : 0.000000
+	error : (null)
+
+Token no. 95
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 19
+	value : 0.000000
+	error : (null)
+
+Token no. 96
+	is_num : 0
+	is_err : 0
+	token : BREAK
+	lexeme : break
+	line_no : 20
+	value : 0.000000
+	error : (null)
+
+Token no. 97
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 20
+	value : 0.000000
+	error : (null)
+
+Token no. 98
+	is_num : 0
+	is_err : 0
+	token : CASE
+	lexeme : case
+	line_no : 21
+	value : 0.000000
+	error : (null)
+
+Token no. 99
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : TRUE
+	line_no : 21
+	value : 0.000000
+	error : (null)
+
+Token no. 100
+	is_num : 0
+	is_err : 0
+	token : COLON
+	lexeme : :
+	line_no : 21
+	value : 0.000000
+	error : (null)
+
+Token no. 101
+	is_num : 0
+	is_err : 0
+	token : USE
+	lexeme : use
+	line_no : 21
+	value : 0.000000
+	error : (null)
+
+Token no. 102
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : mod1
+	line_no : 21
+	value : 0.000000
+	error : (null)
+
+Token no. 103
+	is_num : 0
+	is_err : 0
+	token : WITH
+	lexeme : with
+	line_no : 21
+	value : 0.000000
+	error : (null)
+
+Token no. 104
+	is_num : 0
+	is_err : 0
+	token : PARAMETERS
+	lexeme : parameters
+	line_no : 21
+	value : 0.000000
+	error : (null)
+
+Token no. 105
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : a
+	line_no : 21
+	value : 0.000000
+	error : (null)
+
+Token no. 106
+	is_num : 0
+	is_err : 0
+	token : COMMA
+	lexeme : ,
+	line_no : 21
+	value : 0.000000
+	error : (null)
+
+Token no. 107
+	is_num : 0
+	is_err : 0
+	token : ID
+	lexeme : b
+	line_no : 21
+	value : 0.000000
+	error : (null)
+
+Token no. 108
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 21
+	value : 0.000000
+	error : (null)
+
+Token no. 109
+	is_num : 0
+	is_err : 0
+	token : BREAK
+	lexeme : break
+	line_no : 22
+	value : 0.000000
+	error : (null)
+
+Token no. 110
+	is_num : 0
+	is_err : 0
+	token : SEMICOL
+	lexeme : ;
+	line_no : 22
+	value : 0.000000
+	error : (null)
+
+Token no. 111
+	is_num : 0
+	is_err : 0
+	token : END
+	lexeme : end
+	line_no : 23
+	value : 0.000000
+	error : (null)
+
+Token no. 112
+	is_num : 0
+	is_err : 0
+	token : END
+	lexeme : end
+	line_no : 24
+	value : 0.000000
+	error : (null)

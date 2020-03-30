@@ -1,0 +1,100 @@
+1 Line Number = 2 	Lexeme = **** 	Token_Name = COMMENTMARK 
+ 2 Line Number = 4 	Lexeme = var_1_ 	Token_Name = ID 
+ 3 Line Number = 4 	Lexeme = , 	Token_Name = COMMA 
+ 4 Line Number = 4 	Lexeme = var_2_ 	Token_Name = ID 
+ 5 Line Number = 4 	Lexeme = , 	Token_Name = COMMA 
+ 6 Line Number = 4 	Lexeme = var_3_ 	Token_Name = ID 
+ 7 Line Number = 4 	Lexeme = : 	Token_Name = COLON 
+ 8 Line Number = 4 	Lexeme = integer 	Token_Name = INTEGER 
+ 9 Line Number = 4 	Lexeme = + 	Token_Name = PLUS 
+ 10 Line Number = 4 	Lexeme = AND 	Token_Name = AND 
+ 11 Line Number = 4 	Lexeme = + 	Token_Name = PLUS 
+ 12 Line Number = 4 	Lexeme = declare 	Token_Name = DECLARE 
+ 13 Line Number = 4 	Lexeme = .. 	Token_Name = RANGEOP 
+ 14 Line Number = 4 	Lexeme = - 	Token_Name = MINUS 
+ 15 Line Number = 4 	Lexeme = 23.7e+12 	Token_Name = RNUM 
+ 16 Line Number = 4 	Lexeme = um16789 	Token_Name = ID 
+ 17 Line Number = 4 	Lexeme = + 	Token_Name = PLUS 
+ 18 Line Number = 4 	Lexeme = **** 	Token_Name = COMMENTMARK 
+ 19 Line Number = 5 	Lexeme = 123 	Token_Name = NUM 
+ 20 Line Number = 5 	Lexeme = abc123 	Token_Name = ID 
+ LEXICAL ERROR - Line Number = 5 Lexeme = .2,
+ 22 Line Number = 5 	Lexeme = 3 	Token_Name = NUM 
+ 23 Line Number = 5 	Lexeme = - 	Token_Name = MINUS 
+ 24 Line Number = 5 	Lexeme = / 	Token_Name = DIV 
+ 25 Line Number = 5 	Lexeme = * 	Token_Name = MUL 
+ 26 Line Number = 5 	Lexeme = + 	Token_Name = PLUS 
+ 27 Line Number = 5 	Lexeme = while 	Token_Name = WHILE 
+ 28 Line Number = 5 	Lexeme = ) 	Token_Name = BC 
+ 29 Line Number = 5 	Lexeme = for 	Token_Name = FOR 
+ 30 Line Number = 5 	Lexeme = ( 	Token_Name = BO 
+ 31 Line Number = 5 	Lexeme = begin 	Token_Name = ID 
+ 32 Line Number = 5 	Lexeme = - 	Token_Name = MINUS 
+ 33 Line Number = 5 	Lexeme = - 	Token_Name = MINUS 
+ LEXICAL ERROR - Line Number = 5 Lexeme = 12.03e+a,
+ 35 Line Number = 5 	Lexeme = 2 	Token_Name = NUM 
+ 36 Line Number = 5 	Lexeme = <<< 	Token_Name = DRIVERDEF 
+ 37 Line Number = 5 	Lexeme = << 	Token_Name = DEF 
+ 38 Line Number = 5 	Lexeme = == 	Token_Name = EQ 
+ LEXICAL ERROR - Line Number = 5 Lexeme = =>,
+ LEXICAL ERROR - Line Number = 5 Lexeme = =v,
+ 41 Line Number = 5 	Lexeme = alue_123___16 	Token_Name = ID 
+ LEXICAL ERROR - Line Number = 6 Lexeme = FJKHDSFSDjshd547637_,
+ 43 Line Number = 6 	Lexeme = 4234 	Token_Name = NUM 
+ LEXICAL ERROR - Line Number = 6 Lexeme = _,
+ 45 Line Number = 6 	Lexeme = 3423 	Token_Name = NUM 
+ 46 Line Number = 6 	Lexeme = mdfndf 	Token_Name = ID 
+ 47 Line Number = 6 	Lexeme = + 	Token_Name = PLUS 
+ LEXICAL ERROR - Line Number = 6 Lexeme = 342543.d,
+ 49 Line Number = 6 	Lexeme = fsf 	Token_Name = ID 
+ 50 Line Number = 6 	Lexeme = + 	Token_Name = PLUS 
+ 51 Line Number = 6 	Lexeme = case 	Token_Name = CASE 
+ 52 Line Number = 6 	Lexeme = - 	Token_Name = MINUS 
+ 53 Line Number = 6 	Lexeme = case1 	Token_Name = ID 
+ 54 Line Number = 6 	Lexeme = / 	Token_Name = DIV 
+ 55 Line Number = 8 	Lexeme = / 	Token_Name = DIV 
+ 56 Line Number = 8 	Lexeme = true 	Token_Name = TRUE 
+ 57 Line Number = 10 	Lexeme = ; 	Token_Name = SEMICOL 
+ 58 Line Number = 10 	Lexeme = default 	Token_Name = DEFAULT 
+ 59 Line Number = 10 	Lexeme = <= 	Token_Name = LE 
+ 60 Line Number = 10 	Lexeme = 1876 	Token_Name = NUM 
+ 61 Line Number = 10 	Lexeme = .. 	Token_Name = RANGEOP 
+ 62 Line Number = 10 	Lexeme = 2098 	Token_Name = NUM 
+ 63 Line Number = 10 	Lexeme = + 	Token_Name = PLUS 
+ 64 Line Number = 10 	Lexeme = 12 	Token_Name = NUM 
+ 65 Line Number = 10 	Lexeme = .. 	Token_Name = RANGEOP 
+ 66 Line Number = 10 	Lexeme = .. 	Token_Name = RANGEOP 
+ LEXICAL ERROR - Line Number = 10 Lexeme = .:,
+ 68 Line Number = 10 	Lexeme = := 	Token_Name = ASSIGNOP 
+ 69 Line Number = 10 	Lexeme = 30 	Token_Name = NUM 
+ 70 Line Number = 10 	Lexeme = switch 	Token_Name = SWITCH 
+ 71 Line Number = 12 	Lexeme = break 	Token_Name = BREAK 
+ 72 Line Number = 12 	Lexeme = [ 	Token_Name = SQBO 
+ 73 Line Number = 12 	Lexeme = A 	Token_Name = ID 
+ 74 Line Number = 12 	Lexeme = .. 	Token_Name = RANGEOP 
+ 75 Line Number = 12 	Lexeme = 19 	Token_Name = NUM 
+ 76 Line Number = 12 	Lexeme = ] 	Token_Name = SQBC 
+ 77 Line Number = 12 	Lexeme = get_value 	Token_Name = GET_VALUE 
+ 78 Line Number = 12 	Lexeme = , 	Token_Name = COMMA 
+ 79 Line Number = 12 	Lexeme = print 	Token_Name = PRINT 
+ 80 Line Number = 12 	Lexeme = , 	Token_Name = COMMA 
+ 81 Line Number = 12 	Lexeme = use 	Token_Name = USE 
+ 82 Line Number = 12 	Lexeme = , 	Token_Name = COMMA 
+ 83 Line Number = 12 	Lexeme = boolean 	Token_Name = BOOLEAN 
+ 84 Line Number = 12 	Lexeme = 10 	Token_Name = NUM 
+ 85 Line Number = 12 	Lexeme = .. 	Token_Name = RANGEOP 
+ 86 Line Number = 12 	Lexeme = in 	Token_Name = IN 
+ 87 Line Number = 12 	Lexeme = for 	Token_Name = FOR 
+ 88 Line Number = 12 	Lexeme = + 	Token_Name = PLUS 
+ 89 Line Number = 12 	Lexeme = + 	Token_Name = PLUS 
+ 90 Line Number = 12 	Lexeme = array 	Token_Name = ARRAY 
+ 91 Line Number = 12 	Lexeme = [ 	Token_Name = SQBO 
+ LEXICAL ERROR - Line Number = 12 Lexeme = 187.e,
+ 93 Line Number = 12 	Lexeme = + 	Token_Name = PLUS 
+ 94 Line Number = 12 	Lexeme = 12 	Token_Name = NUM 
+ 95 Line Number = 12 	Lexeme = 1.0E-12 	Token_Name = RNUM 
+ 96 Line Number = 12 	Lexeme = e34 	Token_Name = ID 
+ 97 Line Number = 14 	Lexeme = **** 	Token_Name = COMMENTMARK 
+ 98 Line Number = 19 	Lexeme = **** 	Token_Name = COMMENTMARK 
+ 99 Line Number = 20 	Lexeme = **** 	Token_Name = COMMENTMARK 
+ 100 Line Number = 22 	Lexeme = **** 	Token_Name = COMMENTMARK
