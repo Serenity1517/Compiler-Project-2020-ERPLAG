@@ -99,7 +99,7 @@ typedef union Scope{
     Need to add fields in future for codegen and type extraction if needed*/
 typedef struct SymbolTable{
     struct SymbolTable* parent; //The parent tree node (the outer scope corresponding to current scope)
-    struct SymbolTable* next;   //The next SymbolTableTreeNode at the current level of tree (basically the rightSibling)
+    struct SymbolTable* next;   //The next SymbolTableNode at the current level of tree (basically the rightSibling)
     struct SymbolTable* childScope; //basically the child of this table; (inward scoping)
 
      /*When there is collision, the symboltable entries form a chain (linkedlist) at the slot where they collide. 

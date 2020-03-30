@@ -45,7 +45,7 @@ integer	4	INTEGER	 RULE NO !!!! -1	----	dataType	yes
 returns	5	RETURNS	 RULE NO !!!! -1	----	ret	yes	
 ---- ---- ---- ---- RULE NO !!! 8	module	no ret	
 [	5	SQBO	 RULE NO !!!! -1	----	ret	yes	
-sum	5	ID	 RULE NO !!!! -1	----	output_plist	yes	
+ssubtract	5	ID	 RULE NO !!!! -1	----	output_plist	yes	
 ---- ---- ---- ---- RULE NO !!! 13	ret	no output_plist	
 :	5	COLON	 RULE NO !!!! -1	----	output_plist	yes	
 real	5	REAL	 RULE NO !!!! -1	----	type	yes	
@@ -82,7 +82,7 @@ boolean	8	BOOLEAN	 RULE NO !!!! -1	----	dataType	yes
 ---- ---- ---- ---- RULE NO !!! 25	statements	no statements	
 declare	9	DECLARE	 RULE NO !!!! -1	----	declareStmt	yes	
 ---- ---- ---- ---- RULE NO !!! 92	statement	no declareStmt	
-sum	9	ID	 RULE NO !!!! -1	----	idList	yes	
+ssubtract	9	ID	 RULE NO !!!! -1	----	idList	yes	
 ---- ---- ---- ---- RULE NO !!! 52	declareStmt	no idList	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N3	yes	
 ---- ---- ---- ---- RULE NO !!! 54	idList	no N3	

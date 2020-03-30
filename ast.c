@@ -316,7 +316,7 @@ void createAST(ParseTreeNode *node){
         case 14: {
             ASTNode *temp = createASTNode(outputParamNode);
             temp->sc = createASTNode(idNode);
-            strcpy(temp->sc->node.idnode.token, node->sc->tkn->lexeme);
+            strcpy(temp->sc->node.idnode.lexeme, node->sc->tkn->lexeme);
             strcpy(temp->sc->node.idnode.token,node->sc->tkn->token);
             temp->sc->node.idnode.line_no=node->sc->tkn->line_no;
             temp->sc->parent = temp;
