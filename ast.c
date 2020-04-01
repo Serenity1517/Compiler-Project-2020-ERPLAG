@@ -768,7 +768,7 @@ void createAST(ParseTreeNode *node){
             // adding children to already created opNode and OpNode is present in node->sc->syn
             node->sc->syn->sc = node->sc->rs->syn;
             node->sc->syn->sc->parent = node->sc->syn;
-            node->sc->syn->sc->rs = NULL;
+            node->sc->syn->sc->rs = createASTNode(nullNode);
             // set lhs.syn = opnode
             node->syn = node->sc->syn;
             //freeee

@@ -5,3 +5,15 @@
  * Shreyas Srikrishna ------- 2017A7PS0162P
  * Chetan Sharma ------------ 2017A7PS0182P
  */
+
+#ifndef typeExtractor
+#define typeExtractor
+
+#include "typeExtractorDef.h"
+#include "ast.h"
+
+Typeof* extractTypeOfId(ASTNode* node);
+FunctionType* extractTypeOfFunction(ASTNode* node);
+PrimitiveType extractTypeOfExpression(ASTNode *node);
+
+#endif

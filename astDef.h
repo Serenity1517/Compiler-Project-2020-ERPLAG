@@ -11,8 +11,8 @@
 
 #define NO_OF_AST_NODE_TYPES 21
 
-#include "lexer.h"
-#include "parser.h"     // including previous libraries
+#include "lexer.h"    // including previous libraries
+#include "typeExtractorDef.h"
 //#include "symboltable.h"
 
 typedef enum NodeType{
@@ -56,8 +56,9 @@ typedef struct ProgramNode{
 typedef struct ModuleNode{
     //1st child : (id representing name of module)IdNode
     //2nd child : ((nonempty)list of input parameters)linkedlist of InputParamNodes
-    //3rd child : ((nonempty)list of output parameters)linkedlist of OutputParamNodes
+    //3rd child : ((empty/nonempty)list of output parameters)linkedlist of OutputParamNodes
     //4th child : ((empty/nonempty)list of statements of the module)linkedlist of statementNodes (can be any one of the possible statement structures)
+    FunctionType* typeOfFunc;
 }ModuleNode;
 
 typedef struct InputParamNode{
@@ -71,8 +72,8 @@ typedef struct OutputParamNode{
 }OutputParamNode;
 
 typedef struct TypeNode{   // This node stores type constants such as REAL, BOOLEAN, INTEGER etc.
-    char token[21];
-    char lexeme[21];
+    char token[21];         //contains "INTEGER" or "REAL" or "BOOLEAN"
+    char lexeme[21];        //contains the lexeme(might be lowercase)
     int line_no;
 }TypeNode;
 
@@ -124,18 +125,20 @@ typedef struct FunctionCallNode{
 }FunctionCallNode;
 
 typedef struct OpNode{   // this node stores arithmetic operators like PLUS, MINS etc
-    /*1st child : (in case of unary op)NULL
+    /*1st child : (nested expression)
+    //2nd child : (in case of unary op)NullNode
                     OR
                     (nested expression)*/
-    //2nd child : (nested expression)
     char token[21];
     char lexeme[21];
     int line_no;
+    PrimitiveType typeOfExpr;
 }OpNode;
 
 typedef struct DeclareNode{
     //1st Child : ((nonempty)list of Declared variables)list of IdNodes
     //2nd Child : (Defines the datatype of variable that is declared)ArrayTypeNode or TypeNode
+    Typeof typeOfId;
 }DeclareNode;
 
 typedef struct ConditionalNode{
@@ -213,8 +216,7 @@ typedef struct ASTNode {
     struct ASTNode* parent;
     struct ASTNode* rightSibling;
     struct ASTNode* startChild;
-
-    //struct SymbolTable* scopeTable;        //points to the symbol table where this variable/function is hashed
+    struct SymbolTable* scopeTable;        //points to the symbol table where this variable/function is hashed
 }ASTNode;
 
 #endif

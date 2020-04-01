@@ -9,6 +9,7 @@
 #define ast
 
 #include "astDef.h"
+#include "parser.h"
 
 //Main Required Functions 
 struct ASTNode* createASTNode(NodeType type);
