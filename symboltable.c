@@ -11,6 +11,8 @@
 #include "parser.h"
 #include "ast.h"
 #include "symboltable.h"
+#include "typeExtractor.h"
+#include "semantic.h"
 #include <string.h>
 #define sc startChild
 #define rs rightSibling
@@ -25,6 +27,12 @@ int moduleNumber;
 
 //Global bool flag to check duplicate output parameters
 bool dupOutputParamErrorFound = false;
+
+//This function returns the Global symbolTableRoot Object
+SymbolTable* getsymbolTable()
+{
+    return symbolTableRoot;
+}
 
 /*Computes the hash of Block b*/
 int computeBlockHash(Block* b){
@@ -233,7 +241,7 @@ SymbolTableEntry* checkForOutputParamOverloading(char* s, SymbolTable* table){
     return NULL;
 }
 
-void recursiveCheckOverload(ASTNode* outputParam, SymbolTable* table)      //will also require error object parameter
+void recursiveCheckOverload(ASTNode* outputParam, SymbolTable* table,ListOfErrors *sematicErrors)      //will also require error object parameter
 {
 	
     SymbolTable* traverse1 = table;
@@ -241,7 +249,7 @@ void recursiveCheckOverload(ASTNode* outputParam, SymbolTable* table)      //wil
         return; 
     while(traverse1 != NULL){
         if(checkForOutputParamOverloading(outputParam->sc->node.idnode.lexeme, traverse1) == NULL){
-            recursiveCheckOverload(outputParam, traverse1->childScope);
+            recursiveCheckOverload(outputParam, traverse1->childScope,sematicErrors);
             if(dupOutputParamErrorFound == true)
                 return;
             else
@@ -250,6 +258,17 @@ void recursiveCheckOverload(ASTNode* outputParam, SymbolTable* table)      //wil
         else{
             dupOutputParamErrorFound = true;
             //semantic error : declaration of variable inside function that shares same name as outputParameter
+            Error *err = createErrorObject();
+            strcpy(err->error,outputParam->sc->node.idnode.lexeme);
+            err->lineNo = outputParam->sc->node.idnode.line_no;
+            strcat(err->error," Re-declaration of output parameters in line "); // error msg me line no aur variable print karva do
+            Error *temporary = sematicErrors->head;
+            while(temporary->next != NULL)
+            {
+                temporary = temporary->next;
+            }  
+            temporary->next = err;
+            sematicErrors->numberOfErr += 1;
             printf("\nSEMANTIC ERROR\n");
             return;
         }
@@ -260,7 +279,7 @@ void recursiveCheckOverload(ASTNode* outputParam, SymbolTable* table)      //wil
 /*Process AST*/
 //recursive
 //when this is called for the first time, curr is passed as NULL
-void processAST(ASTNode* node, SymbolTable* curr){
+void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
 
     // switch-case on ASTNode type
     switch(node->type){
@@ -271,15 +290,15 @@ void processAST(ASTNode* node, SymbolTable* curr){
             //Scope scope and SymbolTableType tableType fields are invalid for this root node.
             ASTNode *traverse = node->sc;
 
-            processAST(traverse, symbolTableRoot);  //process moduleDeclarations
+            processAST(traverse, symbolTableRoot,semanticErrors);  //process moduleDeclarations
             
             moduleNumber = 0;
 
-            processAST(traverse->rs, symbolTableRoot);    //process otherModules
+            processAST(traverse->rs, symbolTableRoot,semanticErrors);    //process otherModules
              
-            processAST(traverse->rs->rs, symbolTableRoot);//process driverModule
+            processAST(traverse->rs->rs, symbolTableRoot,semanticErrors);//process driverModule
             
-	    processAST(traverse->rs->rs->rs, symbolTableRoot);//process otherModules%
+	        processAST(traverse->rs->rs->rs, symbolTableRoot,semanticErrors);//process otherModules%
 
             
             break;
@@ -333,7 +352,7 @@ void processAST(ASTNode* node, SymbolTable* curr){
                 //now process the statements in the module
                 ASTNode* traverse = node->sc->rs->rs->rs;
                 while(traverse != NULL){
-                    processAST(traverse, newTable);
+                    processAST(traverse, newTable,semanticErrors);
                     traverse = traverse->next;
                 }
 
@@ -368,8 +387,14 @@ void processAST(ASTNode* node, SymbolTable* curr){
                 //2.Create an entry for this module in current table
                 Symbol *s = createSymbol(node);
                 int hash = computeStringHash(s->functionEntry.functionName);
+                
                 // creating a symbol of type functionEntry and populating it's fields.
                 SymbolTableEntry *sym = createSymbolTableEntry(s,functionEntry);
+
+                //extract it's type and fill it in the entry
+                FunctionType* f = extractTypeOfFunction(node);
+                sym->symbol.functionEntry.inOutType = *f;
+                
                 //inserting the symbol into the table
                 if(curr->listHeads[hash] == NULL) { // if linked list is empty
                     curr->listHeads[hash] = sym;
@@ -387,7 +412,7 @@ void processAST(ASTNode* node, SymbolTable* curr){
                 //now process the statements in the module
                 ASTNode* traverse = node->sc->rs->rs->rs;
                 while(traverse != NULL){
-                    processAST(traverse, newTable);
+                    processAST(traverse, newTable,semanticErrors);
                     traverse = traverse->next;
                 }
 
@@ -398,7 +423,7 @@ void processAST(ASTNode* node, SymbolTable* curr){
                     if(outputParamHead->type == nullNode)
 						break;
 					else {
-                    	recursiveCheckOverload(outputParamHead, newTable);  //also pass error object
+                    	recursiveCheckOverload(outputParamHead, newTable,semanticErrors);  //also pass error object
                     	outputParamHead = outputParamHead->next;
                     }
                 }
@@ -427,6 +452,10 @@ void processAST(ASTNode* node, SymbolTable* curr){
                     printf("Debugging Error.....Buggesh Code\n");
                 else
                     entry->table = newTable;
+                
+                //extract function's type and fill it in table
+                FunctionType* f = extractTypeOfFunction(node);
+                entry->symbol.functionEntry.inOutType = *f;
                     
                 // assigning pointers of parent of this newTable (i.e. curr)
                 SymbolTable* t1 = curr->childScope;
@@ -441,7 +470,7 @@ void processAST(ASTNode* node, SymbolTable* curr){
                 //now process the statements in the module
                 ASTNode* traverse = node->sc->rs->rs->rs;
                 while(traverse != NULL){
-                    processAST(traverse, newTable);
+                    processAST(traverse, newTable,semanticErrors);
                     traverse = traverse->next;
                 }
                 
@@ -452,15 +481,25 @@ void processAST(ASTNode* node, SymbolTable* curr){
 		                if(outputParamHead->type == nullNode)
 							break;
 						else
-		                	recursiveCheckOverload(outputParamHead, newTable);  //also pass error object
+		                	recursiveCheckOverload(outputParamHead, newTable,semanticErrors);  //also pass error object
 		                outputParamHead = outputParamHead->next;
 		            
                 	}
                
             }
-
             else{
                 //semantic error : function overloading
+                Error *err = createErrorObject();
+                strcpy(err->error,info->symbol.functionEntry.functionName);
+                err->lineNo = node->sc->node.idnode.line_no;
+                strcat(err->error," Function Overloading in line "); // error msg me line no aur variable print karva do
+                Error *temporary = semanticErrors->head;
+                while(temporary->next != NULL)
+                {
+                    temporary = temporary->next;
+                }  
+                temporary->next = err;
+                semanticErrors->numberOfErr += 1;
             }
             break;
         }
@@ -528,7 +567,7 @@ void processAST(ASTNode* node, SymbolTable* curr){
             //now process the statements in the module
             ASTNode* traverse = node->sc->rs->rs;
             while(traverse != NULL){
-                processAST(traverse, newTable);
+                processAST(traverse, newTable,semanticErrors);
                 traverse = traverse->next;
             }
 
@@ -576,7 +615,7 @@ void processAST(ASTNode* node, SymbolTable* curr){
             //now process the statements in the module
             ASTNode* traverse = node->sc->rs;
             while(traverse != NULL){
-                processAST(traverse, newTable);
+                processAST(traverse, newTable,semanticErrors);
                 traverse = traverse->next;
             }
             break;
@@ -608,9 +647,9 @@ void processAST(ASTNode* node, SymbolTable* curr){
         case declareNode:{
             // add all the identifiers in the current table only.
             ASTNode *temp = node->sc;
-	    if(temp != NULL)
-		processAST(temp, curr);
-
+	        if(temp != NULL)
+		        processAST(temp, curr,semanticErrors);
+            
             break;
         }
         case caseNode:{
@@ -619,7 +658,7 @@ void processAST(ASTNode* node, SymbolTable* curr){
             ASTNode* traverse = node->sc->rs;
             while(traverse != NULL){
             	printf("yes yes yesss\n");
-                processAST(traverse, curr);
+                processAST(traverse, curr,semanticErrors);
                 traverse = traverse->next;
             }
             break;
@@ -661,11 +700,11 @@ void processAST(ASTNode* node, SymbolTable* curr){
             //now process the casenodes
             ASTNode* traverse = node->sc->rs;
             while(traverse != NULL){
-                processAST(traverse, newTable);
+                processAST(traverse, newTable,semanticErrors);
                 traverse = traverse->next;
             }
             //now process the default node(it is also a CaseNode)
-            processAST(node->sc->rs->rs, newTable);
+            processAST(node->sc->rs->rs, newTable,semanticErrors);
             break;
         }
         case numNode:{
@@ -687,6 +726,7 @@ void processAST(ASTNode* node, SymbolTable* curr){
                         sym->functionEntry.outputListHead = NULL;
                         sym->functionEntry.isDeclared = true;
                         sym->functionEntry.isDefined = false;
+                        // node->scopeTable = curr; // updating scopeTable
                         if(curr->listHeads[hash] == NULL)  //first element in list
                             curr->listHeads[hash] = createSymbolTableEntry(sym, functionEntry);
                         else {
@@ -697,13 +737,26 @@ void processAST(ASTNode* node, SymbolTable* curr){
                         }
                     }
                     else{
+                        //bhai follow kar mujhe
                         //semantic error: duplicate module declaration
+                        Error *err = createErrorObject();
+                        SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,functionEntry,false);
+                        err->lineNo = sym->symbol.idEntry.node->node.idnode.line_no;
+                        strcpy(err->error,sym->symbol.idEntry.node->node.idnode.lexeme);
+                        strcat(err->error," Duplicate module declaration in line  "); // error msg me line no aur variable print karva do
+                        Error *temporary = semanticErrors->head;
+                        while(temporary->next != NULL)
+                        {
+                            temporary = temporary->next;
+                        }  
+                        temporary->next = err;
+                        semanticErrors->numberOfErr += 1;
                     }
 
                     //process remaining moduleDeclarations(remaining idNodes in linkedlist)
                     ASTNode *temp = node->next;
                     if(temp != NULL)
-			processAST(temp, curr);
+			            processAST(temp, curr,semanticErrors);
                     break;
                 }
                 case moduleNode:{
@@ -715,7 +768,12 @@ void processAST(ASTNode* node, SymbolTable* curr){
                     {
                         int hash = computeStringHash(node->node.idnode.lexeme);
                         SymbolTableEntry *sym = createSymbolTableEntry(createSymbol(node),idEntry);
-        
+                        
+                        //populate idEntry's type field
+                        Typeof* t = extractTypeOfId(node->parent);      //node->parent is the declareNode
+                        sym->symbol.idEntry.type = *t;
+                        // node->scopeTable = curr; // updating scopeTable  sahi hai?
+
                         if(curr->listHeads[hash] == NULL)  //first element in list
                             curr->listHeads[hash] = sym;
                         else {
@@ -726,13 +784,25 @@ void processAST(ASTNode* node, SymbolTable* curr){
                             temp->next = sym;
                         }
 			
-			if(node->next != NULL)
-			    processAST(node->next, curr);
+			            if(node->next != NULL)
+			                processAST(node->next, curr,semanticErrors);
                         
                     }
                     else
                     {
-                        // semantic error. variable already declared
+                        // semantic error. variable already declared 
+                       Error *err = createErrorObject();
+                       SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,idEntry,true);
+                       err->lineNo = sym->symbol.idEntry.node->node.idnode.line_no;
+                       strcpy(err->error,sym->symbol.idEntry.node->node.idnode.lexeme);
+                       strcat(err->error," Redeclaration of variable in line  "); // error msg me line no aur variable print karva do
+                       Error *temporary = semanticErrors->head;
+                       while(temporary->next != NULL)
+                       {
+                           temporary = temporary->next;
+                       }  
+                       temporary->next = err;
+                       semanticErrors->numberOfErr += 1;
                     }
 
                     break;
@@ -758,7 +828,7 @@ void processAST(ASTNode* node, SymbolTable* curr){
 void checkSymbolTable()
 {
 	ASTNode *n = getAST();
-	processAST(n,NULL);
+	//processAST(n,NULL,semanticErrors);
 	
 }
 

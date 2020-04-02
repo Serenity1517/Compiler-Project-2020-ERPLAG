@@ -11,4 +11,10 @@
 
 #include "semanticDef.h"
 
+Error* createErrorObject();
+ListOfErrors* getSemanticErrorObject();
+void initializeErrorObject();
+void semanticAnalyzer();
+void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors);
+
 #endif

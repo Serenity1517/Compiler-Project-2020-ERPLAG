@@ -19,8 +19,8 @@ SymbolTable* createSymbolTable(SymbolTableType type);
 SymbolTableEntry* createSymbolTableEntry(Symbol* s, SymbolForm f);
 SymbolTableEntry* lookupString(char* s, SymbolTable* table, SymbolForm f, bool deepSearch);
 SymbolTableEntry* checkForOutputParamOverloading(char* s, SymbolTable* table);
-void recursiveCheckOverload(ASTNode *node, SymbolTable *table);
-void processAST(ASTNode* node, SymbolTable* curr);
+void recursiveCheckOverload(ASTNode *node, SymbolTable *table,ListOfErrors *sematicErrors);
+void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors);
 
 void checkSymbolTable();
 SymbolTable* getsymbolTable();

@@ -8,7 +8,9 @@
 
 #include "typeExtractor.h"
 #include "semanticDef.h"
+#include "symboltable.h"
 #include "astDef.h"
+#include "semanticDef.h"
 #include <string.h>
 
 #define sc startChild
@@ -291,7 +293,7 @@ FunctionType* extractTypeOfFunction(ASTNode* node){
 
 //extracts type of an expression, and also sets appropriate field in the AST's opNode
 //param : node: ASTNode of type opNode or ASTNode of type idNode/numNode/boolNode
-PrimitiveType extractTypeOfExpression(ASTNode *node)
+PrimitiveType extractTypeOfExpression(ASTNode *node, SymbolTable* currTable,ListOfErrors* semanticErrors)
 {
     
     if(node->sc == NULL){   //leaf node case
@@ -309,10 +311,34 @@ PrimitiveType extractTypeOfExpression(ASTNode *node)
             }
             case idNode:{
                 //lookup type(obtain Typeof object)
-                    //if lookup returns NULL(variable not delcared), semantic error
-                    //else
-                        //if Typeof.tag is primitive, no problem
-                        //else if Typeof.tag is array, semantic error(mam's  rule 6.6)
+                SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,currTable,idEntry,true);
+                    if(sym == NULL)
+                    { 
+                        // semantic error
+                        Error *err = (Error *)malloc(sizeof(Error));
+                        err->next = NULL;
+                        //strcpy(err->error,"");
+                        Error *temporary = semanticErrors->head;
+                        while(temporary->next != NULL)
+                        {
+                            temporary = temporary->next;
+                        }  
+                        temporary->next = err;
+                        semanticErrors->numberOfErr += 1;
+                    }
+                    else
+                    { 
+                        //else
+                        if(sym->symbol.idEntry.type.tag == primitive){//if Typeof.tag is primitive, no problem
+                            
+                        }
+                        else
+                        {
+                            //else if Typeof.tag is array, semantic error(mam's  rule 6.6)    
+                        }
+                    }
+                    
+                    
                 break;
             }
         }
@@ -323,34 +349,67 @@ PrimitiveType extractTypeOfExpression(ASTNode *node)
 
     //arithmetic op case(mam's rule 6.1,6.2)
     if((strcmp(node->node.opNode.token,"PLUS")==0) || (strcmp(node->node.opNode.token,"MINUS")==0) || (strcmp(node->node.opNode.token,"MUL")==0) || (strcmp(node->node.opNode.token,"DIV")==0)){
-        PrimitiveType t1 = extractTypeOfExpression(left);
-        PrimitiveType t2 = extractTypeOfExpression(right);
+        PrimitiveType t1 = extractTypeOfExpression(left, currTable,semanticErrors);
+        PrimitiveType t2 = extractTypeOfExpression(right, currTable,semanticErrors);
         if((t1 == integer && t2 == integer) || (t1 == real && t2 == real))
             node->node.opNode.typeOfExpr = t1;
         else{
             //semantic error
+            Error *err = (Error *)malloc(sizeof(Error));
+            err->next = NULL;
+            err->lineNo = node->node.opNode.line_no;
+            strcpy(err->error," Semantic Error: Type Mismatch in line no ");
+            Error *temporary = semanticErrors->head;
+            while(temporary->next != NULL)
+            {
+                temporary = temporary->next;
+            }  
+            temporary->next = err;
+            semanticErrors->numberOfErr += 1;
         }
     }
 
     //logical op case(mam's rule 6.5)
     else if(strcmp(node->node.opNode.token, "OR")==0 || strcmp(node->node.opNode.token,"AND")==0){
-        PrimitiveType t1 = extractTypeOfExpression(left);
-        PrimitiveType t2 = extractTypeOfExpression(right);
+        PrimitiveType t1 = extractTypeOfExpression(left, currTable,semanticErrors);
+        PrimitiveType t2 = extractTypeOfExpression(right, currTable,semanticErrors);
         if(t1 == boolean && t2 == boolean)
             node->node.opNode.typeOfExpr = boolean;
         else{
             //semantic error
+            Error *err = (Error *)malloc(sizeof(Error));
+            err->next = NULL;
+            err->lineNo = node->node.opNode.line_no;
+            strcpy(err->error," Semantic Error: Type Mismatch in line no ");
+            Error *temporary = semanticErrors->head;
+            while(temporary->next != NULL)
+            {
+                temporary = temporary->next;
+            }  
+            temporary->next = err;
+            semanticErrors->numberOfErr += 1;
         }
     }
 
     //relational op case(mam's rule 6.3,6.4)
     else if(strcmp(node->node.opNode.token, "NE")==0 || strcmp(node->node.opNode.token, "EQ")==0 || strcmp(node->node.opNode.token, "LT")==0 || strcmp(node->node.opNode.token, "LE")==0 || strcmp(node->node.opNode.token, "GT")==0 || strcmp(node->node.opNode.token, "GE")==0){
-        PrimitiveType t1 = extractTypeOfExpression(left);
-        PrimitiveType t2 = extractTypeOfExpression(right);
+        PrimitiveType t1 = extractTypeOfExpression(left, currTable,semanticErrors);
+        PrimitiveType t2 = extractTypeOfExpression(right, currTable,semanticErrors);
         if((t1 == integer && t2 == integer) || (t1 == real && t2 == real))
             node->node.opNode.typeOfExpr = boolean;
         else{
             //semantic error
+            Error *err = (Error *)malloc(sizeof(Error));
+            err->next = NULL;
+            err->lineNo = node->node.opNode.line_no;
+            strcpy(err->error," Semantic Error: Type Mismatch in line no ");
+            Error *temporary = semanticErrors->head;
+            while(temporary->next != NULL)
+            {
+                temporary = temporary->next;
+            }  
+            temporary->next = err;
+            semanticErrors->numberOfErr += 1;
         }
     }
 }

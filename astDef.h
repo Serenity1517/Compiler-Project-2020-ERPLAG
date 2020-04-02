@@ -101,7 +101,7 @@ typedef struct WhileLoopNode{
 }WhileLoopNode;
 
 typedef struct InputIONode{
-    //1st Child : (Identifier into which input is being taken)IdNode
+    //1st Child : (Identifierr into which input is being taken)IdNode
 }InputIONode;
 
 typedef struct OutputIONode{
@@ -216,7 +216,7 @@ typedef struct ASTNode {
     struct ASTNode* parent;
     struct ASTNode* rightSibling;
     struct ASTNode* startChild;
-    struct SymbolTable* scopeTable;        //points to the symbol table where this variable/function is hashed
+    // struct SymbolTable* scopeTable;        //points to the symbol table where this variable/function is hashed
 }ASTNode;
 
 #endif

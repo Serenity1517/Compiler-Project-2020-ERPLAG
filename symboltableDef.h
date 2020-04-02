@@ -40,7 +40,7 @@ typedef struct IdEntry{
     struct ASTNode* node;        //pointer to corresponding ast node(IdNode)
     int width;          // size of the Identifier NUM has different size than RNUM
     int offset;         // offset calculation field will be assigned in Semantic Analyser Phase
-    struct Typeof type;        //type of the identifier
+    struct Typeof type;        //type of the identifier..DONE
 }IdEntry;
 
 /* Driver Module*/
@@ -57,7 +57,7 @@ typedef struct FunctionEntry{
     int sequenceNumber;
     bool isDeclared;        //true if function prototype exists, false if not
     bool isDefined;         //true if function definition exists, false if not
-    struct FunctionType inOutType;      //type (input/output) of the function
+    struct FunctionType inOutType;      //type (input/output) of the function..DONE
 }FunctionEntry;
 
 typedef struct ForLoopEntry{
@@ -88,8 +88,8 @@ typedef union Symbol{
 */
 typedef struct SymbolTableEntry{
     struct SymbolTableEntry* next;  //The next symbol table entry in the linkedlist
-    union Symbol symbol;           //The symbol present at this entry                  
-    enum SymbolForm tag;             //tag for the above union
+    union Symbol symbol;           //The symbol present at this entry                 
+    enum SymbolForm tag;             //tag for the above union  
     struct SymbolTable* table;      //The symboltable corresponding to current entry(which is a functionEntry/driverEntry/block)
 }SymbolTableEntry;
 
