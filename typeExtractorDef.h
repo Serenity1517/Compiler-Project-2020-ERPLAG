@@ -19,6 +19,8 @@ typedef struct ArrayType{
     PrimitiveType t;
     int low;
     int high;
+    char left[21];
+    char right[21];
 }ArrayType;
 
 typedef union VariableType{

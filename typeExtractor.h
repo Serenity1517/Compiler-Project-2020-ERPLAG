@@ -12,7 +12,7 @@
 #include "typeExtractorDef.h"
 #include "ast.h"
 
-Typeof* createTypeof(VariableTypeTag tag1, PrimitiveType tag2, int l, int h, Typeof* arr, int index);
+Typeof* createTypeof(VariableTypeTag tag1, PrimitiveType tag2, int l, int h, char* left, char* right, Typeof* arr, int index);
 Typeof* extractTypeOfId(ASTNode* node);
 FunctionType* extractTypeOfFunction(ASTNode* node);
 PrimitiveType extractTypeOfExpression(ASTNode *node, SymbolTable* currTable,ListOfErrors* semanticError);
