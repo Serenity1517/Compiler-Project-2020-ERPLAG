@@ -637,7 +637,19 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
             break;
         }
         case functionCallNode:{
-            //do nothing
+            //curr points to the table for current scope
+            //curr->scope.scope points to current function's name
+            if(strcmp(node->sc->rs->node.idnode.lexeme, curr->scope.scope) == 0){
+                //recrusive call
+                Error *err = createErrorObject();
+                err->lineNo = node->sc->node.idnode.line_no; 
+                strcpy(err->error,"Recursive call of function :"); // error msg me line no aur variable print karva do
+                strcat(err->error,curr->scope.scope);
+                Error *temporary = semanticErrors->head;
+                while(temporary->next != NULL)
+                    temporary = temporary->next;
+                temporary->next = err; semanticErrors->numberOfErr += 1;
+            }
             break;
         }
         case opNode:{

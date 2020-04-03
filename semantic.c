@@ -115,11 +115,53 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
         case assignmentNode:{
             //first check if lhs variable has been declared
             
-            PrimitiveType t = extractTypeOfExpression(node->sc->rs, table, semanticErrors);
-        }
+            //PrimitiveType t = extractTypeOfExpression(node->sc->rs, table, semanticErrors);
 
+            //1. check if for loop iterating variable has been assigned 
+    
+            //pehle ye check karna padega ki are we inside forloop scope or not.. 
+            //yes for that we need to perform lookup in symboltable..block se lookup karna padega
+            //matlab for loop ke us iterating variable tak phochne ke lie us ForLoopNode(ASTNODE) ki zaroorat he, correct?
+
+        //oooh got it
+        //basically saare nested for loops check karne padenge
+        // haa aur yeh chota so code kar dega woh kaam
+            // sunn ek case hai jo t5 me hai yeh ek ex hai neeche wala
+            // for a in 5...10
+            //    for b in 100...200  
+            //      switch case
+            //          yahan pe a = b+c;  //
+            ASTNode *temp = node->parent;
+
+            while(temp->parent != NULL){
+                if(temp->type == forLoopNode && strcmp(temp->sc->node.idnode.lexeme,node->sc->node.idnode.lexeme)==0){
+                    //semantic error
+                    Error *err = createErrorObject();   err->lineNo = node->sc->node.idnode.line_no;  strcpy(err->error,"\nAssigning a value to for loop iterating variable is not allowed:"); 
+                    Error *temporary = semanticErrors->head;
+                    while(temporary->next != NULL)
+                        temporary = temporary->next;
+                    temporary->next = err; semanticErrors->numberOfErr += 1;
+                    break;
+                }
+                else
+                    temp = temp->parent;
+            }    //lol 
+            //accha fir while loop ka batata hu. 
+            //basically i suggest making a bool flag variable in whileLoopNode. jaise hi uske statements me
+            //iterating variable ka assignment ho jaye, to flag true kar do. 
+            //fir pura loop traverse karke dekhne ke bad check flag.. 
+        } // sunn ek min
+            // while i<=10  //yeh valid hai ??
+            //   i = i+1; 
+            //   i = i+2;
+            //fir usne t5.txt me kyu likha he aisa
+            //ruk language specifications padhte he
+            //usne waise semantic rules (nalanda wala) 
+//yes valid . o.n.ly  need 1 assignment statement // sun na fir toh agar nhi hoga toh infinte loop hoga woh run time issue me nhi aayega ??
         case functionCallNode:{
-
+            ////accha ruk. me mail likhta hu, use bolta hu ki aise bohot sare cheeze he check karneko
+            //kya aap rules ki list upload karoge ya nahi   //ok wait
+            // hmm yes that should work
         }
     }
 }
