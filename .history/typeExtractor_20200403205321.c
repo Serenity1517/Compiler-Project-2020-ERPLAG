@@ -502,6 +502,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                 temporary->next = err; semanticErrors->numberOfErr += 1;
                 return -1;
             }
+
             //2.check type
             if(sym->symbol.idEntry.type.tag == primitive){
                 Error* err = (Error*)malloc(sizeof(Error));

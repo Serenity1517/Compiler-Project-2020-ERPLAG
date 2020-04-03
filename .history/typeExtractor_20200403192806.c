@@ -405,7 +405,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                             Error* err = (Error*)malloc(sizeof(Error));
                             err->next = NULL;
                             err->lineNo = node->node.idnode.line_no;
-                            strcpy(err->error,"\nCannot use Array variable in expression");
+                            strcpy(err->error,"\nVariable used in this expression has been declared later. line no");
                             Error *temporary = semanticErrors->head;
                             while(temporary->next != NULL)
                             {
@@ -421,142 +421,6 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
         }
     }
 
-    if(node->type == arrayIdNode){
-        //2 cases: a[b] OR a[3]
-        if(node->sc->rs->type == idNode){   //a[b] case
-            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,currTable, idEntry, true);
-            //1.check if a is declared or not
-            if(sym == NULL){
-                Error *err = (Error*)malloc(sizeof(Error));
-                err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nVariable used in this expression has not been declared. line no");
-                Error *temporary = semanticErrors->head;
-                while(temporary->next != NULL)
-                    temporary = temporary->next;
-                temporary->next = err; semanticErrors->numberOfErr += 1;
-                return -1;
-            }
-            //2.check type
-            if(sym->symbol.idEntry.type.tag == primitive){
-                Error* err = (Error*)malloc(sizeof(Error));
-                err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nCannot use primitive variable as array in expression");
-                Error *temporary = semanticErrors->head;
-                while(temporary->next != NULL)
-                    temporary = temporary->next;
-                temporary->next = err;  semanticErrors->numberOfErr += 1;
-                return -1;
-            }
-            //3.check line number
-            if(sym->symbol.idEntry.node->node.idnode.line_no >= node->sc->node.idnode.line_no){
-                Error *err = (Error*)malloc(sizeof(Error));
-                err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nVariable used in this expression has been declared later. line no");
-                Error *temporary = semanticErrors->head;
-                while(temporary->next != NULL)
-                    temporary = temporary->next;
-                temporary->next = err; semanticErrors->numberOfErr += 1;
-                return -1;
-            }
-            //now we need to check b and check bounds
-            SymbolTableEntry *sym2 = lookupString(node->sc->rs->node.idnode.lexeme,currTable,idEntry, true);
-            //4.check if b is declared or not
-            if(sym2 == NULL){
-                Error *err = (Error*)malloc(sizeof(Error));
-                err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nArray index variable has not been declared. line no");
-                Error *temporary = semanticErrors->head;
-                while(temporary->next != NULL)
-                    temporary = temporary->next;
-                temporary->next = err; semanticErrors->numberOfErr += 1;
-                return -1;
-            }
-            //5. check type
-            if(!(sym2->symbol.idEntry.type.tag == primitive && sym2->symbol.idEntry.type.type.primitiveType == integer)){
-                Error* err = (Error*)malloc(sizeof(Error));
-                err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nCannot use non-integer variable as array index");
-                Error *temporary = semanticErrors->head;
-                while(temporary->next != NULL)
-                    temporary = temporary->next;
-                temporary->next = err;  semanticErrors->numberOfErr += 1;
-                return -1;
-            }
-            //6. check line no
-            if(sym2->symbol.idEntry.node->node.idnode.line_no >= node->sc->rs->node.idnode.line_no){
-                Error *err = (Error*)malloc(sizeof(Error));
-                err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nArray index variable has been declared later. line no");
-                Error *temporary = semanticErrors->head;
-                while(temporary->next != NULL)
-                    temporary = temporary->next;
-                temporary->next = err; semanticErrors->numberOfErr += 1;
-                return -1;
-            }
-            // 7. bound checking at run-time
-            return sym->symbol.idEntry.type.type.arrayType.t;
-        }
-        else{   //a[3] case
-            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,currTable, idEntry, true);
-            //1.check if a is declared or not
-            if(sym == NULL){
-                Error *err = (Error *)malloc(sizeof(Error));
-                err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nVariable used in this expression has not been declared. line no");
-                Error *temporary = semanticErrors->head;
-                while(temporary->next != NULL)
-                    temporary = temporary->next;
-                temporary->next = err; semanticErrors->numberOfErr += 1;
-                return -1;
-            }
-            //2.check type
-            if(sym->symbol.idEntry.type.tag == primitive){
-                Error* err = (Error*)malloc(sizeof(Error));
-                err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nCannot use primitive variable as array in expression");
-                Error *temporary = semanticErrors->head;
-                while(temporary->next != NULL)
-                    temporary = temporary->next;
-                temporary->next = err;  semanticErrors->numberOfErr += 1;
-                return -1;
-            }
-            //3.check line number
-            if(sym->symbol.idEntry.node->node.idnode.line_no >= node->sc->node.idnode.line_no){
-                Error *err = (Error*)malloc(sizeof(Error));
-                err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nVariable used in this expression has been declared later. line no");
-                Error *temporary = semanticErrors->head;
-                while(temporary->next != NULL)
-                    temporary = temporary->next;
-                temporary->next = err; semanticErrors->numberOfErr += 1;
-                return -1;
-            }
-            //4.if static, check for bounds
-            if(sym->symbol.idEntry.type.type.arrayType.low != -1 && sym->symbol.idEntry.type.type.arrayType.high != -1){
-                if(strcmp(node->sc->rs->node.numNode.token,"INTEGER")==0 &&
-                    node->sc->rs->node.numNode.value >= sym->symbol.idEntry.type.type.arrayType.low &&
-                    node->sc->rs->node.numNode.value <= sym->symbol.idEntry.type.type.arrayType.high){
-                    //bound check satisfied
-                    return sym->symbol.idEntry.type.type.arrayType.t;
-                }
-                else{   //bound check not satisified
-                    Error *err = (Error*)malloc(sizeof(Error));
-                    err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nArray index is not valid.");
-                    Error *temporary = semanticErrors->head;
-                    while(temporary->next != NULL)
-                        temporary = temporary->next;
-                    temporary->next = err; semanticErrors->numberOfErr += 1;
-                    return -1;
-                }
-            }
-            //5.if dynamic, check if index is integer or not
-            if(strcmp(node->sc->rs->node.numNode.token,"INTEGER")==0){  //index is integer, assume it is in bounds because 
-                //bound checking will be done at runtime
-                return sym->symbol.idEntry.type.type.arrayType.t;
-            }
-            else{
-                Error *err = (Error*)malloc(sizeof(Error));
-                err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nUnknown error");
-                Error *temporary = semanticErrors->head;
-                while(temporary->next != NULL)
-                    temporary = temporary->next;
-                temporary->next = err; semanticErrors->numberOfErr += 1;
-                return -1;
-            } 
-        }
-    }
-
     ASTNode* left = node->sc;
     ASTNode* right = node->sc->rs;
 
@@ -564,13 +428,9 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
     if((strcmp(node->node.opNode.token,"PLUS")==0) || (strcmp(node->node.opNode.token,"MINUS")==0) || (strcmp(node->node.opNode.token,"MUL")==0) || (strcmp(node->node.opNode.token,"DIV")==0)){
         PrimitiveType t1 = extractTypeOfExpression(left, currTable,semanticErrors);
         PrimitiveType t2 = extractTypeOfExpression(right, currTable,semanticErrors);
-        if((t1 == integer && t2 == integer) || (t1 == real && t2 == real)){
+        if((t1 == integer && t2 == integer) || (t1 == real && t2 == real))
             node->node.opNode.typeOfExpr = t1;
-            return t1;
-        }
         else{
-            if(t1 == -1 || t2 == -1)
-                return -1;
             //semantic error
             Error *err = (Error *)malloc(sizeof(Error));
             err->next = NULL;
@@ -590,13 +450,9 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
     else if(strcmp(node->node.opNode.token, "OR")==0 || strcmp(node->node.opNode.token,"AND")==0){
         PrimitiveType t1 = extractTypeOfExpression(left, currTable,semanticErrors);
         PrimitiveType t2 = extractTypeOfExpression(right, currTable,semanticErrors);
-        if(t1 == boolean && t2 == boolean){
+        if(t1 == boolean && t2 == boolean)
             node->node.opNode.typeOfExpr = boolean;
-            return boolean;
-        }
         else{
-            if(t1==-1 || t2==-1)
-                return -1;
             //semantic error
             Error *err = (Error *)malloc(sizeof(Error));
             err->next = NULL;
@@ -616,14 +472,9 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
     else if(strcmp(node->node.opNode.token, "NE")==0 || strcmp(node->node.opNode.token, "EQ")==0 || strcmp(node->node.opNode.token, "LT")==0 || strcmp(node->node.opNode.token, "LE")==0 || strcmp(node->node.opNode.token, "GT")==0 || strcmp(node->node.opNode.token, "GE")==0){
         PrimitiveType t1 = extractTypeOfExpression(left, currTable,semanticErrors);
         PrimitiveType t2 = extractTypeOfExpression(right, currTable,semanticErrors);
-        if((t1 == integer && t2 == integer) || (t1 == real && t2 == real)){
+        if((t1 == integer && t2 == integer) || (t1 == real && t2 == real))
             node->node.opNode.typeOfExpr = boolean;
-            return boolean;
-        }
         else{
-            
-            if(t1 == -1 || t2 == -1)
-                return -1;
             //semantic error
             Error *err = (Error *)malloc(sizeof(Error));
             err->next = NULL;

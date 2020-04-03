@@ -468,7 +468,8 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                 return -1;
             }
             //5. check type
-            if(!(sym2->symbol.idEntry.type.tag == primitive && sym2->symbol.idEntry.type.type.primitiveType == integer)){
+            if(sym2->symbol.idEntry.node.type.type != integer) 
+            {
                 Error* err = (Error*)malloc(sizeof(Error));
                 err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nCannot use non-integer variable as array index");
                 Error *temporary = semanticErrors->head;
@@ -479,16 +480,13 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             }
             //6. check line no
             if(sym2->symbol.idEntry.node->node.idnode.line_no >= node->sc->rs->node.idnode.line_no){
-                Error *err = (Error*)malloc(sizeof(Error));
-                err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nArray index variable has been declared later. line no");
-                Error *temporary = semanticErrors->head;
-                while(temporary->next != NULL)
-                    temporary = temporary->next;
-                temporary->next = err; semanticErrors->numberOfErr += 1;
-                return -1;
+                
             }
-            // 7. bound checking at run-time
-            return sym->symbol.idEntry.type.type.arrayType.t;
+            // 7. bound checking
+            if(sym2->)
+            {
+                
+            }
         }
         else{   //a[3] case
             SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,currTable, idEntry, true);
@@ -502,6 +500,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                 temporary->next = err; semanticErrors->numberOfErr += 1;
                 return -1;
             }
+
             //2.check type
             if(sym->symbol.idEntry.type.tag == primitive){
                 Error* err = (Error*)malloc(sizeof(Error));

@@ -74,7 +74,17 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
         case moduleNode:{
             //check if driverModule
             if(node->rs->rs == NULL && node->rs->type == moduleNode && node->parent->type == programNode){
-
+                SymbolTableEntry* curr = lookupString("driverModule", table, functionEntry, false);
+                if(curr==NULL){
+                    printf("\nSymbotable populated wrongly\n");
+                    //not possible
+                }
+                
+                //now process its statements
+                //curr->table gives us the table for this scope
+                ASTNode* traverse = node->sc->rs->rs->rs;
+                while(traverse != NULL)
+                    analyzeAST(traverse, curr->table, semanticErrors);
             }
 
             //if it's not a driver module
@@ -87,14 +97,32 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                 }
                 
                 //now process its statements
-
+                //curr->table gives us the table for this scope
+                ASTNode* traverse = node->sc->rs->rs->rs;
+                while(traverse != NULL)
+                    analyzeAST(traverse, curr->table, semanticErrors);
             }
         }
-        case opNode:{
 
+        case declareNode:{
+            //do nothing
         }
+
+        case opNode:{
+            extractTypeOfExpression(node, table, semanticErrors);
+        }
+
+        case assignmentNode:{
+            //first check if lhs variable has been declared
+            
+            PrimitiveType t = extractTypeOfExpression(node->sc->rs, table, semanticErrors);
+        }
+
         case functionCallNode:{
 
         }
     }
 }
+// a = b*c
+
+//declare b;
