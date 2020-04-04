@@ -9,7 +9,6 @@
 #include "parser.h"
 #include "ast.h"
 #include "symboltable.h"
-#include "semantic.h"
 #include "typeExtractor.h"
 
 #ifndef functionCheck
@@ -19,7 +18,7 @@ int moduleSequenceMap(char* moduleName);
 void populateModuleSequenceMap(ASTNode* root, SymbolTable* rootSymbolTable);
 void initializeDeclaredList(ASTNode* root, SymbolTable* rootSymbolTable);
 void checkModules(ASTNode* root, ListOfErrors* semanticErrors);
-void processModule(ASTNode* modNode, ListOfErrors* semanticErrors);
-void processStmt(ASTNode* stmtNode, ListOfErrors* semanticErrors);
+void processModule(ASTNode* modNode);
+void processStmt(ASTNode* stmtNode);
 
 #endif

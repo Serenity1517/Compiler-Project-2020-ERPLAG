@@ -51,6 +51,7 @@ typedef struct ProgramNode{
     //2nd Child : ((empty/nonempty)list of modules)linkedlist of ModuleNodes
     //3rd Child : ModuleNode for Driver Module
     //4th Child : ((empty/nonempty)list of modules)linkedlist of ModuleNodes
+    int noOfModules;    //no. of modules including driver
 }ProgramNode;
 
 typedef struct ModuleNode{

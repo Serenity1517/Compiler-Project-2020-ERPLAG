@@ -76,7 +76,7 @@ void initializeDeclaredList(ASTNode* root, SymbolTable* rootSymbolTable){
     for(i = 0; i < root->node.programNode.noOfModules; i++)
     {
         isDeclared[i] = false;
-        isCorrect[i] = true;
+        isCorrect[i] = false;
     }
     while(traverse != NULL || traverse->type != nullNode)
     {
@@ -84,7 +84,6 @@ void initializeDeclaredList(ASTNode* root, SymbolTable* rootSymbolTable){
         if(sym != NULL)
         {
             isDeclared[sym->symbol.functionEntry.sequenceNumber] = true;
-            isCorrect[sym->symbol.functionEntry.sequenceNumber] = false;
         } 
         else
             printf("\nSymbol Table not populated correctly ");
@@ -109,15 +108,7 @@ void checkModules(ASTNode* root, ListOfErrors* semanticErrors){
         otherMod2 = otherMod->next;
         currModuleNo++;
     }
-    
-    //check isCorrect
-    int i;
-    for(i=0; i<n; i++){
-        if(isCorrect[i])
-            continue;
-        //semantic error: Module declarataion is not needed for this function
-        
-    }
+
 }
 
 void processModule(ASTNode* modNode, ListOfErrors* semanticErrors){
@@ -185,7 +176,7 @@ void processStmt(ASTNode* stmtNode, ListOfErrors *semanticErrors){
             //f1 f2 f3 f4
             else if(calledSequenceNo > currModuleNo){       
                 if(isDeclared[calledSequenceNo]){
-                    isCorrect[calledSequenceNo] = true;
+                    isDeclared[calledSequenceNo] = false;
                 }
                 else{
                     //semantic error: Need moduleDeclaration to call this function
@@ -208,4 +199,4 @@ void processStmt(ASTNode* stmtNode, ListOfErrors *semanticErrors){
             break;
         }
     }
-} 
+}

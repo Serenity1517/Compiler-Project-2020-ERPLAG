@@ -14,6 +14,7 @@
 #include "typeExtractor.h"
 #include "semantic.h"
 #include "functionCheck.h"
+#include "offsetComputer.h"
 #include <string.h>
 #define sc startChild
 #define rs rightSibling
@@ -58,7 +59,10 @@ void semanticAnalyzer(){
     SymbolTable* rootSymbolTable = getsymbolTable();
     //now perform semantic analysis
     analyzeAST(astRoot, rootSymbolTable, semanticErrors);
-    ini
+    initializeDeclaredList(astRoot, rootSymbolTable);
+    populateModuleSequenceMap(astRoot, rootSymbolTable);
+    checkModules(astRoot, semanticErrors);
+    computeOffsets(astRoot, rootSymbolTable);
 }
 
 /*This recursive function traverses AST and performs various semantic checks*/
@@ -159,7 +163,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                     temp = temp->parent;
             }
             
-            //2. check if assignment is done for output parameter. if yes, set outputParamNode->isAssigned = true;;
+            //2. check if assignment is done for output parameter. if yes, set outputParamNode->isAssigned = true;
             ASTNode* trav = node->parent;
             while(trav->type != moduleNode)
                 trav = trav->parent;
@@ -219,7 +223,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                         i++;
                         continue;
                     }
-                    if(travCallOutput->symbol.idEntry.type != f->outputList[i]){
+                    if(travCallOutput->symbol.idEntry.type.type.primitiveType != f->outputList[i].type.primitiveType){
                         //semantic error : output type mismatch
                         Error *err = createErrorObject();   err->lineNo = travCallOut->node.idnode.line_no;  strcpy(err->error,"\nOutput types mismatch"); 
                         printf("\n%s",err->error);

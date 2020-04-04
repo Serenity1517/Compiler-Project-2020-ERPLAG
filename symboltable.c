@@ -82,6 +82,7 @@ SymbolTableEntry* createSymbolTableEntry(Symbol* s, SymbolForm f){
 }
 
 /*Creates symbol from ASTNode*/
+/*Here ASTNode can be one of these : moduleNode, forLoopNode, whileLoopNode, conditionalNode*/
 Symbol* createSymbol(ASTNode* astNode){    //need to check node->type and create symbol accordingly
 
     Symbol* sym = (Symbol*)malloc(sizeof(Symbol));
@@ -168,7 +169,6 @@ bool isSymbolEqual(Symbol* s1, SymbolForm f1, Symbol* s2, SymbolForm f2){
 
 /*
 Looks up string in given SymbolTable and returns its SymbolTableEntry pointer
-If this function returns NULL, invoke it again and this time pass the SymbolTable in outer scope compared to prev one
 parameter deepSearch : false - lookup only in table, and not it's subsequent outer scopes
                      :  true - lookup in all tables till outermost scope
 */
@@ -220,6 +220,64 @@ SymbolTableEntry* lookupString(char* s, SymbolTable* table, SymbolForm f, bool d
     return NULL;
 }
 
+/*
+Looks up block in given SymbolTable and returns its SymbolTableEntry pointer
+parameter deepSearch : false - lookup only in table, and not it's subsequent outer scopes
+                     :  true - lookup in all tables till outermost scope
+*/
+SymbolTableEntry* lookupBlock(Block* b, SymbolTable* table, SymbolForm f, bool deepSearch){
+    if(table == NULL)
+        return NULL;
+    SymbolTableEntry* temp = table->listHeads[computeBlockHash(b)];
+    if(f == forLoopEntry){
+        while(temp != NULL){
+            if(temp->tag != forLoopEntry)
+                temp = temp->next;
+            else if(b->start == temp->symbol.forLoopEntry.node->node.forLoopNode.block.start &&
+                    b->end == temp->symbol.forLoopEntry.node->node.forLoopNode.block.end)
+                    return temp;
+            else
+                temp = temp->next;
+        }
+        if(deepSearch)
+            return lookupBlock(b, table->parent, f, true);
+        else
+            return NULL;
+    }
+    else if(f == whileLoopEntry){      
+        while(temp != NULL){
+            if(temp->tag != whileLoopEntry)
+                temp = temp->next;
+            else if(b->start == temp->symbol.whileLoopEntry.node->node.forLoopNode.block.start &&
+                    b->end == temp->symbol.forLoopEntry.node->node.forLoopNode.block.end)
+                return temp;
+            else                
+                temp = temp->next;
+        }
+        if(deepSearch)
+            return lookupBlock(b, table->parent, f, true);
+        else
+            return NULL;
+    }
+    else if(f == conditionalNode){ 
+        while(temp != NULL){
+            if(temp->tag != conditionalNode)
+                temp = temp->next;
+            else if(b->start == temp->symbol.switchCaseEntry.node->node.forLoopNode.block.start &&
+                    b->end == temp->symbol.switchCaseEntry.node->node.forLoopNode.block.end)
+                return temp;
+            else
+                temp = temp->next;
+        }
+        if(deepSearch)
+            return lookupBlock(b, table->parent, f, true);
+        else
+            return NULL;
+    }
+    else
+        return NULL;
+    return NULL;
+}
 
 SymbolTableEntry* checkForOutputParamOverloading(char* s, SymbolTable* table){
     if(table == NULL)
@@ -287,21 +345,15 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
         case programNode:{
             //node points to programNode, curr is NULL
             symbolTableRoot = createSymbolTable(root);
-
             //Scope scope and SymbolTableType tableType fields are invalid for this root node.
             ASTNode *traverse = node->sc;
-
             processAST(traverse, symbolTableRoot,semanticErrors);  //process moduleDeclarations
-            
             moduleNumber = 0;
-
             processAST(traverse->rs, symbolTableRoot,semanticErrors);    //process otherModules
-             
             processAST(traverse->rs->rs, symbolTableRoot,semanticErrors);//process driverModule
-            
 	        processAST(traverse->rs->rs->rs, symbolTableRoot,semanticErrors);//process otherModules%
 
-            
+            node->node.programNode.noOfModules = moduleNumber;
             break;
         }
         
@@ -809,7 +861,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                         //populate idEntry's type field
                         Typeof* t = extractTypeOfId(node->parent);      //node->parent is the declareNode
                         sym->symbol.idEntry.type = *t;
-                        // node->scopeTable = curr; // updating scopeTable  sahi hai?
+                        //populate idEntry's offset and width
 
                         if(curr->listHeads[hash] == NULL)  //first element in list
                             curr->listHeads[hash] = sym;
@@ -817,7 +869,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                             SymbolTableEntry* temp = curr->listHeads[hash];
 
                             while(temp->next != NULL)
-                                temp = temp->next;
+                                temp = temp->next; 
                             temp->next = sym;
                         }
 			
@@ -874,11 +926,4 @@ SymbolTable* getsymbolTable()
 {
 	return symbolTableRoot;
 }
-//Semantic error:
-                //1. Type checking related
-                    /*{
-                        //TypeExtractor.c -> semantic.c
-                    }*/
-                //2. Declaration related 
-                    //a. duplicate declarations
-                    //b. outputparameter overloading inside function
+

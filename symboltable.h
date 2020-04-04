@@ -18,6 +18,7 @@ int computeBlockHash(Block* b);
 SymbolTable* createSymbolTable(SymbolTableType type);
 SymbolTableEntry* createSymbolTableEntry(Symbol* s, SymbolForm f);
 SymbolTableEntry* lookupString(char* s, SymbolTable* table, SymbolForm f, bool deepSearch);
+SymbolTableEntry* lookupBlock(Block* b, SymbolTable* table, SymbolForm f, bool deepSearch);
 SymbolTableEntry* checkForOutputParamOverloading(char* s, SymbolTable* table);
 void recursiveCheckOverload(ASTNode *node, SymbolTable *table,ListOfErrors *sematicErrors);
 void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors);

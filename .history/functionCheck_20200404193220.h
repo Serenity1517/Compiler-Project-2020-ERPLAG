@@ -9,7 +9,6 @@
 #include "parser.h"
 #include "ast.h"
 #include "symboltable.h"
-#include "semantic.h"
 #include "typeExtractor.h"
 
 #ifndef functionCheck

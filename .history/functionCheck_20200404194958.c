@@ -111,13 +111,7 @@ void checkModules(ASTNode* root, ListOfErrors* semanticErrors){
     }
     
     //check isCorrect
-    int i;
-    for(i=0; i<n; i++){
-        if(isCorrect[i])
-            continue;
-        //semantic error: Module declarataion is not needed for this function
-        
-    }
+    
 }
 
 void processModule(ASTNode* modNode, ListOfErrors* semanticErrors){
@@ -208,4 +202,4 @@ void processStmt(ASTNode* stmtNode, ListOfErrors *semanticErrors){
             break;
         }
     }
-} 
+}
