@@ -23,7 +23,7 @@
 SymbolTable* symbolTableRoot;
 
 //Global int to store number of modules. Also used to assign a sequence number to each module
-int moduleNumber;
+extern int moduleNumber;    //in the end this will store total number of modules (including driver)
 
 //Global bool flag to check duplicate output parameters
 bool dupOutputParamErrorFound = false;
@@ -262,6 +262,7 @@ void recursiveCheckOverload(ASTNode* outputParam, SymbolTable* table,ListOfError
             strcpy(err->error,outputParam->sc->node.idnode.lexeme);
             err->lineNo = outputParam->sc->node.idnode.line_no;
             strcat(err->error," Re-declaration of output parameters in line "); // error msg me line no aur variable print karva do
+            printf("\n%s",err->error);
             Error *temporary = sematicErrors->head;
             while(temporary->next != NULL)
             {
@@ -493,6 +494,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 strcpy(err->error,info->symbol.functionEntry.functionName);
                 err->lineNo = node->sc->node.idnode.line_no;
                 strcat(err->error," Function Overloading in line "); // error msg me line no aur variable print karva do
+                printf("\n%s",err->error);
                 Error *temporary = semanticErrors->head;
                 while(temporary->next != NULL)
                 {
@@ -504,11 +506,11 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
             break;
         }
         case inputParamNode:{
-
+            printf("\nWrong traversal\n");
             break;
         }
         case outputParamNode:{
-
+            printf("\nWrong traversal\n");
             break;
         }
         case typeNode:{
@@ -521,7 +523,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
             break;
         }
         case rangeNode:{
-
+            printf("\nWrong traversal\n");
             break;
         }
         case forLoopNode:{ // for forLoopEntries
@@ -633,7 +635,28 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
             break;
         }
         case assignmentNode:{
-            //do nothing
+            if(node->sc->type == idNode){
+                SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, curr, idEntry, true);
+                if(sym == NULL){
+                    Error *err = createErrorObject();   err->lineNo = node->sc->node.idnode.line_no;    strcpy(err->error,"LHS of assignment statement has not been declared before");
+                    printf("\n%s",err->error);
+                    Error *temporary = semanticErrors->head;
+                    while(temporary->next != NULL)
+                        temporary = temporary->next;
+                    temporary->next = err; semanticErrors->numberOfErr += 1;
+                }
+            }
+            else{
+                SymbolTableEntry* sym = lookupString(node->sc->sc->node.idnode.lexeme, curr, idEntry, true);
+                if(sym == NULL){
+                    Error *err = createErrorObject();   err->lineNo = node->sc->node.idnode.line_no;    strcpy(err->error,"LHS of assignment statement has not been declared before");
+                    printf("\n%s",err->error);
+                    Error *temporary = semanticErrors->head;
+                    while(temporary->next != NULL)
+                        temporary = temporary->next;
+                    temporary->next = err; semanticErrors->numberOfErr += 1;
+                }
+            }
             break;
         }
         case functionCallNode:{
@@ -645,6 +668,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 err->lineNo = node->sc->node.idnode.line_no; 
                 strcpy(err->error,"Recursive call of function :"); // error msg me line no aur variable print karva do
                 strcat(err->error,curr->scope.scope);
+                printf("\n%s",err->error);
                 Error *temporary = semanticErrors->head;
                 while(temporary->next != NULL)
                     temporary = temporary->next;
@@ -756,6 +780,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                         err->lineNo = sym->symbol.idEntry.node->node.idnode.line_no;
                         strcpy(err->error,sym->symbol.idEntry.node->node.idnode.lexeme);
                         strcat(err->error," Duplicate module declaration in line  "); // error msg me line no aur variable print karva do
+                        printf("\n%s",err->error);
                         Error *temporary = semanticErrors->head;
                         while(temporary->next != NULL)
                         {
@@ -808,6 +833,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                        err->lineNo = sym->symbol.idEntry.node->node.idnode.line_no;
                        strcpy(err->error,sym->symbol.idEntry.node->node.idnode.lexeme);
                        strcat(err->error," Redeclaration of variable in line  "); // error msg me line no aur variable print karva do
+                       printf("\n%s",err->error);
                        Error *temporary = semanticErrors->head;
                        while(temporary->next != NULL)
                        {

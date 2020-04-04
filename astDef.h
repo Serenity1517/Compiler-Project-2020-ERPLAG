@@ -69,6 +69,7 @@ typedef struct InputParamNode{
 typedef struct OutputParamNode{  
     //1st child : (Identifier)IdNode
     //2nd child : (type of above identifier)TypeNode
+    bool isAssigned;        //for semantic analysis
 }OutputParamNode;
 
 typedef struct TypeNode{   // This node stores type constants such as REAL, BOOLEAN, INTEGER etc.
@@ -153,7 +154,7 @@ typedef struct CaseNode{
     /*2nd child : (case value) NumNode or BoolNode
                     OR
                    (default case) NULL  */ 
-
+    int line;       //used for semantic errors
 }CaseNode;
 
 //NUM/RNUM constants

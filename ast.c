@@ -245,9 +245,14 @@ void createAST(ParseTreeNode *node){
         //rule of form A -> wxByz
 		case 9:
 		case 101: {
+            ASTNode* curr = createASTNode(caseNode);
+            curr->node.caseNode.line = node->sc->tkn->line_no;
             node->sc->rs->rs->inh = NULL;
             createAST(node->sc->rs->rs);
-            node->syn = node->sc->rs->rs->syn;
+            curr->sc = node->sc->rs->rs->syn;
+            curr->sc->parent = curr;
+            curr->sc->rs = NULL;
+            node->syn = curr;
             free(node->sc->rs->rs->rs->rs);
             free(node->sc->rs->rs->rs);
             free(node->sc->rs->rs);
@@ -315,6 +320,7 @@ void createAST(ParseTreeNode *node){
         //Rule of type A->xyBC 
         case 14: {
             ASTNode *temp = createASTNode(outputParamNode);
+            temp->node.outputParamNode.isAssigned = false;
             temp->sc = createASTNode(idNode);
             strcpy(temp->sc->node.idnode.lexeme, node->sc->tkn->lexeme);
             strcpy(temp->sc->node.idnode.token,node->sc->tkn->token);
@@ -341,6 +347,7 @@ void createAST(ParseTreeNode *node){
         //<N2> --> COMMA ID COLON <type><N2>
         case 15: {
             ASTNode *temp = createASTNode(outputParamNode);
+            temp->node.outputParamNode.isAssigned = false;
             temp->sc = createASTNode(idNode);
             strcpy(temp->sc->node.idnode.token,node->sc->rs->tkn->token);
             strcpy(temp->sc->node.idnode.lexeme,node->sc->rs->tkn->lexeme);
@@ -907,7 +914,7 @@ void createAST(ParseTreeNode *node){
             //compute Default.syn and update parent nodes
             createAST(node->sc->rs->rs->rs->rs->rs->rs);
             curr->sc->rs->rs = node->sc->rs->rs->rs->rs->rs->rs->syn;
-            traverse = curr->sc->rs->rs;
+            traverse = curr->sc->rs->rs->sc;
             if(traverse->type == nullNode)  //if its an empty list of statements
                 traverse->parent = curr;
             else {
@@ -938,6 +945,7 @@ void createAST(ParseTreeNode *node){
         //T is expanded by right recursion in case 96
 		case 95: {
             ASTNode *temp = createASTNode(caseNode);
+            temp->node.caseNode.line = node->sc->tkn->line_no;
             //compute <value>.syn
             createAST(node->sc->rs);
             temp->sc = node->sc->rs->syn;
@@ -978,6 +986,7 @@ void createAST(ParseTreeNode *node){
         //C is a linkedlist of statements, so update parents
 		case 96: {
             ASTNode *temp = createASTNode(caseNode);
+            temp->node.caseNode.line = node->tkn->line_no;
             //compute <value>.syn
             createAST(node->sc->rs);
             temp->sc = node->sc->rs->syn;
