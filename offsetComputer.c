@@ -50,12 +50,12 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
    SymbolTableEntry* sym = lookupString(currModule->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false);
    SymbolTable* currTable = sym->table;//ye calcculate karke neeche function me pass karna he
    while(stmtNode != NULL){
-       processStmt(stmtNode, currTable);
+       processStatement(stmtNode, currTable);
        stmtNode = stmtNode->next;
    } 
 }
 
-void processStmt(ASTNode* stmtNode, SymbolTable* currTable){
+void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
     switch(stmtNode->type){
         case declareNode:{
             Typeof* declareType = &stmtNode->node.declareNode.typeOfId;
@@ -119,7 +119,7 @@ void processStmt(ASTNode* stmtNode, SymbolTable* currTable){
             SymbolTableEntry* sym = lookupBlock(&stmtNode->node.forLoopNode.block,currTable,forLoopEntry,false);
             SymbolTable* curr= sym->table;
             while(forLoopStmt != NULL){
-                processStmt(forLoopStmt,curr);
+                processStatement(forLoopStmt,curr);
                 forLoopStmt = forLoopStmt->next;
             }
             break;
@@ -131,7 +131,7 @@ void processStmt(ASTNode* stmtNode, SymbolTable* currTable){
             //(Block* b, SymbolTable* table, SymbolForm f, bool deepSearch);
             while(whileStmt != NULL)
             {
-                processStmt(whileStmt,curr);
+                processStatement(whileStmt,curr);
                 whileStmt = whileStmt->next;
             }
             break;
@@ -141,17 +141,17 @@ void processStmt(ASTNode* stmtNode, SymbolTable* currTable){
             SymbolTable* curr = sym->table;
             ASTNode* caseStmt = stmtNode->sc->rs;
             while(caseStmt != NULL){
-                processStmt(caseStmt, curr);
+                processStatement(caseStmt, curr);
                 caseStmt = caseStmt->next;
             }
             if(stmtNode->sc->rs->rs->type != nullNode)
-                processStmt(stmtNode->sc->rs->rs, curr);
+                processStatement(stmtNode->sc->rs->rs, curr);
             break;
         }
         case caseNode:{
             ASTNode* stmt = stmtNode->sc;
             while(stmt != NULL){
-                processStmt(stmt, currTable);
+                processStatement(stmt, currTable);
                 stmt = stmt->next;
             }
         }

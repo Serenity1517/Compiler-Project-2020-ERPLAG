@@ -10,6 +10,8 @@
 #define typeExtractor
 
 #include "typeExtractorDef.h"
+#include "symboltableDef.h"
+#include "semanticDef.h"
 #include "ast.h"
 
 Typeof* createTypeof(VariableTypeTag tag1, PrimitiveType tag2, int l, int h, char* left, char* right, Typeof* arr, int index);

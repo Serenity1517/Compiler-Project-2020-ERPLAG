@@ -12,6 +12,8 @@
 #define NO_OF_AST_NODE_TYPES 21
 
 #include "symboltableDef.h"
+#include "semantic.h"
+#include "semanticDef.h"
 
 int computeStringHash(char* s);
 int computeBlockHash(Block* b);
@@ -23,7 +25,7 @@ SymbolTableEntry* checkForOutputParamOverloading(char* s, SymbolTable* table);
 void recursiveCheckOverload(ASTNode *node, SymbolTable *table,ListOfErrors *sematicErrors);
 void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors);
 
-void checkSymbolTable();
+void checkSymbolTable(ListOfErrors* semanticErrors);
 SymbolTable* getsymbolTable();
 
 #endif

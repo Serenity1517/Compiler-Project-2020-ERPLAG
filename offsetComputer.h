@@ -17,4 +17,4 @@
 
 void computeOffsets(ASTNode* root, SymbolTable* rootSymbolTable);
 void calcOffsets(ASTNode* node,SymbolTable* rootSymbolTable);
-void processStmt(ASTNode* node, SymbolTable* table);
+void processStatement(ASTNode* node, SymbolTable* table);

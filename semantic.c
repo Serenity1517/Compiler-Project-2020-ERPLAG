@@ -44,11 +44,12 @@ Error* createErrorObject()
 This function calls for construction of symbol table, type checking of expressions
 type checking for function calls etc*/
 void semanticAnalyzer(){
+	ASTNode *astRoot = getAST();
     initializeErrorObject();
-    ASTNode* astRoot = getAST();
+	processAST(astRoot,NULL,semanticErrors);
     
     //construct symboltable
-    processAST(astRoot,NULL,semanticErrors);
+    //processAST(astRoot,NULL,semanticErrors);
     /*NOTE:In above function, following semantic checks have been performed arleady*/
     /**
      * Output parameter overloading inside module definition
@@ -167,7 +168,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
             ASTNode* trav = node->parent;
             while(trav->type != moduleNode)
                 trav = trav->parent;
-            if(trav->sc != nullNode){   //only if we are not iside drvire module
+            if(trav->sc->type != nullNode){   //only if we are not iside drvire module
                 ASTNode* travOutputParam = trav->sc->rs->rs;
                 while(travOutputParam != NULL){
                     if(travOutputParam->type == nullNode)

@@ -12,7 +12,7 @@
 #include "lexer.h"
 #include "functionCheck.h"
 #include "semantic.h"
-
+#include <string.h>
 #define sc startChild
 #define rs rightSibling
 
@@ -55,10 +55,10 @@ void populateModuleSequenceMap(ASTNode* root, SymbolTable* rootSymbolTable){
         trav = trav->next;
     }
     // store driver module
-    SymbolTableEntry *driv = lookupString("driverModule",root,functionEntry,false);
+    SymbolTableEntry *driv = lookupString("driverModule",rootSymbolTable,functionEntry,false);
     strcpy(modules[driv->symbol.functionEntry.sequenceNumber],"driverModule");
     //otherModules%
-    ASTNode *trav = root->sc->rs->rs->rs;   // otherModule%
+    trav = root->sc->rs->rs->rs;   // otherModule%
     while(trav->type != nullNode)
     {
         SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false); 

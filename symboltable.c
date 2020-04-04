@@ -23,7 +23,7 @@
 SymbolTable* symbolTableRoot;
 
 //Global int to store number of modules. Also used to assign a sequence number to each module
-extern int moduleNumber;    //in the end this will store total number of modules (including driver)
+int moduleNumber;    //in the end this will store total number of modules (including driver)
 
 //Global bool flag to check duplicate output parameters
 bool dupOutputParamErrorFound = false;
@@ -915,15 +915,9 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
 
 
 //temporary function
-void checkSymbolTable()
+void checkSymbolTable(ListOfErrors* semanticErrors)
 {
 	ASTNode *n = getAST();
-	//processAST(n,NULL,semanticErrors);
-	
-}
-
-SymbolTable* getsymbolTable()
-{
-	return symbolTableRoot;
+	processAST(n,NULL,semanticErrors);
 }
 

@@ -108,7 +108,7 @@ Typeof* extractTypeOfId(ASTNode* node){
             }
             else
             {
-                return -1;        
+                return NULL;        
             }
         }
         else if(temp->sc->sc->rs->type == idNode && temp->sc->sc->type == numNode) // high id
@@ -136,7 +136,7 @@ Typeof* extractTypeOfId(ASTNode* node){
             }
             else
             {
-                return -1;        
+                return NULL;        
             }
         }           
         else if(temp->sc->sc->rs->type == idNode && temp->sc->sc->type == idNode){  //if both are id
@@ -163,7 +163,7 @@ Typeof* extractTypeOfId(ASTNode* node){
             }
             else
             {
-                return -1;        
+                return NULL;        
             }
         }
         else    //if both are num
@@ -192,7 +192,7 @@ Typeof* extractTypeOfId(ASTNode* node){
             }
             else
             {
-                return -1;        
+                return NULL;        
             }
         }
        
@@ -219,14 +219,14 @@ Typeof* extractTypeOfId(ASTNode* node){
         }
         else
         {
-            return -1;
+            return NULL;
         }
     }
     else
     {
-        return -1;            
+        return NULL;            
     }
-    return -1;
+    return NULL;
 }
 
 //tells the type of a function(input/output parameter types)

@@ -10,6 +10,7 @@
 #include <time.h>
 #include "ast.h"
 #include "symboltable.h"
+#include "semantic.h"
 
 int main (int argc,char **argv)
 {
@@ -25,7 +26,9 @@ int main (int argc,char **argv)
 		printf("3. Press 3 to parse the input file. \n");
 		printf("4. Press 4 to find the time taken for parsing the input. \n");
 		printf("5. Press 5 to find AST. \n");
-        printf("6. Press 0 for exit. \n");
+		printf("6. Press 6 to test symboltable. \n");
+		printf("7. Press 7 to test semantic analyzer.\n");
+        printf("8. Press 0 for exit. \n");
 		printf("\n");    
 		scanf("%d", &option);
         switch(option){
@@ -57,10 +60,16 @@ int main (int argc,char **argv)
                     return 0;
             case 6:	{
             		testAST(argv[1],argv[2]);
-            		checkSymbolTable();
-            		SymbolTable* tabble = getsymbolTable();
+            		//checkSymbolTable();
+            		//SymbolTable* tabble = getsymbolTable();
             		return 0;
             }
+			case 7: {
+				testAST(argv[1],argv[2]);
+				semanticAnalyzer();
+				ListOfErrors* semanticErrors = getSemanticErrorObject();
+				return 0;
+			}
             		
         }
     }
