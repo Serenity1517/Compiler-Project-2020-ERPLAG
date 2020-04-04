@@ -106,10 +106,10 @@ void processStmt(ASTNode* stmtNode, SymbolTable* currTable){
                     }
                     else { // real  
                         sym->symbol.idEntry.offset = offset;
-                        sym->symbol.idEntry.width = 4;
                         offset += 4;
+                        sym->symbol.idEntry.width = 4;
                     }
-                    idtraverse = idtraverse->next; //push karde
+                    idtraverse = idtraverse->next; 
                 }
             }
             break;
