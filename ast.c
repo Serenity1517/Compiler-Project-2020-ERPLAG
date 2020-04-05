@@ -925,7 +925,7 @@ void createAST(ParseTreeNode *node){
             //compute Default.syn and update parent nodes
             createAST(node->sc->rs->rs->rs->rs->rs->rs);
             curr->sc->rs->rs = node->sc->rs->rs->rs->rs->rs->rs->syn;
-            traverse = curr->sc->rs->rs->sc;
+            traverse = curr->sc->rs->rs;
             if(traverse->type == nullNode)  //if its an empty list of statements
                 traverse->parent = curr;
             else {
@@ -997,7 +997,7 @@ void createAST(ParseTreeNode *node){
         //C is a linkedlist of statements, so update parents
 		case 96: {
             ASTNode *temp = createASTNode(caseNode);
-            temp->node.caseNode.line = node->tkn->line_no;
+            temp->node.caseNode.line = node->sc->tkn->line_no;
             //compute <value>.syn
             createAST(node->sc->rs);
             temp->sc = node->sc->rs->syn;

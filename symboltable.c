@@ -254,8 +254,8 @@ SymbolTableEntry* lookupBlock(Block* b, SymbolTable* table, SymbolForm f, bool d
         while(temp != NULL){
             if(temp->tag != whileLoopEntry)
                 temp = temp->next;
-            else if(b->start == temp->symbol.whileLoopEntry.node->node.forLoopNode.block.start &&
-                    b->end == temp->symbol.forLoopEntry.node->node.forLoopNode.block.end)
+            else if(b->start == temp->symbol.whileLoopEntry.node->node.whileLoopNode.block.start &&
+                    b->end == temp->symbol.forLoopEntry.node->node.whileLoopNode.block.end)
                 return temp;
             else                
                 temp = temp->next;
@@ -265,12 +265,12 @@ SymbolTableEntry* lookupBlock(Block* b, SymbolTable* table, SymbolForm f, bool d
         else
             return NULL;
     }
-    else if(f == conditionalNode){ 
+    else if(f == switchCaseEntry){ 
         while(temp != NULL){
-            if(temp->tag != conditionalNode)
+            if(temp->tag != switchCaseEntry)
                 temp = temp->next;
-            else if(b->start == temp->symbol.switchCaseEntry.node->node.forLoopNode.block.start &&
-                    b->end == temp->symbol.switchCaseEntry.node->node.forLoopNode.block.end)
+            else if(b->start == temp->symbol.switchCaseEntry.node->node.conditionalNode.block.start &&
+                    b->end == temp->symbol.switchCaseEntry.node->node.conditionalNode.block.end)
                 return temp;
             else
                 temp = temp->next;
@@ -359,11 +359,32 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
             symbolTableRoot = createSymbolTable(root);
             //Scope scope and SymbolTableType tableType fields are invalid for this root node.
             ASTNode *traverse = node->sc;
-            processAST(traverse, symbolTableRoot,semanticErrors);  //process moduleDeclarations
-            moduleNumber = 0;
-            processAST(traverse->rs, symbolTableRoot,semanticErrors);    //process otherModules
-            processAST(traverse->rs->rs, symbolTableRoot,semanticErrors);//process driverModule
-	        processAST(traverse->rs->rs->rs, symbolTableRoot,semanticErrors);//process otherModules%
+			if(traverse->type != nullNode){
+				while(traverse != NULL){
+					processAST(traverse, symbolTableRoot,semanticErrors);  //process moduleDeclarations
+					traverse = traverse->next;
+				}			
+			}
+			traverse = node->sc->rs;
+
+			moduleNumber = 0;
+			if(traverse->type != nullNode){
+				while(traverse != NULL){
+					processAST(traverse, symbolTableRoot,semanticErrors);    //process otherModules
+					traverse = traverse->next;
+				}			
+			}
+			traverse = node->sc->rs->rs;
+			
+			processAST(traverse, symbolTableRoot,semanticErrors);//process driverModule
+			traverse = node->sc->rs->rs->rs;
+
+			if(traverse->type != nullNode){
+				while(traverse != NULL){
+			        processAST(traverse, symbolTableRoot,semanticErrors);//process otherModules%
+					traverse = traverse->next;
+				}			
+			}
 
             node->node.programNode.noOfModules = moduleNumber;
             break;
@@ -546,6 +567,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 info->symbol.functionEntry.inputListHead = node->sc->rs;
                 info->symbol.functionEntry.outputListHead = node->sc->rs->rs;
                 info->symbol.functionEntry.isDefined = true;
+				info->symbol.functionEntry.sequenceNumber = moduleNumber++;
 
                 SymbolTable* newTable = createSymbolTable(functionBlock);
                 //set newTable.scope equal to the name of curr function
@@ -648,7 +670,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 Error *err = createErrorObject();
                 strcpy(err->error,info->symbol.functionEntry.functionName);
                 err->lineNo = node->sc->node.idnode.line_no;
-                strcat(err->error," Function Overloading in line "); // error msg me line no aur variable print karva do
+                strcat(err->error," Function Overloading in line ");
                 printf("\n%s",err->error);
                 Error *temporary = semanticErrors->head;
                 if(temporary == NULL)
@@ -759,7 +781,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
             }
 
             //2. Insert a whileLoopEntry in current table
-            Block whileBlock = node->node.forLoopNode.block;
+            Block whileBlock = node->node.whileLoopNode.block;
             int hash = computeBlockHash(&whileBlock);
         
             // insert into table.
@@ -914,13 +936,13 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
             int hash = computeBlockHash(&node->node.conditionalNode.block);
             SymbolTableEntry* temp = curr->listHeads[hash];
             if(temp == NULL) {  //empty slot, just insert
-                curr->listHeads[hash] = createSymbolTableEntry(createSymbol(node),forLoopEntry);
+                curr->listHeads[hash] = createSymbolTableEntry(createSymbol(node),switchCaseEntry);
                 curr->listHeads[hash]->table = newTable;
             }
             else {              //collision
                 while(temp->next != NULL)
                     temp = temp->next;
-                temp->next = createSymbolTableEntry(createSymbol(node),forLoopEntry);
+                temp->next = createSymbolTableEntry(createSymbol(node),switchCaseEntry);
                 temp->next->table = newTable;
             }
 

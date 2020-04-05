@@ -152,11 +152,13 @@ void processStmt(ASTNode* stmtNode, ListOfErrors *semanticErrors){
             while(switchCaseStmt != NULL)
             {
                 ASTNode* caseStmt = switchCaseStmt->sc;
-                while(caseStmt != NULL || caseStmt->type != nullNode)
-                {
-                    processStmt(caseStmt, semanticErrors);
-                    caseStmt = caseStmt->next;
-                }
+				if(caseStmt->type != nullNode){
+					while(caseStmt != NULL)
+		            {
+		                processStmt(caseStmt, semanticErrors);
+		                caseStmt = caseStmt->next;
+		            }
+				}
                 switchCaseStmt = switchCaseStmt->next;
             }
             break;   

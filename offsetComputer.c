@@ -148,7 +148,7 @@ void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
             break;
         }
         case conditionalNode:{
-            SymbolTableEntry* sym = lookupBlock(&stmtNode->node.conditionalNode.block,currTable,whileLoopEntry,false);
+            SymbolTableEntry* sym = lookupBlock(&stmtNode->node.conditionalNode.block,currTable,switchCaseEntry,false);
             SymbolTable* curr = sym->table;
             ASTNode* caseStmt = stmtNode->sc->rs;
             while(caseStmt != NULL){
