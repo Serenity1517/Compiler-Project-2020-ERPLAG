@@ -30,6 +30,7 @@ ListOfErrors* getSemanticErrorObject()
 //for the same, we will pass error object to every function
 void initializeErrorObject(){
     semanticErrors = (ListOfErrors*)malloc(sizeof(ListOfErrors));
+    semanticErrors->head = NULL;
     semanticErrors->numberOfErr = 0;
 }
 
