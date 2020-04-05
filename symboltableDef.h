@@ -41,6 +41,7 @@ typedef struct IdEntry{
     int width;          // size of the Identifier NUM has different size than RNUM
     int offset;         // offset calculation field will be assigned in Semantic Analyser Phase
     struct Typeof type;        //type of the identifier..DONE
+    bool isInputParam;
 }IdEntry;
 
 /* Driver Module*/

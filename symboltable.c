@@ -13,6 +13,7 @@
 #include "symboltable.h"
 #include "typeExtractor.h"
 #include "semantic.h"
+#include "offsetComputer.h"
 #include <string.h>
 #define sc startChild
 #define rs rightSibling
@@ -367,7 +368,9 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 //set newTable.scope equal to name of curr function
                 Scope scp;
                 scp.scope = (char*)malloc(sizeof(char)*21);
-                strcpy(scp.scope, "driverModule");
+                refreshBuffer(scp.scope, 21);
+                // strcpy(scp.scope, "driverModule");
+                sprintf(scp.scope, "driverModule");
                 newTable->scope = scp;
                 
                 // assigning pointers of parent of this newTable (i.e. curr)
@@ -418,7 +421,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
 
                 //1. Create table for this module
                 SymbolTable* newTable = createSymbolTable(functionBlock);
-                //set newTable.scope equal to name of curr function
+                //set newTable.scope equal to name of  curr function
                 Scope scp;
                 scp.scope = (char*)malloc(sizeof(char)*21);
                 strcpy(scp.scope, node->sc->node.idnode.lexeme);
@@ -461,6 +464,43 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                     temp->next->table = newTable;
                 }
 
+                //add input/output params to symboltable
+                ASTNode* travInp = node->sc->rs; ASTNode* travOut = node->sc->rs->rs;
+                while(travInp != NULL){
+                    ASTNode* dummyDeclare = createASTNode(declareNode);
+                    dummyDeclare->sc = travInp->sc; dummyDeclare->sc->next = NULL; dummyDeclare->sc->rs = travInp->sc->rs;
+                    Typeof* t = extractTypeOfId(dummyDeclare);
+                    SymbolTableEntry* inputParamEntry = createSymbolTableEntry(createSymbol(travInp->sc), idEntry);
+                    inputParamEntry->symbol.idEntry.isInputParam = true;
+                    inputParamEntry->symbol.idEntry.type = *t;
+                    SymbolTableEntry* temptrav = newTable->listHeads[computeStringHash(travInp->sc->node.idnode.lexeme)];
+                    if(temptrav == NULL)
+                        newTable->listHeads[computeStringHash(travInp->sc->node.idnode.lexeme)] = inputParamEntry;
+                    else{
+                        while(temptrav->next != NULL)
+                            temptrav = temptrav->next;
+                        temptrav->next = inputParamEntry;
+                    }
+                    processStatement(dummyDeclare, newTable);
+                }
+                while(travOut != NULL){
+                    ASTNode* dummyDeclare2 = createASTNode(declareNode);
+                    dummyDeclare2->sc = travOut ; dummyDeclare2->sc->next = NULL; dummyDeclare2->sc->rs = travInp->sc->rs;
+                    Typeof* t2 = extractTypeOfId(dummyDeclare2);
+                    SymbolTableEntry* outputParamEntry = createSymbolTableEntry(createSymbol(travOut->sc),idEntry);
+                    SymbolTableEntry* entry = newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)];
+                    outputParamEntry->symbol.idEntry.isInputParam = false;
+                    outputParamEntry->symbol.idEntry.type = *t2;
+                    if(entry == NULL)
+                        newTable->listHeads[computeStringHash(travInp->sc->node.idnode.lexeme)] = outputParamEntry;
+                    else{
+                        while(entry->next != NULL)
+                            entry = entry->next;
+                        entry->next = outputParamEntry;
+                    }
+
+                    travOut = travOut->next;
+                }
 
                 //now process the statements in the module
                 ASTNode* traverse = node->sc->rs->rs->rs;

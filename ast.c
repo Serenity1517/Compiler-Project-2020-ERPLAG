@@ -241,9 +241,20 @@ void createAST(ParseTreeNode *node){
             free(node->sc);
             break;
         }
-        
-        //rule of form A -> wxByz
-		case 9:
+
+        //<ret> --> RETURNS SQBO <output_plist> SQBC SEMICOL
+        case 9:{
+            createAST(node->sc->rs->rs);
+            node->syn = node->sc->rs->rs->syn;
+            free(node->sc->rs->rs->rs->rs);
+            free(node->sc->rs->rs->rs);
+            free(node->sc->rs->rs);
+            free(node->sc->rs);
+            free(node->sc);
+            break;
+        }
+
+        //<Default> --> DEFAULT COLON <statements> BREAK SEMICOL
 		case 101: {
             ASTNode* curr = createASTNode(caseNode);
             curr->node.caseNode.line = node->sc->tkn->line_no;
