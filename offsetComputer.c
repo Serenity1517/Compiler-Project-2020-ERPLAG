@@ -35,7 +35,7 @@ void computeOffsets(ASTNode* root, SymbolTable* rootSymbolTable){
     while(otherMod2 != NULL){
         offset = 0;
         calcOffsets(otherMod2, rootSymbolTable);
-        otherMod2 = otherMod->next;
+        otherMod2 = otherMod2->next;
     }
 }
     
@@ -46,7 +46,18 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
    //yesthis function is for current module only.. cu
    //just traverse it's statemments
    //ruk
+   if(currModule->type == nullNode)
+	return;
    ASTNode* stmtNode = currModule->sc->rs->rs->rs;
+	if(currModule->sc->type == nullNode){
+		SymbolTableEntry* sym = lookupString("driverModule",rootSymbolTable,driverEntry,false);
+   		SymbolTable* currTable = sym->table;//ye calcculate karke neeche function me pass karna he
+   		while(stmtNode != NULL){
+       processStatement(stmtNode, currTable);
+       stmtNode = stmtNode->next;
+   		}
+		return;			
+	}
    SymbolTableEntry* sym = lookupString(currModule->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false);
    SymbolTable* currTable = sym->table;//ye calcculate karke neeche function me pass karna he
    while(stmtNode != NULL){
