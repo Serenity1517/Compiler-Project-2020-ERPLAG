@@ -263,12 +263,13 @@ FunctionType* extractTypeOfFunction(ASTNode* node){
     int i;
     //populate inputType array
     for(i=0; i<no_of_inputs; i++){
+    	if(inputs == NULL) break;
         if(inputs->sc->rs->type == typeNode){
             if(strcmp(inputs->sc->rs->node.typeNode.token, "BOOLEAN")==0)
                 inputType = createTypeof(primitive, boolean, -1, -1, NULL, NULL, inputType, i);
-            else if(strcmp(outputs->sc->rs->node.typeNode.token, "REAL")==0)
+            else if(strcmp(inputs->sc->rs->node.typeNode.token, "REAL")==0)
                 inputType = createTypeof(primitive, real, -1, -1, NULL, NULL, inputType, i);
-            else if(strcmp(outputs->sc->rs->node.typeNode.token, "INTEGER")==0)
+            else if(strcmp(inputs->sc->rs->node.typeNode.token, "INTEGER")==0)
                 inputType = createTypeof(primitive, integer, -1, -1, NULL, NULL, inputType, i);
             else
                 return NULL;
@@ -322,6 +323,7 @@ FunctionType* extractTypeOfFunction(ASTNode* node){
 
     //populate outputType array. NOTE: outputParameters cannot be Arrays
     for(i=0; i<no_of_outputs; i++){
+    	if(outputs == NULL) break;
         if(strcmp(outputs->sc->rs->node.typeNode.token, "BOOLEAN")==0)
             outputType = createTypeof(primitive, boolean, -1, -1, NULL, NULL, outputType, i);
         else if(strcmp(outputs->sc->rs->node.typeNode.token, "REAL")==0)
