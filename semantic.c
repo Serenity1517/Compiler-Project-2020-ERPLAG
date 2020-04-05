@@ -121,6 +121,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                 }
                 //now staetmetnts have been processed. check if all the output parameters have been assigned a value or not
                 ASTNode* travOutputParam = node->sc->rs->rs;
+                if(travOutputParam->type != nullNode){
                 while(travOutputParam != NULL){
                     if(travOutputParam->node.outputParamNode.isAssigned == false){
                         //semantic error :
@@ -140,9 +141,13 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                             temporary->next = err;
                             semanticErrors->numberOfErr += 1;   
                         }
+                        
                     }
+                    travOutputParam = travOutputParam->next;
                 }
             }
+            }
+            
             break;
         }
 
@@ -194,8 +199,9 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                         break;
                     if(strcmp(travOutputParam->sc->node.idnode.lexeme, node->sc->node.idnode.lexeme) == 0){
                         travOutputParam->node.outputParamNode.isAssigned = true;
-                        travOutputParam = travOutputParam->next;
+                        
                     }
+                    travOutputParam = travOutputParam->next;
                 }
             }
             

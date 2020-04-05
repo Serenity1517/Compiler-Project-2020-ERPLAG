@@ -480,6 +480,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 while(travInp != NULL){
                     ASTNode* dummyDeclare = createASTNode(declareNode);
                     dummyDeclare->sc = travInp->sc; dummyDeclare->sc->next = NULL; dummyDeclare->sc->rs = travInp->sc->rs;
+                    dummyDeclare->sc->parent = dummyDeclare; dummyDeclare->sc->rs->parent = dummyDeclare;
                     Typeof* t = extractTypeOfId(dummyDeclare);
                     SymbolTableEntry* inputParamEntry = createSymbolTableEntry(createSymbol(travInp->sc), idEntry);
                     inputParamEntry->symbol.idEntry.isInputParam = true;
@@ -495,27 +496,30 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                     processStatement(dummyDeclare, newTable);
                     travInp = travInp->next;
                 }
-                while(travOut != NULL){
-                    ASTNode* dummyDeclare2 = createASTNode(declareNode);
-                    dummyDeclare2->sc = travOut->sc; 
-					dummyDeclare2->sc->next = NULL; 
-					dummyDeclare2->sc->rs = travOut->sc->rs;
-                    Typeof* t2 = extractTypeOfId(dummyDeclare2);
-                    SymbolTableEntry* outputParamEntry = createSymbolTableEntry(createSymbol(travOut->sc),idEntry);
-                    SymbolTableEntry* entry = newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)];
-                    outputParamEntry->symbol.idEntry.isInputParam = false;
-                    outputParamEntry->symbol.idEntry.type = *t2;
-                    if(entry == NULL)
-                        newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)] = outputParamEntry;
-                    else{
-                        while(entry->next != NULL)
-                            entry = entry->next;
-                        entry->next = outputParamEntry;
-                    }
-					processStatement(dummyDeclare2, newTable);
-                    travOut = travOut->next;
-                }
-
+                if(travOut->type != nullNode){
+		            while(travOut != NULL){
+		                ASTNode* dummyDeclare2 = createASTNode(declareNode);
+		                dummyDeclare2->sc = travOut->sc; 
+						dummyDeclare2->sc->next = NULL; 
+						dummyDeclare2->sc->rs = travOut->sc->rs;
+						dummyDeclare2->sc->parent = dummyDeclare2;
+						dummyDeclare2->sc->rs->parent = dummyDeclare2;
+		                Typeof* t2 = extractTypeOfId(dummyDeclare2);
+		                SymbolTableEntry* outputParamEntry = createSymbolTableEntry(createSymbol(travOut->sc),idEntry);
+		                SymbolTableEntry* entry = newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)];
+		                outputParamEntry->symbol.idEntry.isInputParam = false;
+		                outputParamEntry->symbol.idEntry.type = *t2;
+		                if(entry == NULL)
+		                    newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)] = outputParamEntry;
+		                else{
+		                    while(entry->next != NULL)
+		                        entry = entry->next;
+		                    entry->next = outputParamEntry;
+		                }
+						processStatement(dummyDeclare2, newTable);
+		                travOut = travOut->next;
+		            }
+				}
                 //now process the statements in the module
                 ASTNode* traverse = node->sc->rs->rs->rs;
                 while(traverse != NULL){
@@ -573,7 +577,52 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                         t1 = t1->next;
                     t1->next = newTable;
                 }
+				//add input/output params to symboltable
+                ASTNode* travInp = node->sc->rs; ASTNode* travOut = node->sc->rs->rs;
+                while(travInp != NULL){
+                    ASTNode* dummyDeclare = createASTNode(declareNode);
 
+                    dummyDeclare->sc = travInp->sc; dummyDeclare->sc->next = NULL; dummyDeclare->sc->rs = travInp->sc->rs; dummyDeclare->sc->parent = dummyDeclare; 
+                    dummyDeclare->sc->rs->parent = dummyDeclare;
+                    Typeof* t = extractTypeOfId(dummyDeclare);
+                    SymbolTableEntry* inputParamEntry = createSymbolTableEntry(createSymbol(travInp->sc), idEntry);
+                    inputParamEntry->symbol.idEntry.isInputParam = true;
+                    inputParamEntry->symbol.idEntry.type = *t;
+                    SymbolTableEntry* temptrav = newTable->listHeads[computeStringHash(travInp->sc->node.idnode.lexeme)];
+                    if(temptrav == NULL)
+                        newTable->listHeads[computeStringHash(travInp->sc->node.idnode.lexeme)] = inputParamEntry;
+                    else{
+                        while(temptrav->next != NULL)
+                            temptrav = temptrav->next;
+                        temptrav->next = inputParamEntry;
+                    }
+                    processStatement(dummyDeclare, newTable);
+                    travInp = travInp->next;
+                }
+                if(travOut->type != nullNode){
+		            while(travOut != NULL){
+		                ASTNode* dummyDeclare2 = createASTNode(declareNode);
+		                dummyDeclare2->sc = travOut->sc; 
+						dummyDeclare2->sc->next = NULL; 
+						dummyDeclare2->sc->rs = travOut->sc->rs;
+						dummyDeclare2->sc->parent = dummyDeclare2; dummyDeclare2->sc->rs->parent = dummyDeclare2;
+		                Typeof* t2 = extractTypeOfId(dummyDeclare2);
+		                SymbolTableEntry* outputParamEntry = createSymbolTableEntry(createSymbol(travOut->sc),idEntry);
+		                SymbolTableEntry* entry = newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)];
+		                outputParamEntry->symbol.idEntry.isInputParam = false;
+		                outputParamEntry->symbol.idEntry.type = *t2;
+		                if(entry == NULL)
+		                    newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)] = outputParamEntry;
+		                else{
+		                    while(entry->next != NULL)
+		                        entry = entry->next;
+		                    entry->next = outputParamEntry;
+		                }
+						processStatement(dummyDeclare2, newTable);
+		                travOut = travOut->next;
+		            }
+				}
+				
                 //now process the statements in the module
                 ASTNode* traverse = node->sc->rs->rs->rs;
                 while(traverse != NULL){
@@ -1000,9 +1049,9 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                         if(lookupString(node->node.idnode.lexeme, curr, idEntry, true) == NULL){
                             //semantic error..variable not declared.
                             Error *err = createErrorObject();
-                            SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,idEntry,true);
+                            //SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,idEntry,true);
                             err->lineNo = node->node.idnode.line_no;
-                            strcpy(err->error,sym->symbol.idEntry.node->node.idnode.lexeme);
+                            strcpy(err->error,node->node.idnode.lexeme);
                             strcat(err->error," Variable is not declared ");
                             printf("\n%s",err->error);
                             Error *temporary = semanticErrors->head;
