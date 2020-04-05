@@ -47,8 +47,10 @@ int computeBlockHash(Block* b){
 
 /*Computes hash of string s*/
 int computeStringHash(char* s){
+	//printf("\nHere\n");
     int hash=0;
     int len = strlen(s);
+	//printf("\n%d : %s", len, s);
     int i;
     for(i=0;i<len;i++)
     {
@@ -214,7 +216,10 @@ SymbolTableEntry* lookupString(char* s, SymbolTable* table, SymbolForm f, bool d
             else
                 return temp;
         }
-        return NULL;
+		if(deepSearch)
+            return lookupString(s, table->parent, f, true);
+        else
+            return NULL;
     }
     else
         return NULL;
@@ -492,20 +497,22 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 }
                 while(travOut != NULL){
                     ASTNode* dummyDeclare2 = createASTNode(declareNode);
-                    dummyDeclare2->sc = travOut ; dummyDeclare2->sc->next = NULL; dummyDeclare2->sc->rs = travInp->sc->rs;
+                    dummyDeclare2->sc = travOut->sc; 
+					dummyDeclare2->sc->next = NULL; 
+					dummyDeclare2->sc->rs = travOut->sc->rs;
                     Typeof* t2 = extractTypeOfId(dummyDeclare2);
                     SymbolTableEntry* outputParamEntry = createSymbolTableEntry(createSymbol(travOut->sc),idEntry);
                     SymbolTableEntry* entry = newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)];
                     outputParamEntry->symbol.idEntry.isInputParam = false;
                     outputParamEntry->symbol.idEntry.type = *t2;
                     if(entry == NULL)
-                        newTable->listHeads[computeStringHash(travInp->sc->node.idnode.lexeme)] = outputParamEntry;
+                        newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)] = outputParamEntry;
                     else{
                         while(entry->next != NULL)
                             entry = entry->next;
                         entry->next = outputParamEntry;
                     }
-
+					processStatement(dummyDeclare2, newTable);
                     travOut = travOut->next;
                 }
 

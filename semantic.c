@@ -64,6 +64,8 @@ void semanticAnalyzer(){
     populateModuleSequenceMap(astRoot, rootSymbolTable);
     checkModules(astRoot, semanticErrors);
     computeOffsets(astRoot, rootSymbolTable);
+	SymbolTable* finalTable = getsymbolTable();
+	return;
 }
 
 /*This recursive function traverses AST and performs various semantic checks*/
@@ -88,7 +90,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
         case moduleNode:{
             //check if driverModule
             if(node->sc->type == nullNode){
-                SymbolTableEntry* curr = lookupString("driverModule", table, functionEntry, false);
+                SymbolTableEntry* curr = lookupString("driverModule", table, driverEntry, false);
                 if(curr==NULL)       //not possible
                     printf("\nSymbotable populated wrongly\n");
                 
@@ -287,6 +289,8 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                         i++;
                         continue;
                     }
+					i++;
+					travCallOut = travCallOut->next;
                 }
 
                 if(!(travCallOut == NULL && i == f->noOfOutputs)){

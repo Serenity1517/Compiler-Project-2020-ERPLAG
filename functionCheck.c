@@ -48,23 +48,27 @@ void populateModuleSequenceMap(ASTNode* root, SymbolTable* rootSymbolTable){
         modules[i] = (char*)malloc(sizeof(char)*21);
     }
     ASTNode *trav = root->sc->rs;   // otherModule
-    while(trav->type != nullNode)
-    {
-        SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false); 
-        strcpy(modules[sym->symbol.functionEntry.sequenceNumber],trav->sc->node.idnode.lexeme);
-        trav = trav->next;
-    }
+	if(trav->type != nullNode){
+		while(trav != NULL)
+		{
+		    SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false); 
+		    strcpy(modules[sym->symbol.functionEntry.sequenceNumber],trav->sc->node.idnode.lexeme);
+		    trav = trav->next;
+		}
+	}
     // store driver module
-    SymbolTableEntry *driv = lookupString("driverModule",rootSymbolTable,functionEntry,false);
-    strcpy(modules[driv->symbol.functionEntry.sequenceNumber],"driverModule");
+    SymbolTableEntry *driv = lookupString("driverModule",rootSymbolTable,driverEntry,false);
+    strcpy(modules[driv->symbol.driverEntry.sequenceNumber],"driverModule");
     //otherModules%
     trav = root->sc->rs->rs->rs;   // otherModule%
-    while(trav->type != nullNode)
-    {
-        SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false); 
-        strcpy(modules[sym->symbol.functionEntry.sequenceNumber],trav->sc->node.idnode.lexeme);
-        trav = trav->next;
-    }
+	if(trav->type != nullNode){
+		while(trav != NULL)
+		{
+		    SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false); 
+		    strcpy(modules[sym->symbol.functionEntry.sequenceNumber],trav->sc->node.idnode.lexeme);
+		    trav = trav->next;
+		}
+	}
 }
 
 void initializeDeclaredList(ASTNode* root, SymbolTable* rootSymbolTable){
@@ -78,49 +82,62 @@ void initializeDeclaredList(ASTNode* root, SymbolTable* rootSymbolTable){
         isDeclared[i] = false;
         isCorrect[i] = true;
     }
-    while(traverse != NULL || traverse->type != nullNode)
-    {
-        SymbolTableEntry* sym = lookupString(traverse->node.idnode.lexeme,rootSymbolTable,functionEntry,false);
-        if(sym != NULL)
-        {
-            isDeclared[sym->symbol.functionEntry.sequenceNumber] = true;
-            isCorrect[sym->symbol.functionEntry.sequenceNumber] = false;
-        } 
-        else
-            printf("\nSymbol Table not populated correctly ");
-        traverse = traverse->next;
-    }
-
+	if(traverse->type != nullNode){
+	    while(traverse != NULL)
+		{
+		    SymbolTableEntry* sym = lookupString(traverse->node.idnode.lexeme,rootSymbolTable,functionEntry,false);
+		    if(sym != NULL)
+		    {
+		        isDeclared[sym->symbol.functionEntry.sequenceNumber] = true;
+		        isCorrect[sym->symbol.functionEntry.sequenceNumber] = false;
+		    } 
+		    else
+		        printf("\nSymbol Table not populated correctly ");
+		    traverse = traverse->next;
+		}
+	}
 }
 
 void checkModules(ASTNode* root, ListOfErrors* semanticErrors){
     ASTNode* otherMod = root->sc->rs;
     ASTNode* driverMod = root->sc->rs->rs;
     ASTNode* otherMod2 = root->sc->rs->rs->rs;
-    while(otherMod != NULL){
-        processModule(otherMod, semanticErrors);
-        otherMod = otherMod->next;
-        currModuleNo++;
-    }
+	if(otherMod->type != nullNode){
+		while(otherMod != NULL){
+		    processModule(otherMod, semanticErrors);
+		    otherMod = otherMod->next;
+		    currModuleNo++;
+		}
+	}
     processModule(driverMod, semanticErrors);   
     currModuleNo++;
-    while(otherMod2 != NULL){
-        processModule(otherMod2, semanticErrors);
-        otherMod2 = otherMod->next;
-        currModuleNo++;
+	if(otherMod2->type != nullNode){
+		while(otherMod2 != NULL){
+		    processModule(otherMod2, semanticErrors);
+		    otherMod2 = otherMod2->next;
+		    currModuleNo++;
+		}
     }
-    
     //check isCorrect
     int i;
     for(i=0; i<n; i++){
         if(isCorrect[i])
             continue;
         //semantic error: Module declarataion is not needed for this function
-        
+        Error *err = createErrorObject();   err->lineNo = 0;  strcpy(err->error,"\nModule Declaration is not needed for this function- ");
+        strcat(err->error, modules[i]); 
+        printf("\n%s",err->error);
+        Error *temporary = semanticErrors->head;
+        while(temporary->next != NULL)
+            temporary = temporary->next;
+        temporary->next = err; semanticErrors->numberOfErr += 1;
+        break;
     }
 }
 
 void processModule(ASTNode* modNode, ListOfErrors* semanticErrors){
+	if(modNode->type == nullNode)
+		return;
     ASTNode* stmt = modNode->sc->rs->rs->rs;
     while(stmt != NULL){
         processStmt(stmt, semanticErrors);
@@ -169,7 +186,7 @@ void processStmt(ASTNode* stmtNode, ListOfErrors *semanticErrors){
             if(calledSequenceNo == -1){
                 //semantic error: Called function has not been defined/declared
                 Error *err = createErrorObject();   err->lineNo = stmtNode->sc->rs->node.idnode.line_no;  strcpy(err->error,"\nCalled function has not been defined/declared ");
-                strcat(err->error, stmtNode->sc->node.idnode.lexeme); 
+                strcat(err->error, stmtNode->sc->rs->node.idnode.lexeme); 
                 printf("\n%s",err->error);
                 Error *temporary = semanticErrors->head;
                 while(temporary->next != NULL)
@@ -190,7 +207,7 @@ void processStmt(ASTNode* stmtNode, ListOfErrors *semanticErrors){
                 else{
                     //semantic error: Need moduleDeclaration to call this function
                     Error *err = createErrorObject();   err->lineNo = stmtNode->sc->rs->node.idnode.line_no;  strcpy(err->error,"\nNeed moduleDeclaration to call this function ");
-                    strcat(err->error, stmtNode->sc->node.idnode.lexeme); 
+                    strcat(err->error, stmtNode->sc->rs->node.idnode.lexeme); 
                     printf("\n%s",err->error);
                     Error *temporary = semanticErrors->head;
                     while(temporary->next != NULL)
