@@ -372,7 +372,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                         err->next = NULL;
                         err->lineNo = node->node.idnode.line_no;
                         strcpy(err->error,"\nVariable used in this expression has not been declared. line no");
-                        printf("\n%s",err->error);
+                        printf("LINE %d: %s",err->lineNo,err->error);
                         Error *temporary = semanticErrors->head;
                         if(temporary == NULL)
                         {
@@ -395,7 +395,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                         err->next = NULL;
                         err->lineNo = node->node.idnode.line_no;
                         strcpy(err->error,"\nVariable used in this expression has been declared later. line no");
-                        printf("\n%s",err->error);
+                        printf("LINE %d: %s",err->lineNo,err->error);
                         Error *temporary = semanticErrors->head;
                         if(temporary == NULL)
                         {
@@ -424,7 +424,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                             err->next = NULL;
                             err->lineNo = node->node.idnode.line_no;
                             strcpy(err->error,"\nCannot use Array variable in expression");
-                            printf("\n%s",err->error);
+                            printf("LINE %d: %s",err->lineNo,err->error);
                             Error *temporary = semanticErrors->head;
                             if(temporary == NULL)
                             {
@@ -454,7 +454,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             if(sym == NULL){
                 Error *err = (Error*)malloc(sizeof(Error));
                 err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nVariable used in this expression has not been declared. line no");
-                printf("\n%s",err->error);
+                printf("LINE %d: %s",err->lineNo,err->error);
                 Error *temporary = semanticErrors->head;
                 if(temporary == NULL)
                 {
@@ -474,7 +474,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             if(sym->symbol.idEntry.type.tag == primitive){
                 Error* err = (Error*)malloc(sizeof(Error));
                 err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nCannot use primitive variable as array in expression");
-                printf("\n%s",err->error);
+                printf("LINE %d: %s",err->lineNo,err->error);
                 Error *temporary = semanticErrors->head;
                 if(temporary == NULL)
                 {
@@ -494,7 +494,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             if(sym->symbol.idEntry.node->node.idnode.line_no >= node->sc->node.idnode.line_no){
                 Error *err = (Error*)malloc(sizeof(Error));
                 err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nVariable used in this expression has been declared later. line no");
-                printf("\n%s",err->error);
+                printf("LINE %d: %s",err->lineNo,err->error); // hello
                 Error *temporary = semanticErrors->head;
                 if(temporary == NULL)
                 {
@@ -516,7 +516,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             if(sym2 == NULL){
                 Error *err = (Error*)malloc(sizeof(Error));
                 err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nArray index variable has not been declared. line no");
-                printf("\n%s",err->error);
+                printf("LINE %d: %s",err->lineNo,err->error);
                 Error *temporary = semanticErrors->head;
                 if(temporary == NULL)
                 {
@@ -555,7 +555,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             if(sym2->symbol.idEntry.node->node.idnode.line_no >= node->sc->rs->node.idnode.line_no){
                 Error *err = (Error*)malloc(sizeof(Error));
                 err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nArray index variable has been declared later. line no");
-                printf("\n%s",err->error);
+                printf("LINE %d: %s",err->lineNo,err->error);
                 Error *temporary = semanticErrors->head;
                 if(temporary == NULL)
                 {
@@ -580,7 +580,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             if(sym == NULL){
                 Error *err = (Error *)malloc(sizeof(Error));
                 err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nVariable used in this expression has not been declared. line no");
-                printf("\n%s",err->error);
+                printf("LINE %d: %s",err->lineNo,err->error);
                 Error *temporary = semanticErrors->head;
                 if(temporary == NULL)
                 {
@@ -600,7 +600,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             if(sym->symbol.idEntry.type.tag == primitive){
                 Error* err = (Error*)malloc(sizeof(Error));
                 err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nCannot use primitive variable as array in expression");
-                printf("\n%s",err->error);
+                printf("LINE %d: %s",err->lineNo,err->error);
                 Error *temporary = semanticErrors->head;
                 if(temporary == NULL)
                 {
@@ -620,7 +620,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             if(sym->symbol.idEntry.node->node.idnode.line_no >= node->sc->node.idnode.line_no){
                 Error *err = (Error*)malloc(sizeof(Error));
                 err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nVariable used in this expression has been declared later. line no");
-                printf("\n%s",err->error);
+                printf("LINE %d: %s",err->lineNo,err->error);
                 Error *temporary = semanticErrors->head;
                 if(temporary == NULL)
                 {
@@ -647,7 +647,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                 else{   //bound check not satisified
                     Error *err = (Error*)malloc(sizeof(Error));
                     err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nArray index is not valid.");
-                    printf("\n%s",err->error);
+                    printf("LINE %d: %s",err->lineNo,err->error);
                     Error *temporary = semanticErrors->head;
                     if(temporary == NULL)
                     {
@@ -672,7 +672,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             else{
                 Error *err = (Error*)malloc(sizeof(Error));
                 err->next = NULL; err->lineNo = node->node.idnode.line_no; strcpy(err->error,"\nUnknown error");
-                printf("\n%s",err->error);
+                printf("LINE %d: %s",err->lineNo,err->error);
                 Error *temporary = semanticErrors->head;
                 if(temporary == NULL)
                 {
@@ -710,7 +710,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             err->next = NULL;
             err->lineNo = node->node.opNode.line_no;
             strcpy(err->error," Semantic Error: Type Mismatch in line no ");
-            printf("\n%s",err->error);
+            printf("LINE %d: %s",err->lineNo,err->error);
             Error *temporary = semanticErrors->head;
             if(temporary == NULL)
             {
@@ -743,7 +743,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             err->next = NULL;
             err->lineNo = node->node.opNode.line_no;
             strcpy(err->error," Semantic Error: Type Mismatch in line no ");
-            printf("\n%s",err->error);
+            printf("LINE %d: %s",err->lineNo,err->error);
             Error *temporary = semanticErrors->head;
             if(temporary == NULL)
             {
@@ -777,7 +777,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             err->next = NULL;
             err->lineNo = node->node.opNode.line_no;
             strcpy(err->error," Semantic Error: Type Mismatch in line no ");
-            printf("\n%s",err->error);
+            printf("LINE %d: %s",err->lineNo,err->error);
             Error *temporary = semanticErrors->head;
             if(temporary == NULL)
             {

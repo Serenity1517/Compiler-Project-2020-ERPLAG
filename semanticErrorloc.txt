@@ -2,6 +2,11 @@ Sematic Analyser:
 ------------------------------------------------
 
 
+YE SAB BACHA HE ABHI::
+1. input parameter overshadowing 
+2. output parameters / input parameters symboltable me daalne he / daal die?
+3. while loop condition's variables must be assigned a value inside the loop
+
 
 1.An identifier cannot be declared multiple times in the same scope.
      processAST() symboltable.c
@@ -28,14 +33,15 @@ Sematic Analyser:
 
 9.A switch statement with a boolean type identifier can have the case statements with labels true and false only. The switch statement then should not have a default statement.
     done in sematic.c
+
 10.Function overloading is not allowed.
     done in symboltable.c
 
 11.A function declaration for a function being used (say F1) by another (say F2) must precede the definition of the function using it(i.e. F2), only if the function definition of F1 does not precede the definition of F2.
-    check in functionCheck.c
+    done in functionCheck.c
     
 12.If the function definition of F1 precedes function definition of F2(the one which uses F1), then the function declaration of F1 is redundant and is not valid.
-    check in functionCheck.c
+    done in functionCheck.c
 
 13.A for statement must not redefine the variable that participates in the iterating over the range.
     done in semantic.c
