@@ -12,7 +12,7 @@
 //structure for semantic error
 typedef struct Error{
     struct Error* next;     //next error object in linkedlist
-    char error[50];
+    char error[150];
     int lineNo;
 }Error;
 

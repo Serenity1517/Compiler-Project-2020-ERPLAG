@@ -70,13 +70,13 @@ integer	7	INTEGER	 RULE NO !!!! -1	----	dataType	yes
 ---- ---- ---- ---- RULE NO !!! 25	moduleDef	no statements	
 declare	8	DECLARE	 RULE NO !!!! -1	----	declareStmt	yes	
 ---- ---- ---- ---- RULE NO !!! 92	statement	no declareStmt	
-t	8	ID	 RULE NO !!!! -1	----	idList	yes	
+ssubtract	8	ID	 RULE NO !!!! -1	----	idList	yes	
 ---- ---- ---- ---- RULE NO !!! 52	declareStmt	no idList	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N3	yes	
 ---- ---- ---- ---- RULE NO !!! 54	idList	no N3	
 :	8	COLON	 RULE NO !!!! -1	----	declareStmt	yes	
-boolean	8	BOOLEAN	 RULE NO !!!! -1	----	dataType	yes	
----- ---- ---- ---- RULE NO !!! 19	declareStmt	no dataType	
+real	8	REAL	 RULE NO !!!! -1	----	dataType	yes	
+---- ---- ---- ---- RULE NO !!! 18	declareStmt	no dataType	
 ;	8	SEMICOL	 RULE NO !!!! -1	----	declareStmt	yes	
 ---- ---- ---- ---- RULE NO !!! 29	statements	no statement	
 ---- ---- ---- ---- RULE NO !!! 25	statements	no statements	
@@ -94,13 +94,13 @@ real	9	REAL	 RULE NO !!!! -1	----	dataType	yes
 ---- ---- ---- ---- RULE NO !!! 25	statements	no statements	
 declare	10	DECLARE	 RULE NO !!!! -1	----	declareStmt	yes	
 ---- ---- ---- ---- RULE NO !!! 92	statement	no declareStmt	
-ssubtract	10	ID	 RULE NO !!!! -1	----	idList	yes	
+t	10	ID	 RULE NO !!!! -1	----	idList	yes	
 ---- ---- ---- ---- RULE NO !!! 52	declareStmt	no idList	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N3	yes	
 ---- ---- ---- ---- RULE NO !!! 54	idList	no N3	
 :	10	COLON	 RULE NO !!!! -1	----	declareStmt	yes	
-real	10	REAL	 RULE NO !!!! -1	----	dataType	yes	
----- ---- ---- ---- RULE NO !!! 18	declareStmt	no dataType	
+integer	10	INTEGER	 RULE NO !!!! -1	----	dataType	yes	
+---- ---- ---- ---- RULE NO !!! 17	declareStmt	no dataType	
 ;	10	SEMICOL	 RULE NO !!!! -1	----	declareStmt	yes	
 ---- ---- ---- ---- RULE NO !!! 29	statements	no statement	
 ---- ---- ---- ---- RULE NO !!! 25	statements	no statements	

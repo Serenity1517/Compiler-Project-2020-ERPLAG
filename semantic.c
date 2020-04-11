@@ -128,7 +128,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                         //semantic error :
                         Error *err = createErrorObject();   err->lineNo = travOutputParam->sc->node.idnode.line_no;  strcpy(err->error,"\nNo value was assigned for output param: ");
                         strcat(err->error, travOutputParam->sc->node.idnode.lexeme); 
-                        printf("LINE %d: %s",err->lineNo,err->error);
+                        printf("LINE %d: %s\n",err->lineNo,err->error);
                         Error *temporary = semanticErrors->head;
                         if(temporary == NULL)
                         {
@@ -170,7 +170,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                 if(temp->type == forLoopNode && strcmp(temp->sc->node.idnode.lexeme,node->sc->node.idnode.lexeme)==0){
                     //semantic error
                     Error *err = createErrorObject();   err->lineNo = node->sc->node.idnode.line_no;  strcpy(err->error,"\nAssigning a value to for loop iterating variable is not allowed:"); 
-                    printf("LINE %d: %s",err->lineNo,err->error);
+                    printf("LINE %d: %s***\n",err->lineNo,err->error);
                     Error *temporary = semanticErrors->head;
                     if(temporary == NULL)
                     {
@@ -211,11 +211,11 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
         case functionCallNode:{
             SymbolTableEntry* func = lookupString(node->sc->rs->node.idnode.lexeme, table, functionEntry, true);
             //1.void functions handling
-            if(func->symbol.functionEntry.outputListHead == NULL){  //actually a void function
+            if(func->symbol.functionEntry.outputListHead->type == nullNode){  //actually a void function
                 if(node->sc->type != nullNode){
                     //semantic error: void function should not return anything
-                    Error *err = createErrorObject();   err->lineNo = node->sc->sc->node.idnode.line_no;  strcpy(err->error,"\nVoid function must not return anything"); 
-                    printf("LINE %d: %s",err->lineNo,err->error);
+                    Error *err = createErrorObject();   err->lineNo = node->sc->rs->node.idnode.line_no;  strcpy(err->error,"\nVoid function must not return anything"); 
+                    printf("LINE %d: %s\n",err->lineNo,err->error);
                     Error *temporary = semanticErrors->head;
                     if(temporary == NULL)
                     {
@@ -239,7 +239,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                     if(travCallOut->type == nullNode){
                         //semantic error : function must return something
                         Error *err = createErrorObject();   err->lineNo = node->sc->rs->node.idnode.line_no;  strcpy(err->error,"\nVoid function must not return anything"); 
-                        printf("LINE %d: %s",err->lineNo,err->error);
+                        printf("LINE %d: %s\n",err->lineNo,err->error);
                         Error *temporary = semanticErrors->head;
                         if(temporary == NULL)
                         {
@@ -278,7 +278,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                     if(travCallOutput->symbol.idEntry.type.type.primitiveType != f->outputList[i].type.primitiveType){
                         //semantic error : output type mismatch
                         Error *err = createErrorObject();   err->lineNo = travCallOut->node.idnode.line_no;  strcpy(err->error,"\nOutput types mismatch"); 
-                        printf("LINE %d: %s",err->lineNo,err->error);
+                        printf("LINE %d: %s\n",err->lineNo,err->error);
                         Error *temporary = semanticErrors->head;
                         if(temporary == NULL)
                         {
@@ -303,7 +303,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                 if(!(travCallOut == NULL && i == f->noOfOutputs)){
                     //semantic error : output parameter  count mismatch
                     Error *err = createErrorObject();   err->lineNo = node->sc->rs->node.idnode.line_no;  strcpy(err->error,"\nOutput parameter count mismatch"); 
-                    printf("LINE %d: %s",err->lineNo,err->error);
+                    printf("LINE %d: %s\n",err->lineNo,err->error);
                     Error *temporary = semanticErrors->head;
                     if(temporary == NULL)
                     {
@@ -326,14 +326,18 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
             struct Typeof* travDefIn = inp->inputList;
             int i=0; 
             ASTNode *travCallIn = node->sc->rs->rs;
-            while(travCallIn != NULL && i < inp->noOfInputs)
+            int counter = 0;
+            ASTNode* checkNoOfInputs = node->sc->rs->rs;
+            while(checkNoOfInputs != NULL)
             {
-                SymbolTableEntry* sym = lookupString(travCallIn->node.idnode.lexeme, table, idEntry, true);
-                if(sym == NULL)
-                {
-                    //input parameter must be declared
-                    Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"\nInput parameter must be used before declaration"); 
-                    printf("LINE %d: %s",err->lineNo,err->error);
+            	counter++;
+            	checkNoOfInputs = checkNoOfInputs->next;
+            }
+            
+            if(counter != inp->noOfInputs)
+            {
+            	 	Error *err = createErrorObject();   err->lineNo = node->sc->rs->node.idnode.line_no;  strcpy(err->error,"\nInput parameter count mismatch"); 
+                    printf("LINE %d: %s\n",err->lineNo,err->error);
                     Error *temporary = semanticErrors->head;
                     if(temporary == NULL)
                     {
@@ -347,81 +351,105 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                         temporary->next = err;
                         semanticErrors->numberOfErr += 1;   
                     }
-                    travCallIn = travCallIn->next;
-                    i++;
-                    continue;
-                }
-                else
-                {
-                    if(sym->symbol.idEntry.type.type.primitiveType != travDefIn[i].type.primitiveType && sym->symbol.idEntry.type.tag == primitive && travDefIn[i].tag == primitive)
-                    {
-                        // semantic error
-                        Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"\nInput parameter type mismatch"); 
-                        printf("LINE %d: %s",err->lineNo,err->error);
-                        Error *temporary = semanticErrors->head;
-                        if(temporary == NULL)
-                        {
-                            semanticErrors->head = err;    
-                            semanticErrors->numberOfErr += 1; 
-                        }
-                        else
-                        {
-                            while(temporary->next != NULL)
-                                temporary = temporary->next;
-                            temporary->next = err;
-                            semanticErrors->numberOfErr += 1;   
-                        }
-                        travCallIn = travCallIn->next;
-                        i++;
-                        continue;                        
-                    }
-                    else if(sym->symbol.idEntry.type.type.arrayType.t != travDefIn[i].type.arrayType.t && sym->symbol.idEntry.type.tag == array && travDefIn[i].tag == array)
-                    {
-                        Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"\nInput parameter type mismatch "); 
-                        Error *temporary = semanticErrors->head;
-                        if(temporary == NULL)
-                        {
-                            semanticErrors->head = err;    
-                            semanticErrors->numberOfErr += 1; 
-                        }
-                        else
-                        {
-                            while(temporary->next != NULL)
-                                temporary = temporary->next;
-                            temporary->next = err;
-                            semanticErrors->numberOfErr += 1;   
-                        }
-                        travCallIn = travCallIn->next;
-                        i++;
-                        continue;
-                    }
-                    else if(sym->symbol.idEntry.type.tag != travDefIn[i].tag){ 
-                        //semantic error:input parameter type mismatch
-                        Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"\nInput parameter type mismatch "); 
-                        printf("LINE %d: %s",err->lineNo,err->error);
-                        Error *temporary = semanticErrors->head;
-                        if(temporary == NULL)
-                        {
-                            semanticErrors->head = err;    
-                            semanticErrors->numberOfErr += 1; 
-                        }
-                        else
-                        {
-                            while(temporary->next != NULL)
-                                temporary = temporary->next;
-                            temporary->next = err;
-                            semanticErrors->numberOfErr += 1;   
-                        }
-                        travCallIn = travCallIn->next;
-                        i++;
-                        continue;
-                    }   
-                    i++;
-                    travCallIn = travCallIn->next;
-                }
-                
+                    
             }
-            
+            //else{
+		        while(travCallIn != NULL && i < inp->noOfInputs)
+		        {
+		            SymbolTableEntry* sym = lookupString(travCallIn->node.idnode.lexeme, table, idEntry, true);
+		            if(sym == NULL)
+		            {
+		                //input parameter must be declared
+		                Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"\nInput parameter must be used before declaration"); 
+		                printf("LINE %d: %s\n",err->lineNo,err->error);
+		                Error *temporary = semanticErrors->head;
+		                if(temporary == NULL)
+		                {
+		                    semanticErrors->head = err;    
+		                    semanticErrors->numberOfErr += 1; 
+		                }
+		                else
+		                {
+		                    while(temporary->next != NULL)
+		                        temporary = temporary->next;
+		                    temporary->next = err;
+		                    semanticErrors->numberOfErr += 1;   
+		                }
+		                travCallIn = travCallIn->next;
+		                i++;
+		                continue;
+		            }
+		            else
+		            {
+		                if(sym->symbol.idEntry.type.type.primitiveType != travDefIn[i].type.primitiveType && sym->symbol.idEntry.type.tag == primitive && travDefIn[i].tag == primitive)
+		                {
+		                    // semantic error
+		                    Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"\nInput parameter type mismatch"); 
+		                    printf("LINE %d: %s\n",err->lineNo,err->error);
+		                    Error *temporary = semanticErrors->head;
+		                    if(temporary == NULL)
+		                    {
+		                        semanticErrors->head = err;    
+		                        semanticErrors->numberOfErr += 1; 
+		                    }
+		                    else
+		                    {
+		                        while(temporary->next != NULL)
+		                            temporary = temporary->next;
+		                        temporary->next = err;
+		                        semanticErrors->numberOfErr += 1;   
+		                    }
+		                    travCallIn = travCallIn->next;
+		                    i++;
+		                    continue;                        
+		                }
+		                else if(sym->symbol.idEntry.type.type.arrayType.t != travDefIn[i].type.arrayType.t && sym->symbol.idEntry.type.tag == array && travDefIn[i].tag == array)
+		                {
+		                    Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"\nInput parameter type mismatch "); 
+		                    Error *temporary = semanticErrors->head;
+		                    if(temporary == NULL)
+		                    {
+		                        semanticErrors->head = err;    
+		                        semanticErrors->numberOfErr += 1; 
+		                    }
+		                    else
+		                    {
+		                        while(temporary->next != NULL)
+		                            temporary = temporary->next;
+		                        temporary->next = err;
+		                        semanticErrors->numberOfErr += 1;   
+		                    }
+		                    travCallIn = travCallIn->next;
+		                    i++;
+		                    continue;
+		                }
+		                else if(sym->symbol.idEntry.type.tag != travDefIn[i].tag){ 
+		                    //semantic error:input parameter type mismatch
+		                    Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"\nInput parameter type mismatch "); 
+		                    printf("LINE %d: %s\n",err->lineNo,err->error);
+		                    Error *temporary = semanticErrors->head;
+		                    if(temporary == NULL)
+		                    {
+		                        semanticErrors->head = err;    
+		                        semanticErrors->numberOfErr += 1; 
+		                    }
+		                    else
+		                    {
+		                        while(temporary->next != NULL)
+		                            temporary = temporary->next;
+		                        temporary->next = err;
+		                        semanticErrors->numberOfErr += 1;   
+		                    }
+		                    travCallIn = travCallIn->next;
+		                    i++;
+		                    continue;
+		                }   
+		                i++;
+		                travCallIn = travCallIn->next;
+		            }
+		            
+		        }
+            //}
             
             break;
         }
@@ -457,7 +485,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                         {
                             //semantic error case node is not an integer
                             Error *err = createErrorObject();   err->lineNo = node->sc->rs->node.caseNode.line;  strcpy(err->error,"\nCase Node is not an integer "); 
-                            printf("LINE %d: %s",err->lineNo,err->error);
+                            printf("LINE %d: %s\n",err->lineNo,err->error);
                             Error *temporary = semanticErrors->head;
                             if(temporary == NULL)
                             {
@@ -478,7 +506,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                 }
                 case real:{
                         Error *err = createErrorObject();   err->lineNo = node->sc->node.idnode.line_no;  strcpy(err->error,"\nSwitching variable cannot be of real type :"); 
-                        printf("LINE %d: %s",err->lineNo,err->error);
+                        printf("LINE %d: %s\n",err->lineNo,err->error);
                         Error *temporary = semanticErrors->head;
                         if(temporary == NULL)
                         {
@@ -497,7 +525,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                 case boolean:{
                     if(node->sc->rs->rs->type != nullNode){
                         Error *err = createErrorObject();   err->lineNo = node->sc->rs->rs->node.caseNode.line;  strcpy(err->error,"\nSwitch case on boolean variable cannot have default case"); 
-                        printf("LINE %d: %s",err->lineNo,err->error);
+                        printf("LINE %d: %s\n",err->lineNo,err->error);
                         Error *temporary = semanticErrors->head;
                         while(temporary->next != NULL)
                             temporary = temporary->next;
@@ -505,7 +533,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                     }
                     if(!(node->sc->rs->sc->rs->type == boolNode && node->sc->rs->next->sc->rs->type == boolNode && node->sc->rs->next->next == NULL)){
                         Error *err = createErrorObject();   err->lineNo = node->sc->rs->node.caseNode.line;  strcpy(err->error,"\nSwitch case on boolean variable must have exactly 2 cases, true and false"); 
-                        printf("LINE %d: %s",err->lineNo,err->error);
+                        printf("LINE %d: %s\n",err->lineNo,err->error);
                         Error *temporary = semanticErrors->head;
                         if(temporary == NULL)
                         {
