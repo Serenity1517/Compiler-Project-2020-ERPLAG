@@ -1,5 +1,0 @@
-<program> --> <moduleDeclarations><otherModules>
-<moduleDeclarations> --> <moduleDeclaration><moduleDeclarations> BOOLEAN
-<moduleDeclarations> --> #
-<moduleDeclaration> --> REAL
-<otherModules> --> INTEGER
