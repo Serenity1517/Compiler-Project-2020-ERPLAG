@@ -12,17 +12,17 @@ start
 	a:= m[5]+3;
 	p:= m;					** not an error**
 	k:=true;
-	p[10]:= a*b-20*h;			**ERROR: variable h is not declared**
+	p[10]:= a*b-20*h;			**ERROR: variable h is not declared-DONE**
 	while(k AND x<=m[11] OR false)
 	start
 		declare p:integer;
 		declare b: array[2..20] of integer;
 		b:= m;
-		b[2]:= u+m[6];			**ERROR: variable u is not declared**
+		b[2]:= u+m[6];			**ERROR: variable u is not declared-DONE**
 		p:= b[18]*18;
 	end
         n:= a - b;
-	declare b:real;				**ERROR: variable b is re-declared**
+	declare b:real;				**ERROR: variable b is re-declared-DONE**
 	b:= b+3;
 	k:= a>b OR b>100;
 	print(k);	
@@ -42,13 +42,13 @@ start
 	declare C: array[10..30] of integer;
 	A:=B;
 	C:=a;
-	D:=C;					**ERROR: variable D is not declared**
+	D:=C;					**ERROR: variable D is not declared DONE**
 	for (k in 15..40)
 	start
 		x:=x+y;
 		declare u, v:real;
 		u := y+c*34.2;
-		v:= u-c*p-20.5E+2;		**ERROR: variable p is not declared**
+		v:= u-c*p-20.5E+2;		**ERROR: variable p is not declared	DONE**
 		switch(k)
 		start
 			case 10: declare A:real;
@@ -58,9 +58,9 @@ start
 				 B:=C;          **No error as C is available with static ancestor**
 				 E:= Q;		**ERROR: variable Q is not declared**
 				 break;
-			case 20: declare B: array[1..10] of real;      **ERROR: variable B is redeclared in the scope of switch**
+			case 20: declare B: array[1..10] of real;      **ERROR: variable B is redeclared in the scope of switch-DONE**
                                  A:= 12.90 + u*y - c;         **Not an error as u, y and c are avialble in the scopes of static ancestors**
-				 declare E: real;             **ERROR: variable E is re-declared**
+				 declare E: real;             **ERROR: variable E is re-declared-DONE**
 				 declare Q: integer;
 				 get_value(Q);
 				 E[7]:= k+12 - Q*10;          **not an error**
@@ -69,14 +69,14 @@ start
 				 break;			 	
 		end
 		x:=x+u*v;
-		k:= Q+1;				**ERROR: variable Q is not declared**
+		k:= Q+1;				**ERROR: variable Q is not declared-DONE**
 	end
 	x:=c+y;	
 	C[18]:= a[18]+ b[18];
 	A[5]:= B[6]- 10;
-	declare A: array[10..70] of integer;	**ERROR: variable A is re-declared**
+	declare A: array[10..70] of integer;	**ERROR: variable A is re-declared-DONE**
 	m:= A[5]< C[18];
-	m:= c>=x AND E[10]>=y;			**ERROR: variable E is not declared**
+	m:= c>=x AND E[10]>=y;			**ERROR: variable E is not declared-DONE**
 	n:= 20*8-5;	
 end
 
@@ -89,11 +89,11 @@ start
         A:=12;
 	declare p: real;
 	p:= 23.56;
-	get_value(v_1_2_43);							**ERROR: variable v_1_2_43 is not declared**		
+	get_value(v_1_2_43);							**ERROR: variable v_1_2_43 is not declared DONE**	
 	declare B, C: array [2..20] of integer;
 	[ v_1_2_3, u1]:=use module var_demo_array with parameters A,B,p;		
-	[ v_1_2_3, k]:=use module var_demo_array with parameters A,B,p;		**ERROR: variable k is not declared**
+	[ v_1_2_3, k]:=use module var_demo_array with parameters A,B,p;		**ERROR: variable k is not declared DONE**
 	B:= C;
-	declare B: real;							**ERROR: variable B is re-declared**
+	declare B: real;							**ERROR: variable B is re-declared	DONE**
 end
 
