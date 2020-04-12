@@ -367,7 +367,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             }
             case idNode:{
                 //lookup type(obtain Typeof object)
-                SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,currTable,idEntry,true);
+                SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,currTable,idEntry,true,node->node.idnode.line_no);
                     if(sym == NULL) 
                     { 
                         // semantic error
@@ -452,7 +452,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
     if(node->type == arrayIdNode){
         //2 cases: a[b] OR a[3]
         if(node->sc->rs->type == idNode){   //a[b] case
-            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,currTable, idEntry, true);
+            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,currTable, idEntry, true, node->sc->node.idnode.line_no);
             //1.check if a is declared or not
             if(sym == NULL){
                 Error *err = (Error*)malloc(sizeof(Error));
@@ -514,7 +514,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                 return -1;
             }
             //now we need to check b and check bounds
-            SymbolTableEntry *sym2 = lookupString(node->sc->rs->node.idnode.lexeme,currTable,idEntry, true);
+            SymbolTableEntry *sym2 = lookupString(node->sc->rs->node.idnode.lexeme,currTable,idEntry, true,node->sc->rs->node.idnode.line_no);
             //4.check if b is declared or not
             if(sym2 == NULL){
                 Error *err = (Error*)malloc(sizeof(Error));
@@ -578,7 +578,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             return sym->symbol.idEntry.type.type.arrayType.t;
         }
         else{   //a[3] case
-            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,currTable, idEntry, true);
+            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,currTable, idEntry, true,node->sc->node.idnode.line_no);
             //1.check if a is declared or not
             if(sym == NULL){
                 Error *err = (Error *)malloc(sizeof(Error));

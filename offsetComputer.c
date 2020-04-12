@@ -50,7 +50,7 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
 	return;
    ASTNode* stmtNode = currModule->sc->rs->rs->rs;
 	if(currModule->sc->type == nullNode){
-		SymbolTableEntry* sym = lookupString("driverModule",rootSymbolTable,driverEntry,false);
+		SymbolTableEntry* sym = lookupString("driverModule",rootSymbolTable,driverEntry,false,-1);
    		SymbolTable* currTable = sym->table;//ye calcculate karke neeche function me pass karna he
    		while(stmtNode != NULL){
        processStatement(stmtNode, currTable);
@@ -58,7 +58,7 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
    		}
 		return;			
 	}
-   SymbolTableEntry* sym = lookupString(currModule->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false);
+   SymbolTableEntry* sym = lookupString(currModule->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1);
    SymbolTable* currTable = sym->table;//ye calcculate karke neeche function me pass karna he
    while(stmtNode != NULL){
        processStatement(stmtNode, currTable);
@@ -81,7 +81,7 @@ void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
                     int currWidth = factor*(declareType->type.arrayType.high - declareType->type.arrayType.low + 1);
                     ASTNode* declareId = stmtNode->sc;
                     while(declareId != NULL){
-                        SymbolTableEntry* sym = lookupString(declareId->node.idnode.lexeme,currTable,idEntry,false);
+                        SymbolTableEntry* sym = lookupString(declareId->node.idnode.lexeme,currTable,idEntry,false,declareId->node.idnode.line_no);
                         sym->symbol.idEntry.offset = offset;
                         sym->symbol.idEntry.width = currWidth;
                         offset += currWidth;
@@ -91,7 +91,7 @@ void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
                 else{       //dynamic..assign width 2
                     ASTNode* declareId = stmtNode->sc;
                     while(declareId != NULL){
-                        SymbolTableEntry* sym = lookupString(declareId->node.idnode.lexeme,currTable,idEntry,false);
+                        SymbolTableEntry* sym = lookupString(declareId->node.idnode.lexeme,currTable,idEntry,false,declareId->node.idnode.line_no);
                         sym->symbol.idEntry.offset = offset;
                         sym->symbol.idEntry.width = 2;
                         offset += 2;
@@ -103,7 +103,7 @@ void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
                 ASTNode* idtraverse = stmtNode->sc;
                 while(idtraverse != NULL)
                 {
-                    SymbolTableEntry* sym = lookupString(idtraverse->node.idnode.lexeme,currTable,idEntry,false);
+                    SymbolTableEntry* sym = lookupString(idtraverse->node.idnode.lexeme,currTable,idEntry,false,idtraverse->node.idnode.line_no);
                     PrimitiveType t = sym->symbol.idEntry.type.type.primitiveType;
                     if(t == integer){
                         sym->symbol.idEntry.offset = offset;

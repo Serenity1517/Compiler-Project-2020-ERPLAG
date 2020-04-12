@@ -51,20 +51,20 @@ void populateModuleSequenceMap(ASTNode* root, SymbolTable* rootSymbolTable){
 	if(trav->type != nullNode){
 		while(trav != NULL)
 		{
-		    SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false); 
+		    SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1); 
 		    strcpy(modules[sym->symbol.functionEntry.sequenceNumber],trav->sc->node.idnode.lexeme);
 		    trav = trav->next;
 		}
 	}
     // store driver module
-    SymbolTableEntry *driv = lookupString("driverModule",rootSymbolTable,driverEntry,false);
+    SymbolTableEntry *driv = lookupString("driverModule",rootSymbolTable,driverEntry,false,-1);
     strcpy(modules[driv->symbol.driverEntry.sequenceNumber],"driverModule");
     //otherModules%
     trav = root->sc->rs->rs->rs;   // otherModule%
 	if(trav->type != nullNode){
 		while(trav != NULL)
 		{
-		    SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false); 
+		    SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1); 
 		    strcpy(modules[sym->symbol.functionEntry.sequenceNumber],trav->sc->node.idnode.lexeme);
 		    trav = trav->next;
 		}
@@ -85,7 +85,7 @@ void initializeDeclaredList(ASTNode* root, SymbolTable* rootSymbolTable){
 	if(traverse->type != nullNode){
 	    while(traverse != NULL)
 		{
-		    SymbolTableEntry* sym = lookupString(traverse->node.idnode.lexeme,rootSymbolTable,functionEntry,false);
+		    SymbolTableEntry* sym = lookupString(traverse->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1);
 		    if(sym != NULL)
 		    {
 		        isDeclared[sym->symbol.functionEntry.sequenceNumber] = true;

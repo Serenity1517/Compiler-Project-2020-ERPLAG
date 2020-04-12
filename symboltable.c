@@ -94,6 +94,8 @@ Symbol* createSymbol(ASTNode* astNode){    //need to check node->type and create
         sym->idEntry.node = astNode;
         sym->idEntry.offset = 0;
         sym->idEntry.width = 0;
+        sym->idEntry.next = NULL;
+        sym->idEntry.isInputParam = false;
     }
     else if(astNode->type == moduleNode){       //module Definition
         strcpy(sym->functionEntry.functionName, astNode->sc->node.idnode.lexeme);
@@ -117,7 +119,6 @@ Symbol* createSymbol(ASTNode* astNode){    //need to check node->type and create
     }
     else
         return sym;
-
 
     return sym;
 }
@@ -175,7 +176,7 @@ Looks up string in given SymbolTable and returns its SymbolTableEntry pointer
 parameter deepSearch : false - lookup only in table, and not it's subsequent outer scopes
                      :  true - lookup in all tables till outermost scope
 */
-SymbolTableEntry* lookupString(char* s, SymbolTable* table, SymbolForm f, bool deepSearch){  //f can be either functionEntry or idEntry
+SymbolTableEntry* lookupString(char* s, SymbolTable* table, SymbolForm f, bool deepSearch,int lineNo){  //f can be either functionEntry or idEntry
     if(table == NULL)
         return NULL;
     SymbolTableEntry* temp = table->listHeads[computeStringHash(s)];
@@ -190,7 +191,7 @@ SymbolTableEntry* lookupString(char* s, SymbolTable* table, SymbolForm f, bool d
         }
         //entry not found in table
         if(deepSearch)
-            return lookupString(s, table->parent, f, true);
+            return lookupString(s, table->parent, f, true,lineNo);
         else
             return NULL;
     }
@@ -198,14 +199,25 @@ SymbolTableEntry* lookupString(char* s, SymbolTable* table, SymbolForm f, bool d
         while(temp != NULL){
             if(temp->tag != idEntry)    //if entry is not idEntry
                 temp = temp->next;
-            else if(strcmp(temp->symbol.idEntry.node->node.idnode.lexeme, s) == 0)  //id entry found
-                return temp;
+            else if(strcmp(temp->symbol.idEntry.node->node.idnode.lexeme, s) == 0){  //id entry found
+                if(temp->symbol.idEntry.next != NULL)   //inputParam overshadowing
+                {
+                    //return temp ya fir return temp->symbol.idEntry.next
+                    if(lineNo > temp->symbol.idEntry.next->symbol.idEntry.node->node.idnode.line_no){
+                        return temp->symbol.idEntry.next;
+                    }
+                    else
+                        return temp;
+                }
+                else
+                    return temp;
+            }    
             else                //if identry doesn't match
                 temp = temp->next;
         }
         //entry not found in table
         if(deepSearch)
-            return lookupString(s, table->parent, f, true);
+            return lookupString(s, table->parent, f, true, lineNo);
         else
             return NULL;
     }
@@ -217,7 +229,7 @@ SymbolTableEntry* lookupString(char* s, SymbolTable* table, SymbolForm f, bool d
                 return temp;
         }
 		if(deepSearch)
-            return lookupString(s, table->parent, f, true);
+            return lookupString(s, table->parent, f, true,lineNo);
         else
             return NULL;
     }
@@ -447,7 +459,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 break;
             }
 
-            SymbolTableEntry* info = lookupString(node->sc->node.idnode.lexeme, curr, functionEntry, false);
+            SymbolTableEntry* info = lookupString(node->sc->node.idnode.lexeme, curr, functionEntry, false,-1);
 
             if(info == NULL){   //if module is previously not defined/declared
 
@@ -580,7 +592,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 //assigning pointers of this newTable
                 newTable->parent = curr;
 
-                SymbolTableEntry *entry = lookupString(newTable->scope.scope, curr, functionEntry, false);
+                SymbolTableEntry *entry = lookupString(newTable->scope.scope, curr, functionEntry, false,-1);
                 
                 if(entry == NULL)   //error. fix code. should never reach this case
                     printf("Debugging Error.....Buggesh Code\n");
@@ -824,7 +836,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
         case assignmentNode:{
             //1. check if lhs is idNode or arrayIdNode
             if(node->sc->type == idNode){      
-                SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, curr, idEntry, true);  //  ?? konsa while code gayab lag rha yaad ek min ruk
+                SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, curr, idEntry, true,node->sc->node.idnode.line_no);  //  ?? konsa while code gayab lag rha yaad ek min ruk
                 if(sym == NULL){
                     Error *err = createErrorObject();  
                     err->lineNo = node->sc->node.idnode.line_no;    
@@ -850,7 +862,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                     
             } 
             else{
-                SymbolTableEntry* sym = lookupString(node->sc->sc->node.idnode.lexeme, curr, idEntry, true);
+                SymbolTableEntry* sym = lookupString(node->sc->sc->node.idnode.lexeme, curr, idEntry, true,node->sc->sc->node.idnode.line_no);
                 if(sym == NULL){
                     Error *err = createErrorObject();   err->lineNo = node->sc->node.idnode.line_no;    strcpy(err->error,"LHS of assignment statement has not been declared before");
                     printf("LINE %d: %s\n",err->lineNo,err->error);
@@ -974,7 +986,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 case programNode:{      //case of moduleDeclaration
                     //curr has root table
                     //here we have encountered function prototype. populate in table
-                    if(lookupString(node->node.idnode.lexeme, curr, functionEntry, false) == NULL){ //add to table
+                    if(lookupString(node->node.idnode.lexeme, curr, functionEntry, false,-1) == NULL){ //add to table
                         int hash = computeStringHash(node->node.idnode.lexeme);
                         Symbol* sym = createSymbol(node);
                         strcpy(sym->functionEntry.functionName, node->node.idnode.lexeme);
@@ -995,7 +1007,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                     else{
                         //semantic error: duplicate module declaration
                         Error *err = createErrorObject();
-                        SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,functionEntry,false);
+                        SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,functionEntry,false,node->node.idnode.line_no);
                         err->lineNo = sym->symbol.idEntry.node->node.idnode.line_no;
                         strcpy(err->error,sym->symbol.idEntry.node->node.idnode.lexeme);
                         strcat(err->error," Duplicate module declaration in line  "); // error msg me line no aur variable print karva do
@@ -1026,7 +1038,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                     break;
                 }
                 case declareNode:{
-                    if(lookupString(node->node.idnode.lexeme,curr,idEntry,false) == NULL)
+                    if(lookupString(node->node.idnode.lexeme,curr,idEntry,false,node->node.idnode.line_no) == NULL)
                     {
                         int hash = computeStringHash(node->node.idnode.lexeme);
                         SymbolTableEntry *sym = createSymbolTableEntry(createSymbol(node),idEntry);
@@ -1052,24 +1064,34 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                     {
                         // semantic error. variable already declared 
                         Error *err = createErrorObject();
-                        SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,idEntry,false);
-                        err->lineNo = node->node.idnode.line_no;
-                        strcpy(err->error,sym->symbol.idEntry.node->node.idnode.lexeme);
-                        strcat(err->error," Redeclaration of variable in line  "); // error msg me line no aur variable print karva do
-                        printf("LINE %d: %s\n",err->lineNo,err->error);
-                        Error *temporary = semanticErrors->head;
-                        if(temporary == NULL)
-                        {
-                            semanticErrors->head = err;    
-                            semanticErrors->numberOfErr += 1; 
+                        SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,idEntry,false,node->node.idnode.line_no);
+                        if(sym->symbol.idEntry.isInputParam){
+                            SymbolTableEntry *sym2 = createSymbolTableEntry(createSymbol(node),idEntry);
+                            //populate idEntry's type field
+                            Typeof* t = extractTypeOfId(node->parent);      //node->parent is the declareNode
+                            sym2->symbol.idEntry.type = *t;
+                            sym->symbol.idEntry.next = sym2;
                         }
-                        else
-                        {
-                            while(temporary->next != NULL)
-                                temporary = temporary->next;
-                            temporary->next = err;
-                            semanticErrors->numberOfErr += 1;   
+                        else{
+                            err->lineNo = node->node.idnode.line_no;
+                            strcpy(err->error,sym->symbol.idEntry.node->node.idnode.lexeme);
+                            strcat(err->error," Redeclaration of variable in line  "); // error msg me line no aur variable print karva do
+                            printf("LINE %d: %s\n",err->lineNo,err->error);
+                            Error *temporary = semanticErrors->head;
+                            if(temporary == NULL)
+                            {
+                                semanticErrors->head = err;    
+                                semanticErrors->numberOfErr += 1; 
+                            }
+                            else
+                            {
+                                while(temporary->next != NULL)
+                                    temporary = temporary->next;
+                                temporary->next = err;
+                                semanticErrors->numberOfErr += 1;   
+                            }
                         }
+                        
                         if(node->next != NULL)
 			                processAST(node->next, curr,semanticErrors);
                     }
@@ -1077,7 +1099,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 }
                 case inputIONode:
                 case outputIONode:{
-                        if(lookupString(node->node.idnode.lexeme, curr, idEntry, true) == NULL){
+                        if(lookupString(node->node.idnode.lexeme, curr, idEntry, true, node->node.idnode.line_no) == NULL){
                             //semantic error..variable not declared.
                             Error *err = createErrorObject();
                             //SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,idEntry,true);

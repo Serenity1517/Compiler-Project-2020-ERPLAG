@@ -92,7 +92,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
         case moduleNode:{
             //check if driverModule
             if(node->sc->type == nullNode){
-                SymbolTableEntry* curr = lookupString("driverModule", table, driverEntry, false);
+                SymbolTableEntry* curr = lookupString("driverModule", table, driverEntry, false,-1);
                 if(curr==NULL)       //not possible
                     printf("\nSymbotable populated wrongly\n");
                 
@@ -108,7 +108,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
             //if it's not a driver module
             else{   
                 //first obtain the symboltable corresponding to this module
-                SymbolTableEntry* curr = lookupString(node->sc->node.idnode.lexeme, table, functionEntry, false);
+                SymbolTableEntry* curr = lookupString(node->sc->node.idnode.lexeme, table, functionEntry, false,-1);
                 if(curr == NULL){
                     printf("\nRoot Symboltable not populated with this function");
                     //not possible. check code
@@ -207,16 +207,34 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                 }
             }
             //3. process the rhs of the assignment statements.
-            ASTNode *rhsProcess = node->sc->rs;
-            while(rhsProcess != NULL)
+            ASTNode* rhsProcess = node->sc->rs;
+            analyzeAST(rhsProcess,table,semanticErrors);
+            PrimitiveType t_lhs = extractTypeOfExpression(node->sc,table,semanticErrors);
+            PrimitiveType t_rhs = extractTypeOfExpression(rhsProcess,table,semanticErrors);
+            if(t_lhs != t_rhs)
             {
-            	analyzeAST(rhsProcess,table,semanticErrors);
-            	rhsProcess = rhsProcess->next;
+                Error *err_lhs_rhs = createErrorObject();
+                err_lhs_rhs->lineNo = node->sc->node.idnode.line_no;
+                strcpy(err_lhs_rhs->error,"Type MisMatch in Assignment Statement.");
+                printf("LINE %d: %s\n",err_lhs_rhs->lineNo,err_lhs_rhs->error);
+                Error *temporary = semanticErrors->head;
+                    if(temporary == NULL)
+                    {
+                        semanticErrors->head = err_lhs_rhs;    
+                        semanticErrors->numberOfErr += 1; 
+                    }
+                    else
+                    {
+                        while(temporary->next != NULL)
+                            temporary = temporary->next;
+                        temporary->next = err_lhs_rhs;
+                        semanticErrors->numberOfErr += 1;   
+                    }
             }
             break; 
         } 
         case functionCallNode:{
-            SymbolTableEntry* func = lookupString(node->sc->rs->node.idnode.lexeme, table, functionEntry, true);
+            SymbolTableEntry* func = lookupString(node->sc->rs->node.idnode.lexeme, table, functionEntry, true,-1);
             //1.void functions handling
             if(func->symbol.functionEntry.outputListHead->type == nullNode){  //actually a void function
                 if(node->sc->type != nullNode){
@@ -261,7 +279,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                             semanticErrors->numberOfErr += 1;   
                         }
                     }
-                    SymbolTableEntry* travCallOutput = lookupString(travCallOut->node.idnode.lexeme, table, idEntry, true);
+                    SymbolTableEntry* travCallOutput = lookupString(travCallOut->node.idnode.lexeme, table, idEntry, true,travCallOut->node.idnode.line_no);
                     if(travCallOutput == NULL)
                     {
                     	Error *err = createErrorObject();   err->lineNo = travCallOut->node.idnode.line_no;  strcpy(err->error,"\nOutput Parameter not declared"); 
@@ -385,7 +403,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
             //else{
 		        while(travCallIn != NULL && i < inp->noOfInputs)
 		        {
-		            SymbolTableEntry* sym = lookupString(travCallIn->node.idnode.lexeme, table, idEntry, true);
+		            SymbolTableEntry* sym = lookupString(travCallIn->node.idnode.lexeme, table, idEntry, true,travCallIn->node.idnode.line_no);
 		            if(sym == NULL)
 		            {
 		                //input parameter must be declared
@@ -484,7 +502,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
         }
 
         case conditionalNode:{  //switch-case. assumes swtiching variable is declared and is not of type array
-            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true);
+            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true,node->sc->node.idnode.line_no);
             switch(sym->symbol.idEntry.type.type.primitiveType){
                 case integer:{
                     if(node->sc->rs->rs->type == nullNode)
