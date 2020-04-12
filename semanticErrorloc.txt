@@ -3,10 +3,9 @@ Sematic Analyser:
 
 
 YE SAB BACHA HE ABHI::
-1. input parameter overshadowing 
-2. output parameters / input parameters symboltable me daalne he / daal die?
-3. while loop condition's variables must be assigned a value inside the loop
-
+1. input parameter overshadowing - done
+2. while loop condition's variables must be assigned a value inside the loop
+3. semantic.c:line 224 dynamic arrays ka assignement.
 
 1.An identifier cannot be declared multiple times in the same scope.
      processAST() symboltable.c

@@ -375,7 +375,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                         err->next = NULL;
                         err->lineNo = node->node.idnode.line_no;
                         strcpy(err->error,"Variable used in this expression has not been declared. line no");
-                        printf("LINE %d: %s\n",err->lineNo,err->error);
+                        printf("LINE %d: %s %s\n",err->lineNo,node->node.idnode.lexeme,err->error);
                         Error *temporary = semanticErrors->head;
                         if(temporary == NULL)
                         {
@@ -457,7 +457,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             if(sym == NULL){
                 Error *err = (Error*)malloc(sizeof(Error));
                 err->next = NULL; err->lineNo = node->sc->node.idnode.line_no; strcpy(err->error,"Variable used in this expression has not been declared. line no");
-                printf("LINE %d: %s\n",err->lineNo,err->error);
+                printf("LINE %d: %s %s\n",err->lineNo,node->sc->node.idnode.lexeme,err->error);
                 Error *temporary = semanticErrors->head;
                 if(temporary == NULL)
                 {
@@ -583,7 +583,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
             if(sym == NULL){
                 Error *err = (Error *)malloc(sizeof(Error));
                 err->next = NULL; err->lineNo = node->sc->node.idnode.line_no; strcpy(err->error,"Variable used in this expression has not been declared. line no");
-                printf("LINE %d: %s\n",err->lineNo,err->error);
+                printf("LINE %d: %s %s\n",err->lineNo,node->sc->node.idnode.lexeme,err->error);
                 Error *temporary = semanticErrors->head;
                 if(temporary == NULL)
                 {
@@ -727,6 +727,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                 temporary->next = err;
                 semanticErrors->numberOfErr += 1;   
             }
+            return -1;
         }
     }
 
@@ -760,6 +761,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                 temporary->next = err;
                 semanticErrors->numberOfErr += 1;   
             }
+            return -1;
         }
     }
 
@@ -794,15 +796,11 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                 temporary->next = err;
                 semanticErrors->numberOfErr += 1;   
             }
+            return -1;
         }
     }
 }
 //need to implement mam's rules 6.7 onwards
-
-
-
-
-
 
 
 

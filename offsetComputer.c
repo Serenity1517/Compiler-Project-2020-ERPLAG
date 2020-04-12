@@ -19,6 +19,7 @@
 #define sc startChild
 #define rs rightSibling
 
+
 int offset;
 
 void computeOffsets(ASTNode* root, SymbolTable* rootSymbolTable){

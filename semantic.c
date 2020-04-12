@@ -171,7 +171,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                 if(temp->type == forLoopNode && strcmp(temp->sc->node.idnode.lexeme,node->sc->node.idnode.lexeme)==0){
                     //semantic error
                     Error *err = createErrorObject();   err->lineNo = node->sc->node.idnode.line_no;  strcpy(err->error,"\nAssigning a value to for loop iterating variable is not allowed:"); 
-                    printf("LINE %d: %s***\n",err->lineNo,err->error);
+                    printf("LINE %d: %s\n",err->lineNo,err->error);
                     Error *temporary = semanticErrors->head;
                     if(temporary == NULL)
                     {
@@ -185,6 +185,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                         temporary->next = err;
                         semanticErrors->numberOfErr += 1;   
                     }
+                    break;
                 }
                 else
                     temp = temp->parent;
@@ -206,11 +207,66 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                     travOutputParam = travOutputParam->next;
                 }
             }
+
             //3. process the rhs of the assignment statements.
             ASTNode* rhsProcess = node->sc->rs;
-            analyzeAST(rhsProcess,table,semanticErrors);
+            //first exempt the special case of A:=B where both A and B are arrays
+            if(node->sc->type == idNode && node->sc->rs->type == idNode){
+                SymbolTableEntry *sym1 = lookupString(node->sc->node.idnode.lexeme,table,idEntry,true,node->sc->node.idnode.line_no);
+                SymbolTableEntry *sym2 = lookupString(node->sc->rs->node.idnode.lexeme,table,idEntry,true,node->sc->rs->node.idnode.line_no);
+                if(sym1 == NULL){
+                    Error *err_lhs = createErrorObject();
+                    err_lhs->lineNo = node->sc->node.idnode.line_no;
+                    strcpy(err_lhs->error,"LHS of Assignment statement is not declared");
+                    printf("LINE %d: %s\n",err_lhs->lineNo,err_lhs->error);
+                    Error *temporary = semanticErrors->head;
+                    if(temporary == NULL){
+                        semanticErrors->head = err_lhs;    
+                        semanticErrors->numberOfErr += 1; 
+                    }
+                    else{
+                        while(temporary->next != NULL)
+                            temporary = temporary->next;
+                        temporary->next = err_lhs;
+                        semanticErrors->numberOfErr += 1;   
+                    }
+                    break;
+                }
+                if(sym2 == NULL){
+                    Error *err_lhs = createErrorObject();
+                    err_lhs->lineNo = node->sc->rs->node.idnode.line_no;
+                    strcpy(err_lhs->error,"RHS of Assignment statement is not declared");
+                    printf("LINE %d: %s\n",err_lhs->lineNo,err_lhs->error);
+                    Error *temporary = semanticErrors->head;
+                    if(temporary == NULL){
+                        semanticErrors->head = err_lhs;    
+                        semanticErrors->numberOfErr += 1; 
+                    }
+                    else{
+                        while(temporary->next != NULL)
+                            temporary = temporary->next;
+                        temporary->next = err_lhs;
+                        semanticErrors->numberOfErr += 1;   
+                    }
+                    break;
+                }
+                if(sym1->symbol.idEntry.type.tag == array && sym2->symbol.idEntry.type.tag == array){
+                    ArrayType* lhsarr = &sym1->symbol.idEntry.type.type.arrayType;
+                    ArrayType* rhsarr = &sym2->symbol.idEntry.type.type.arrayType;
+                    if(lhsarr->low != -1 && lhsarr->high != -1 && rhsarr->low != -1 && rhsarr->high != -1){ //static
+                        if(lhsarr->low == rhsarr->low && lhsarr->high == rhsarr->high)
+                            break;
+                    }
+                    else{   //dynamic
+                        //
+                    }
+                }
+            }
             PrimitiveType t_lhs = extractTypeOfExpression(node->sc,table,semanticErrors);
             PrimitiveType t_rhs = extractTypeOfExpression(rhsProcess,table,semanticErrors);
+            if(t_rhs == -1)
+                break;
+            //type mismatch : int:=boolean
             if(t_lhs != t_rhs)
             {
                 Error *err_lhs_rhs = createErrorObject();
@@ -502,6 +558,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
         }
 
         case conditionalNode:{  //switch-case. assumes swtiching variable is declared and is not of type array
+            //1. check switching variable and apply semantic checks based on its type
             SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true,node->sc->node.idnode.line_no);
             switch(sym->symbol.idEntry.type.type.primitiveType){
                 case integer:{
@@ -526,7 +583,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                     ASTNode *temp = node->sc->rs;
                     while(temp != NULL)
                     {
-                        if(temp->sc->rs->type == numNode && strcmp(node->sc->rs->node.numNode.token,"INTEGER")==0)
+                        if(temp->sc->rs->type == numNode && strcmp(temp->sc->rs->node.numNode.token,"INTEGER")==0)
                             temp = temp->next;
                         else
                         {
@@ -546,6 +603,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                                 temporary->next = err;
                                 semanticErrors->numberOfErr += 1;   
                             }
+                            temp = temp->next;
                             //break;
                         }
                     }
@@ -597,7 +655,82 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                     } 
                 }
             }
+            
+            //2. process its cases and default case
+                //first need to obtain the switch case scope's table
+            SymbolTableEntry* switchEntry = lookupBlock(&node->node.conditionalNode.block,table,switchCaseEntry,false);
+            ASTNode* case_node = node->sc->rs;
+            while(case_node != NULL){
+                analyzeAST(case_node, switchEntry->table, semanticErrors);
+                case_node = case_node->next;
+            }
+            if(node->sc->rs->rs->type != nullNode)
+                analyzeAST(node->sc->rs->rs, switchEntry->table, semanticErrors);
             break;
-        }            
+        } 
+        case caseNode:{
+            //1. now process the case's statements
+            ASTNode* caseStmt = node->sc;
+            if(caseStmt->type != nullNode){
+                while(caseStmt != NULL){
+                    analyzeAST(caseStmt, table, semanticErrors);
+                    caseStmt = caseStmt->next;
+                }
+            }
+            break;
+        }  
+        case forLoopNode : {
+            SymbolTableEntry *floop = lookupBlock(&node->node.forLoopNode.block,table,forLoopEntry,false);
+            ASTNode* forStmt =  node->sc->rs->rs;
+            if(forStmt->type != nullNode){
+                while(forStmt != NULL)
+                {
+                    analyzeAST(forStmt,floop->table,semanticErrors);
+                    forStmt = forStmt->next;
+                }
+            }
+            break;
+        }         
+        case whileLoopNode: {
+            //1. check the type of the expression in while loop condition
+            PrimitiveType t = extractTypeOfExpression(node->sc,table,semanticErrors);
+            if(t != boolean)
+            {
+                if(t==-1)
+                    break;
+                //semantic error
+                Error* err = createErrorObject();
+                err->lineNo = node->node.whileLoopNode.block.start;
+                strcpy(err->error,"While Loop Condition doesn't evaluates to a boolean");
+                printf("LINE %d: %s\n",err->lineNo,err->error);
+                Error *temporary = semanticErrors->head;
+                if(temporary == NULL)
+                {
+                    semanticErrors->head = err;    
+                    semanticErrors->numberOfErr += 1; 
+                }
+                else
+                {
+                    while(temporary->next != NULL)
+                        temporary = temporary->next;
+                    temporary->next = err;
+                    semanticErrors->numberOfErr += 1;   
+                }
+            }
+            else
+            {
+                SymbolTableEntry* wloop = lookupBlock(&node->node.whileLoopNode.block,table,whileLoopEntry,false);
+                // Now process the statements
+                ASTNode* whileStmt =  node->sc->rs;
+                if(whileStmt->type != nullNode){
+                    while(whileStmt != NULL)
+                    {
+                        analyzeAST(whileStmt,wloop->table,semanticErrors);
+                        whileStmt = whileStmt->next;
+                    }
+                }
+            }
+            break;
+        }
     }
 }
