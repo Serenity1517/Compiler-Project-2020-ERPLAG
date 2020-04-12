@@ -74,14 +74,15 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
     switch(node->type){
         case programNode:{
             ASTNode *t1 = node->sc->rs;
-            while(t1->next !=NULL)
+            while(t1 !=NULL)
             {
                 analyzeAST(t1, table, semanticErrors);
                 t1 = t1->next;
             }
             analyzeAST(node->sc->rs->rs, table, semanticErrors);
             t1 = node->sc->rs->rs->rs;
-            while(t1->next !=NULL)
+  
+            while(t1 !=NULL)
             {
                 analyzeAST(t1, table, semanticErrors);
                 t1 = t1->next;
@@ -205,7 +206,13 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                     travOutputParam = travOutputParam->next;
                 }
             }
-            
+            //3. process the rhs of the assignment statements.
+            ASTNode *rhsProcess = node->sc->rs;
+            while(rhsProcess != NULL)
+            {
+            	analyzeAST(rhsProcess,table,semanticErrors);
+            	rhsProcess = rhsProcess->next;
+            }
             break; 
         } 
         case functionCallNode:{
@@ -255,7 +262,28 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                         }
                     }
                     SymbolTableEntry* travCallOutput = lookupString(travCallOut->node.idnode.lexeme, table, idEntry, true);
-                    if(travCallOutput->symbol.idEntry.type.tag == array){
+                    if(travCallOutput == NULL)
+                    {
+                    	Error *err = createErrorObject();   err->lineNo = travCallOut->node.idnode.line_no;  strcpy(err->error,"\nOutput Parameter not declared"); 
+                        printf("LINE %d: %s\n",err->lineNo,err->error);
+                        Error *temporary = semanticErrors->head;
+                        if(temporary == NULL)
+                        {
+                            semanticErrors->head = err;    
+                            semanticErrors->numberOfErr += 1; 
+                        }
+                        else
+                        {
+                            while(temporary->next != NULL)
+                                temporary = temporary->next;
+                            temporary->next = err;
+                            semanticErrors->numberOfErr += 1;   
+                        }	
+                        
+                    }
+                    
+                   else {
+                   		if(travCallOutput->symbol.idEntry.type.tag == array){
                         //semantic error : function cannot return array
                         Error *err = createErrorObject();   err->lineNo = travCallOut->node.idnode.line_no;  strcpy(err->error,"\nFunction cannot return array"); 
                         Error *temporary = semanticErrors->head;
@@ -296,6 +324,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                         i++;
                         continue;
                     }
+                  }
 					i++;
 					travCallOut = travCallOut->next;
                 }

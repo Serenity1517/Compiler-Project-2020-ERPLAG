@@ -1026,7 +1026,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                     break;
                 }
                 case declareNode:{
-                    if(lookupString(node->node.idnode.lexeme,curr,idEntry,true) == NULL)
+                    if(lookupString(node->node.idnode.lexeme,curr,idEntry,false) == NULL)
                     {
                         int hash = computeStringHash(node->node.idnode.lexeme);
                         SymbolTableEntry *sym = createSymbolTableEntry(createSymbol(node),idEntry);
@@ -1052,8 +1052,8 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                     {
                         // semantic error. variable already declared 
                         Error *err = createErrorObject();
-                        SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,idEntry,true);
-                        err->lineNo = sym->symbol.idEntry.node->node.idnode.line_no;
+                        SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,idEntry,false);
+                        err->lineNo = node->node.idnode.line_no;
                         strcpy(err->error,sym->symbol.idEntry.node->node.idnode.lexeme);
                         strcat(err->error," Redeclaration of variable in line  "); // error msg me line no aur variable print karva do
                         printf("LINE %d: %s\n",err->lineNo,err->error);
@@ -1070,6 +1070,8 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                             temporary->next = err;
                             semanticErrors->numberOfErr += 1;   
                         }
+                        if(node->next != NULL)
+			                processAST(node->next, curr,semanticErrors);
                     }
                     break;
                 }
@@ -1108,7 +1110,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
         case nullNode: {
             //do nothing
             
-            printf("NULL NODE");
+            //printf("NULL NODE");
             break;
         }
     }

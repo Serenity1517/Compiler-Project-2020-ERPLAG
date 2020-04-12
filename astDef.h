@@ -47,7 +47,7 @@ typedef struct Block{
 }Block;
 
 typedef struct ProgramNode{
-    //1st Child : ((empty/nonempty555)list of moduleDeclarations)linkedlist of IdNodes
+    //1st Child : ((empty/nonempty)list of moduleDeclarations)linkedlist of IdNodes
     //2nd Child : ((empty/nonempty)list of modules)linkedlist of ModuleNodes
     //3rd Child : ModuleNode for Driver Module
     //4th Child : ((empty/nonempty)list of modules)linkedlist of ModuleNodes
