@@ -57,7 +57,7 @@ void semanticAnalyzer(){
      * Duplicate module Declarations
      * Duplicate variable declarations inside a block (doubt--is a variable visible inside inner scopes? can't we overshadow it? if we can, then change code in processAST where deep lookup is performed for checking duplicate declaration)
      * */
-
+    printf("SYMBOL TABLE CREATED\n");
     SymbolTable* rootSymbolTable = getsymbolTable();
     //now perform semantic analysis
     analyzeAST(astRoot, rootSymbolTable, semanticErrors);
@@ -264,7 +264,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
             }
             PrimitiveType t_lhs = extractTypeOfExpression(node->sc,table,semanticErrors);
             PrimitiveType t_rhs = extractTypeOfExpression(rhsProcess,table,semanticErrors);
-            if(t_rhs == -1)
+            if(t_rhs == -1 || t_lhs == -1)
                 break;
             //type mismatch : int:=boolean
             if(t_lhs != t_rhs)
@@ -463,7 +463,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
 		            if(sym == NULL)
 		            {
 		                //input parameter must be declared
-		                Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"\nInput parameter must be used before declaration"); 
+		                Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"\nInput parameter must be declared before use"); 
 		                printf("LINE %d: %s\n",err->lineNo,err->error);
 		                Error *temporary = semanticErrors->head;
 		                if(temporary == NULL)
@@ -506,22 +506,47 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
 		                    i++;
 		                    continue;                        
 		                }
-		                else if(sym->symbol.idEntry.type.type.arrayType.t != travDefIn[i].type.arrayType.t && sym->symbol.idEntry.type.tag == array && travDefIn[i].tag == array)
+		                else if(sym->symbol.idEntry.type.tag == array && travDefIn[i].tag == array)
 		                {
-		                    Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"\nInput parameter type mismatch "); 
-		                    Error *temporary = semanticErrors->head;
-		                    if(temporary == NULL)
-		                    {
-		                        semanticErrors->head = err;    
-		                        semanticErrors->numberOfErr += 1; 
-		                    }
-		                    else
-		                    {
-		                        while(temporary->next != NULL)
-		                            temporary = temporary->next;
-		                        temporary->next = err;
-		                        semanticErrors->numberOfErr += 1;   
-		                    }
+                            if((sym->symbol.idEntry.type.type.arrayType.t != travDefIn[i].type.arrayType.t)){
+                                Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"Array in formal parameter is of different type than actual parameter"); 
+                                Error *temporary = semanticErrors->head;
+                                printf("LINE %d: %s\n",err->lineNo,err->error);
+                                if(temporary == NULL)
+                                {
+                                    semanticErrors->head = err;    
+                                    semanticErrors->numberOfErr += 1; 
+                                }
+                                else
+                                {
+                                    while(temporary->next != NULL)
+                                        temporary = temporary->next;
+                                    temporary->next = err;
+                                    semanticErrors->numberOfErr += 1;   
+                                }
+                            }
+                            else{   //arrays' primitive types match, so check indexes only if both are static
+                                if(sym->symbol.idEntry.type.type.arrayType.high>=0 && sym->symbol.idEntry.type.type.arrayType.low>=0 && travDefIn[i].type.arrayType.high>=0 && travDefIn[i].type.arrayType.low>=0){
+                                    if((sym->symbol.idEntry.type.type.arrayType.high != travDefIn[i].type.arrayType.high )||(sym->symbol.idEntry.type.type.arrayType.low != travDefIn[i].type.arrayType.low)){
+                                        Error *err = createErrorObject();   err->lineNo = travCallIn->node.idnode.line_no;  strcpy(err->error,"Array in formal parameter is of different type than actual parameter(index ranges don't match)"); 
+                                        Error *temporary = semanticErrors->head;
+                                        printf("LINE %d: %s\n",err->lineNo,err->error);
+                                        if(temporary == NULL)
+                                        {
+                                            semanticErrors->head = err;    
+                                            semanticErrors->numberOfErr += 1; 
+                                        }
+                                        else
+                                        {
+                                            while(temporary->next != NULL)
+                                                temporary = temporary->next;
+                                            temporary->next = err;
+                                            semanticErrors->numberOfErr += 1;   
+                                        }
+                                    }
+                                }
+                            }
+		                    
 		                    travCallIn = travCallIn->next;
 		                    i++;
 		                    continue;
@@ -583,7 +608,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                     ASTNode *temp = node->sc->rs;
                     while(temp != NULL)
                     {
-                        if(temp->sc->rs->type == numNode && strcmp(temp->sc->rs->node.numNode.token,"INTEGER")==0)
+                        if(temp->sc->type == numNode && strcmp(temp->sc->node.numNode.token,"NUM")==0)
                             temp = temp->next;
                         else
                         {

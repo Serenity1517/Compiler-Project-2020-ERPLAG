@@ -150,7 +150,7 @@ typedef struct ConditionalNode{
     struct Block block;
 }ConditionalNode;
 
-typedef struct CaseNode{
+typedef struct CaseNode{    
     //1st child : ((empty/nonempty)list of statements in case body)linkedlist of statement nodes (can be any of the possible statements)
     /*2nd child : (case value) NumNode or BoolNode
                     OR

@@ -886,25 +886,27 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
         case functionCallNode:{
             //curr points to the table for current scope
             //curr->scope.scope points to current function's name
-            if(strcmp(node->sc->rs->node.idnode.lexeme, curr->scope.scope) == 0){
-                //recrusive call
-                Error *err = createErrorObject();
-                err->lineNo = node->sc->node.idnode.line_no; 
-                strcpy(err->error,"Recursive call of function :"); // error msg me line no aur variable print karva do
-                strcat(err->error,curr->scope.scope);
-                printf("LINE %d: %s\n",err->lineNo,err->error);
-                Error *temporary = semanticErrors->head;
-                if(temporary == NULL)
-                {
-                    semanticErrors->head = err;    
-                    semanticErrors->numberOfErr += 1; 
-                }
-                else
-                {
-                    while(temporary->next != NULL)
-                        temporary = temporary->next;
-                    temporary->next = err;
-                    semanticErrors->numberOfErr += 1;   
+            if(curr->tableType == functionBlock) {
+                if(strcmp(node->sc->rs->node.idnode.lexeme, curr->scope.scope) == 0){
+                    //recrusive call
+                    Error *err = createErrorObject();
+                    err->lineNo = node->sc->node.idnode.line_no; 
+                    strcpy(err->error,"Recursive call of function :"); // error msg me line no aur variable print karva do
+                    strcat(err->error,curr->scope.scope);
+                    printf("LINE %d: %s\n",err->lineNo,err->error);
+                    Error *temporary = semanticErrors->head;
+                    if(temporary == NULL)
+                    {
+                        semanticErrors->head = err;    
+                        semanticErrors->numberOfErr += 1; 
+                    }
+                    else
+                    {
+                        while(temporary->next != NULL)
+                            temporary = temporary->next;
+                        temporary->next = err;
+                        semanticErrors->numberOfErr += 1;   
+                    }
                 }
             }
             break;
@@ -924,11 +926,15 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
         case caseNode:{
             //just process the statements in this case block
             //now process the statements in the module
-            ASTNode* traverse = node->sc->rs;
+            ASTNode* traverse = node->sc;
+            
             while(traverse != NULL){
                 processAST(traverse, curr,semanticErrors);
                 traverse = traverse->next;
             }
+            
+           
+            
             break;
         }
         case conditionalNode:{

@@ -259,9 +259,20 @@ void createAST(ParseTreeNode *node){
             ASTNode* curr = createASTNode(caseNode);
             curr->node.caseNode.line = node->sc->tkn->line_no;
             node->sc->rs->rs->inh = NULL;
-            createAST(node->sc->rs->rs);
+            createAST(node->sc->rs->rs);    //statements process kia he
             curr->sc = node->sc->rs->rs->syn;
-            curr->sc->parent = curr;
+
+            //set parents of statemnt nodes
+            ASTNode *traverse = curr->sc;
+            if(traverse->type == nullNode)
+                traverse->parent = curr;
+            else {
+                while(traverse != NULL){
+                    traverse->parent = curr;
+                    traverse = traverse->next;
+                }
+            }
+
             curr->sc->rs = NULL;
             node->syn = curr;
             free(node->sc->rs->rs->rs->rs);
@@ -957,16 +968,19 @@ void createAST(ParseTreeNode *node){
 		case 95: {
             ASTNode *temp = createASTNode(caseNode);
             temp->node.caseNode.line = node->sc->tkn->line_no;
-            //compute <value>.syn
-            createAST(node->sc->rs);
-            temp->sc = node->sc->rs->syn;
-            temp->sc->parent = temp;
             
             //compute <statements>.syn and update its parents
             node->sc->rs->rs->rs->inh = NULL;
             createAST(node->sc->rs->rs->rs);
-            temp->sc->rs = node->sc->rs->rs->rs->syn; 
-            ASTNode *traverse = temp->sc->rs;
+            temp->sc = node->sc->rs->rs->rs->syn; 
+
+            //compute <value>.syn
+            createAST(node->sc->rs);
+            temp->sc->rs = node->sc->rs->syn;
+            temp->sc->rs->parent = temp;
+            
+            //set parents of statemnt nodes
+            ASTNode *traverse = temp->sc;
             if(traverse->type == nullNode)
                 traverse->parent = temp;
             else {
@@ -998,16 +1012,19 @@ void createAST(ParseTreeNode *node){
 		case 96: {
             ASTNode *temp = createASTNode(caseNode);
             temp->node.caseNode.line = node->sc->tkn->line_no;
-            //compute <value>.syn
-            createAST(node->sc->rs);
-            temp->sc = node->sc->rs->syn;
-            temp->sc->parent = temp;
-
+            
             //compute <statements>.syn and update parent pointers
             node->sc->rs->rs->rs->inh = NULL;
             createAST(node->sc->rs->rs->rs);
-            temp->sc->rs = node->sc->rs->rs->rs->syn;
-            ASTNode *traverse = temp->sc->rs;
+            temp->sc = node->sc->rs->rs->rs->syn;
+
+            //compute <value>.syn
+            createAST(node->sc->rs);
+            temp->sc->rs = node->sc->rs->syn;
+            temp->sc->rs->parent = temp;
+
+            //set statement nodes' parents
+            ASTNode *traverse = temp->sc;
             if(traverse->type == nullNode){
                 traverse->parent = temp;
             }

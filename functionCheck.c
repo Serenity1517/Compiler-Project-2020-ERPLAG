@@ -187,7 +187,7 @@ void processStmt(ASTNode* stmtNode, ListOfErrors *semanticErrors){
             int calledSequenceNo = moduleSequenceMap(stmtNode->sc->rs->node.idnode.lexeme);
             if(calledSequenceNo == -1){
                 //semantic error: Called function has not been defined/declared
-                Error *err = createErrorObject();   err->lineNo = stmtNode->sc->rs->node.idnode.line_no;  strcpy(err->error,"\nCalled function has not been defined/declared ");
+                Error *err = createErrorObject();   err->lineNo = stmtNode->sc->rs->node.idnode.line_no;  strcpy(err->error,"Called function has not been defined/declared ");
                 strcat(err->error, stmtNode->sc->rs->node.idnode.lexeme); 
                 printf("LINE %d: %s",err->lineNo,err->error);
                 Error *temporary = semanticErrors->head;
@@ -208,7 +208,7 @@ void processStmt(ASTNode* stmtNode, ListOfErrors *semanticErrors){
                 }
                 else{
                     //semantic error: Need moduleDeclaration to call this function
-                    Error *err = createErrorObject();   err->lineNo = stmtNode->sc->rs->node.idnode.line_no;  strcpy(err->error,"\nNeed moduleDeclaration to call this function ");
+                    Error *err = createErrorObject();   err->lineNo = stmtNode->sc->rs->node.idnode.line_no;  strcpy(err->error,"Need moduleDeclaration to call this function ");
                     strcat(err->error, stmtNode->sc->rs->node.idnode.lexeme); 
                     printf("LINE %d: %s",err->lineNo,err->error);
                     Error *temporary = semanticErrors->head;
