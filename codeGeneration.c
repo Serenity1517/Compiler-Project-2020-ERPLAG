@@ -7,14 +7,9 @@
  */
 
 
-#include "lexer.h"
-#include "parser.h"
 #include "ast.h"
 #include "symboltable.h"
-#include "typeExtractor.h"
 #include "semantic.h"
-#include "functionCheck.h"
-#include "offsetComputer.h"
 #include "codeGeneration.h"
 #include <string.h>
 
@@ -24,7 +19,29 @@
 void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
     switch(node->type){
         case programNode:{
-            
+            ASTNode* mod1 = node->sc->rs;
+            ASTNode* mod2 = node->sc->rs->rs->rs;
+            ASTNode* driverMod = node->sc->rs->rs;
+            //1. Process mod1's module list 
+            if(mod1->type != nullNode){
+                while(mod1 != NULL){
+                    SymbolTableEntry* mod1_entry = lookupString(mod1->sc->node.idnode.lexeme, table, functionEntry, false, -1);
+                    fprintf(file, "\nmodule%d:\n", mod1_entry->symbol.functionEntry.sequenceNumber);
+                    codeGen(mod1, mod1_entry->table, file);
+                }
+            } 
+            //2. Process mod2's module list 
+            if(mod2->type != nullNode){
+                while(mod2 != NULL){
+                    SymbolTableEntry* mod2_entry = lookupString(mod2->sc->node.idnode.lexeme, table, functionEntry, false, -1);
+                    fprintf(file, "\nmodule%d:\n", mod2_entry->symbol.functionEntry.sequenceNumber);
+                    codeGen(mod2, mod2_entry->table, file);
+                }
+            }   
+            //3. Process driver module
+            SymbolTableEntry* driver_entry = lookupString("driverModule", table, driverEntry, false, -1);
+            fprintf(file, "\n_start:\n");
+            codeGen(driverMod, driver_entry->table, file);
             break;
         }
         case moduleNode:{
@@ -36,7 +53,11 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             break;
         }
         case inputIONode:{
-            
+            SymbolTableEntry* sym = lookupString(node->sc, table, idEntry, true, -1);
+            //sym->symbol.idEntry.offset -> isme offset he
+            //assume base pointer is in rbp..
+            //mov [rbp+offset]
+            //fprintf(file, "%d",);
             break;
         }
         case outputIONode:{
@@ -57,7 +78,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             break;
         }
         case nullNode:{
-
+            //do nothing
             return;
         }
         default:{
@@ -93,5 +114,9 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
         return;
     }
 
+    //add initial lines of code
+    fprintf(fout, "section .data\n\nsection .bss\n\nsection .text\n\tglobal _start\n\n");
     codeGen(root, table, fout);
+    fclose(fout);
+    return;
 }

@@ -11,6 +11,7 @@
 #include "ast.h"
 #include "symboltable.h"
 #include "semantic.h"
+#include "codeGeneration.h"
 
 int main (int argc,char **argv)
 {
@@ -28,7 +29,8 @@ int main (int argc,char **argv)
 		printf("5. Press 5 to find AST. \n");
 		printf("6. Press 6 to test symboltable. \n");
 		printf("7. Press 7 to test semantic analyzer.\n");
-        printf("8. Press 0 for exit. \n");
+        printf("8. Press 8 to generate assembly code\n");
+		printf("9. Press 0 for exit. \n");
 		printf("\n");    
 		scanf("%d", &option);
         switch(option){
@@ -69,6 +71,11 @@ int main (int argc,char **argv)
 				semanticAnalyzer();
 				ListOfErrors* semanticErrors = getSemanticErrorObject();
 				return 0;
+			}
+			case 8:{
+				testAST(argv[1], argv[2]);
+				semanticAnalyzer();
+				codeGenControl(getAST(), getsymbolTable(), argv[3]);
 			}
             		
         }
