@@ -1014,29 +1014,31 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                         //semantic error: duplicate module declaration
                         Error *err = createErrorObject();
                         SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,functionEntry,false,node->node.idnode.line_no);
-                        err->lineNo = sym->symbol.idEntry.node->node.idnode.line_no;
-                        strcpy(err->error,sym->symbol.idEntry.node->node.idnode.lexeme);
-                        strcat(err->error," Duplicate module declaration in line  "); // error msg me line no aur variable print karva do
-                        printf("LINE %d: %s\n",err->lineNo,err->error);
-                        Error *temporary = semanticErrors->head;
-                        if(temporary == NULL)
-                        {
-                            semanticErrors->head = err;    
-                            semanticErrors->numberOfErr += 1; 
-                        }
-                        else
-                        {
-                            while(temporary->next != NULL)
-                                temporary = temporary->next;
-                            temporary->next = err;
-                            semanticErrors->numberOfErr += 1;   
+                        if(sym->symbol.functionEntry.isDeclared == true && sym->symbol.functionEntry.isDefined == false) {
+                            err->lineNo = node->node.idnode.line_no;
+                            strcpy(err->error,sym->symbol.functionEntry.functionName);
+                            strcat(err->error,"Duplicate module declaration in line "); // error msg me line no aur variable print karva do
+                            printf("LINE %d: %s\n",err->lineNo,err->error);
+                            Error *temporary = semanticErrors->head;
+                            if(temporary == NULL)
+                            {
+                                semanticErrors->head = err;    
+                                semanticErrors->numberOfErr += 1; 
+                            }
+                            else
+                            {
+                                while(temporary->next != NULL)
+                                    temporary = temporary->next;
+                                temporary->next = err;
+                                semanticErrors->numberOfErr += 1;   
+                            }
                         }
                     }
 
                     //process remaining moduleDeclarations(remaining idNodes in linkedlist)
-                    ASTNode *temp = node->next;
+                    /*ASTNode *temp = node->next;
                     if(temp != NULL)
-			            processAST(temp, curr,semanticErrors);
+			            processAST(temp, curr,semanticErrors);*/
                     break;
                 }
                 case moduleNode:{

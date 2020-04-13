@@ -124,7 +124,7 @@ void checkModules(ASTNode* root, ListOfErrors* semanticErrors){
         if(isCorrect[i])
             continue;
         //semantic error: Module declarataion is not needed for this function
-        Error *err = createErrorObject();   err->lineNo = 0;  strcpy(err->error,"\nModule Declaration is not needed for this function- ");
+        Error *err = createErrorObject();   err->lineNo = 0;  strcpy(err->error,"Module Declaration is not needed for this function- ");
         strcat(err->error, modules[i]); 
         printf("LINE %d: %s",err->lineNo,err->error);
         Error *temporary = semanticErrors->head;
@@ -208,9 +208,9 @@ void processStmt(ASTNode* stmtNode, ListOfErrors *semanticErrors){
                 }
                 else{
                     //semantic error: Need moduleDeclaration to call this function
-                    Error *err = createErrorObject();   err->lineNo = stmtNode->sc->rs->node.idnode.line_no;  strcpy(err->error,"Need moduleDeclaration to call this function ");
+                    Error *err = createErrorObject();   err->lineNo = stmtNode->sc->rs->node.idnode.line_no;  strcpy(err->error,"Module not defined ");
                     strcat(err->error, stmtNode->sc->rs->node.idnode.lexeme); 
-                    printf("LINE %d: %s",err->lineNo,err->error);
+                    printf("LINE %d: %s\n",err->lineNo,err->error);
                     Error *temporary = semanticErrors->head;
                     while(temporary->next != NULL)
                         temporary = temporary->next;
