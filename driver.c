@@ -69,6 +69,7 @@ int main (int argc,char **argv)
 			case 7: {
 				testAST(argv[1],argv[2]);
 				semanticAnalyzer();
+				SymbolTable* s = getsymbolTable();
 				ListOfErrors* semanticErrors = getSemanticErrorObject();
 				return 0;
 			}
