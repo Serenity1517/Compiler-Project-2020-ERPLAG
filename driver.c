@@ -68,6 +68,8 @@ int main (int argc,char **argv)
 				testAST(argv[1],argv[2]);
 				semanticAnalyzer();
 				ListOfErrors* semanticErrors = getSemanticErrorObject();
+				int compressionR =  getCompressionRatio();
+				printf("Compression Ratio: %d\n",compressionR);
 				return 0;
 			}
             		

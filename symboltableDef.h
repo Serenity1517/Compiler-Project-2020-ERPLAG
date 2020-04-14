@@ -60,6 +60,7 @@ typedef struct FunctionEntry{
     bool isDeclared;        //true if function prototype exists, false if not
     bool isDefined;         //true if function definition exists, false if not
     struct FunctionType inOutType;      //type (input/output) of the function..DONE
+    int activationRecordSize;   //size of activation record (basically sum of all offsets in function)
 }FunctionEntry;
 
 typedef struct ForLoopEntry{

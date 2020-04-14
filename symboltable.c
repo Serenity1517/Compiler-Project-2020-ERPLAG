@@ -1148,7 +1148,6 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
 }
 
 
-
 //temporary function
 void checkSymbolTable(ListOfErrors* semanticErrors)
 {

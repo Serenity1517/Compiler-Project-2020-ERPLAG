@@ -69,6 +69,7 @@ void semanticAnalyzer(){
 	return;
 }
 
+
 /*This recursive function traverses AST and performs various semantic checks*/
 void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors){
     switch(node->type){

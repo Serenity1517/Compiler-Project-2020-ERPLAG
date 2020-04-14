@@ -13,7 +13,8 @@
 #include <string.h>
 #define sc startChild
 #define rs rightSibling       
-  
+
+int total_ast_nodes = 0;  
 //(enum NodeType)int to char* map for astNodes
 char *astNodeMap[] = {
     "ProgramNode",
@@ -50,6 +51,7 @@ ASTNode* createASTNode(NodeType type){
     node->rightSibling = NULL;
     node->startChild = NULL;
     node->next = NULL;
+    total_ast_nodes++;
     return node;
 }
 
@@ -58,6 +60,22 @@ ASTNode* createASTNode(NodeType type){
 ASTNode* getAST()
 {
 	return AST;
+}
+
+/*This function returns no of astNodes*/
+int getAstNodes()
+{
+    return total_ast_nodes;
+}
+
+/*This function returns compression ratio*/
+int getCompressionRatio()
+{
+    int compression ;
+    int sizeAST = total_ast_nodes * sizeof(ASTNode);
+    int sizeParseTree =  getParseTreeNode() * sizeof(ParseTreeNode);
+    compression = ((sizeParseTree - sizeAST)*100)/sizeParseTree;
+    return compression; 
 }
 
 /*This function traverses parse tree and creates AST*/

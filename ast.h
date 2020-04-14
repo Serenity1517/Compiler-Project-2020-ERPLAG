@@ -14,7 +14,7 @@
 //Main Required Functions 
 struct ASTNode* createASTNode(NodeType type);
 void createAST(ParseTreeNode *node);
-
+int getCompressionRatio();
 ASTNode* getAST();
 //For debugging
 void printAST(ASTNode *root);

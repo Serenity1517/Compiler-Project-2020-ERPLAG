@@ -1,104 +1,61 @@
-** Test case 10: Testing execution flow statements - switch and for 
-This Includes 
-1. Switch variable type and case values plus the presence of default statement
-2. Whether the loop variable is not assigned a value in for loop **
+** Test case 1: Testing symbol table creation for variable declaration and redeclaration checks**
+** Single level nesting using primitive data types**
 
-**Independent test case for switch case and for loop semantics**
 
-<<module switch_var_demo1>>
-takes input [x: integer, y: real, z:boolean];
-returns [u: integer];
+<<module var_demo>>
+takes input [x:integer, w: boolean, p:real];
+returns [m:integer, n:integer, u: boolean];
 start
-
-	declare m,n,k: integer;
-	declare h:boolean;
-	declare p: real;
-	get_value(n);
-	switch(k)
-	start
-		case 10: declare A:real;
-			 declare Q: integer;
-			 declare B: array[10..30] of integer;
-			 declare E: array[4..10] of integer;
-			 B[12]:= k*20; 	                  	
-			 break;
-		case 20: A:= 12.90 + p;       
-			 get_value(Q);
-			 for(m in 10..15)
-			 start
-				n:= n+m;
-			 end
-			 E[7]:= k+12 - Q*10;       
-			 break;
-		case true: m:=m-n;			**ERROR: Case value is incorrect as condiiton variable type is integer DONE**
-			 break;
-		default: E[9]:= B[15]+Q;	       
-			 break;			 	
-	end
-
-	u:= u+ x*m-n;
-
-	switch(p)				**ERROR: switch variable cannot be of type real DONE**
-	start
-		case 1: p:=p+1;
-			break;
-		default:h:=false;
-			break;
-	end
-
-	switch(h)
-	start
-		case false: declare A:real;
-			 declare Q: integer;
-			 declare B: array[10..30] of integer;
-			 declare E: array[4..10] of integer;
-			 B[12]:= k*20; 	                  	
-			 break;
-		case 20: A:= 12.90 + p;       		**ERROR: Case value is incorrect as condiiton variable type is boolean DONE**
-			 get_value(Q);
-			 for(m in 10..15)
-			 start
-				n:= n+m;
-			 end
-			 E[7]:= k+12 - Q*10;       
-			 break;
-		case true: m:=m-n;
-			 print(m);			
-			 break;
-		default: E[9]:= B[15]+Q;	      **ERROR: presence of default statement is incorrect as condiiton variable type is boolean DONE** 
-			 break;			 	
-	end
-	
+	declare a,b:integer;
+	a:= 5;
+	get_value(b);
+	declare value, q, r: real;
+	get_value(q);
+	r:= 23.67e+2;
+	value:= p+q*r; 
+	m:=a + x;
+	u:= true AND false OR v;		**ERROR: variable v is not declared**
+	u:= a<=b;
+	declare w: integer;			**Not an error as a local variable can shadow the input parameter**
+	w:= 23;                                 **not an error as type of w is integer now**
+	n:= a*25+100;
+	declare b, c: real;			**ERROR: variable b is re-declared**
+	c:= value-q+r;
+	w:= w + 5;				**No type error as well as type of w is now taken as integer**
 end
 
-<<module for_loop_demo>>
-takes input [x: integer, y: real, z:boolean];
-returns [u: integer];
-start
 
-	declare k: integer;
-	for(k in 12..70)
-	start
-		u:= x+k;
-		k:= k+2;                            **ERROR: for loop variable k cannot be assigned a value DONE** 
-	end 
+<<module compute>>
+takes input[a:integer, b:integer, s: real, c:integer];
+returns [res_1:boolean, res_2_a:integer, res_2__b:real];
+start
+	declare new:boolean;
+	declare abc_1, pqr_2: integer;
+	pqr_2:= abc_1 + 6;
+	declare abc_1: real;				**ERROR: variable abc_1 is re-declared**
+	res_2_a:= -(a*b-c/pqr_2);
+	declare s: integer;				**Not an error as a local variable can shadow the input parameter**
+	res_2__b:= res_2_b + p *12+22.34E-2;		**ERROR variable p is not declared**
+	declare m,n: boolean;
+	res_1 := a <=  b AND c >= a OR  s<=23.50 AND false;
+	m:= n AND (abc_1<=pqr_2);
+	m:= m OR (a <= b) AND (res_2_b >= 30.65);
+	res_1:= (true AND c==b)OR(b>s AND (a<=d));	**ERROR: variable d is not declared**
+	declare new: integer;				**ERROR: variable new is re-declared**
+	new:= a<b;
+	print(res_1);
 end
+
 
 <<<driver program>>>
 start
-	declare a, b: integer;
-	declare c: real;
-	declare d: boolean;
-	[a]:=use module for_loop_demo with parameters b, c, d;
-	switch(a)
-	start
-		case 1: a:=a+b;
-			break;
-		case 2: a:=a-b;
-			break;
-		case 3: a:= a*b;
-			break;
-		case 4: a:= a/b;
-			break;
-	end					**ERROR: default statement is missing- the type of switch variable is integer**
+	declare v_1_2_3:integer;
+	get_value(v_1_2_43);				**ERROR: variable v_1_2_43 is not declared**		
+	declare result_, v7, v9:integer;
+	declare u1:boolean;
+	[u1, result_, k]:=use module compute with parameters v_1_2_3, v7, v9;	**ERROR: variable k is not declared**
+	print(result_);
+	declare u1: real;				**ERROR: variable u1 is re-declared**
 end
+
+

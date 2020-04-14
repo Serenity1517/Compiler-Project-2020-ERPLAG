@@ -23,18 +23,22 @@
 int offset;
 
 void computeOffsets(ASTNode* root, SymbolTable* rootSymbolTable){
+    int activation = 0;
     ASTNode* otherMod = root->sc->rs;  
     ASTNode* driverMod = root->sc->rs->rs;
     ASTNode* otherMod2 = root->sc->rs->rs->rs;
     while(otherMod != NULL){
         offset = 0;
+        activation = 0;
         calcOffsets(otherMod, rootSymbolTable);
         otherMod = otherMod->next;
     }
     offset = 0;
+    activation = 0;
     calcOffsets(driverMod, rootSymbolTable);   
     while(otherMod2 != NULL){
         offset = 0;
+        activation = 0;
         calcOffsets(otherMod2, rootSymbolTable);
         otherMod2 = otherMod2->next;
     }
@@ -42,11 +46,7 @@ void computeOffsets(ASTNode* root, SymbolTable* rootSymbolTable){
     
 
 void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
-    // yeh mai likh deta hoon okk??
-    // ek ar cheeze yeh function ek module ke andr offset set karra hai kya??
-   //yesthis function is for current module only.. cu
-   //just traverse it's statemments
-   //ruk
+
    if(currModule->type == nullNode)
 	return;
    ASTNode* stmtNode = currModule->sc->rs->rs->rs;
@@ -57,6 +57,7 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
        processStatement(stmtNode, currTable);
        stmtNode = stmtNode->next;
    		}
+        sym->symbol.functionEntry.activationRecordSize = offset;
 		return;			
 	}
    SymbolTableEntry* sym = lookupString(currModule->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1);
@@ -65,6 +66,7 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
        processStatement(stmtNode, currTable);
        stmtNode = stmtNode->next;
    } 
+   sym->symbol.functionEntry.activationRecordSize = offset;
 }
 
 void processStatement(ASTNode* stmtNode, SymbolTable* currTable){

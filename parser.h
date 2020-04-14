@@ -38,6 +38,7 @@ ParseTreeNode *createParseTreeNode(SymbolNode sym);
 ParseTree createParseTree();
 void printInorder(ParseTreeNode* curr, FILE *f);
 void testAST(char *inputFile, char *parseTreeOutFile);
+int getParseTreeNode();
 
 //For debugging
 void testFirstFollow();
@@ -48,5 +49,6 @@ void printList(SymbolNodesList L);
 void printFirstFollow();
 void testParseTable();
 void testParseTree(char *inputFile, char *parseTreeOutFile);
+
 #endif     
 
