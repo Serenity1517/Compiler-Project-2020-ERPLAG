@@ -107,47 +107,49 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
 
             //if it's not a driver module
             else{   
-                //first obtain the symboltable corresponding to this module
-                SymbolTableEntry* curr = lookupString(node->sc->node.idnode.lexeme, table, functionEntry, false,-1);
-                if(curr == NULL){
-                    printf("\nRoot Symboltable not populated with this function");
-                    //not possible. check code
-                }
-                
-                //now process its statements
-                //curr->table gives us the table for this scope
-                ASTNode* traverse = node->sc->rs->rs->rs;
-                while(traverse != NULL){
-                    analyzeAST(traverse, curr->table, semanticErrors);
-                    traverse = traverse->next;
-                }
-                //now staetmetnts have been processed. check if all the output parameters have been assigned a value or not
-                ASTNode* travOutputParam = node->sc->rs->rs;
-                if(travOutputParam->type != nullNode){
-                while(travOutputParam != NULL){
-                    if(travOutputParam->node.outputParamNode.isAssigned == false){
-                        //semantic error :
-                        Error *err = createErrorObject();   err->lineNo = travOutputParam->sc->node.idnode.line_no;  strcpy(err->error,"No value was assigned for output param: ");
-                        strcat(err->error, travOutputParam->sc->node.idnode.lexeme); 
-                        printf("LINE %d: %s\n",err->lineNo,err->error);
-                        Error *temporary = semanticErrors->head;
-                        if(temporary == NULL)
-                        {
-                            semanticErrors->head = err;    
-                            semanticErrors->numberOfErr += 1; 
-                        }
-                        else
-                        {
-                            while(temporary->next != NULL)
-                                temporary = temporary->next;
-                            temporary->next = err;
-                            semanticErrors->numberOfErr += 1;   
-                        }
-                        
+                    //first obtain the symboltable corresponding to this module
+                    SymbolTableEntry* curr = lookupString(node->sc->node.idnode.lexeme, table, functionEntry, false,-1);
+                    if(curr == NULL){
+                        printf("\nRoot Symboltable not populated with this function");
+                        //not possible. check code
                     }
-                    travOutputParam = travOutputParam->next;
+                    
+                    //now process its statements
+                    //curr->table gives us the table for this scope
+                    if(node->node.moduleNode.isOverloaded == false){
+                        ASTNode* traverse = node->sc->rs->rs->rs;
+                        while(traverse != NULL){
+                            analyzeAST(traverse, curr->table, semanticErrors);
+                            traverse = traverse->next;
+                        }
+                        //now staetmetnts have been processed. check if all the output parameters have been assigned a value or not
+                        ASTNode* travOutputParam = node->sc->rs->rs;
+                        if(travOutputParam->type != nullNode){
+                        while(travOutputParam != NULL){
+                            if(travOutputParam->node.outputParamNode.isAssigned == false){
+                                //semantic error :
+                                Error *err = createErrorObject();   err->lineNo = travOutputParam->sc->node.idnode.line_no;  strcpy(err->error,"No value was assigned for output param: ");
+                                strcat(err->error, travOutputParam->sc->node.idnode.lexeme); 
+                                printf("LINE %d: %s\n",err->lineNo,err->error);
+                                Error *temporary = semanticErrors->head;
+                                if(temporary == NULL)
+                                {
+                                    semanticErrors->head = err;    
+                                    semanticErrors->numberOfErr += 1; 
+                                }
+                                else
+                                {
+                                    while(temporary->next != NULL)
+                                        temporary = temporary->next;
+                                    temporary->next = err;
+                                    semanticErrors->numberOfErr += 1;   
+                                }
+                                
+                            }
+                            travOutputParam = travOutputParam->next;
+                        }
+                    }
                 }
-            }
             }
             
             break;
@@ -591,6 +593,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                     {
                         // semantic error default node missing  
                         Error *err = createErrorObject();   err->lineNo = node->node.conditionalNode.block.end;  strcpy(err->error,"Default Statement missing line "); 
+                        printf("LINE %d: %s\n",err->lineNo,err->error);
                         Error *temporary = semanticErrors->head;
                         if(temporary == NULL)
                         {
@@ -613,7 +616,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                         else
                         {
                             //semantic error case node is not an integer
-                            Error *err = createErrorObject();   err->lineNo = node->sc->rs->node.caseNode.line;  strcpy(err->error,"\nCase Node is not an integer "); 
+                            Error *err = createErrorObject();   err->lineNo = temp->node.caseNode.line;  strcpy(err->error,"Case Node is not an integer "); 
                             printf("LINE %d: %s\n",err->lineNo,err->error);
                             Error *temporary = semanticErrors->head;
                             if(temporary == NULL)
@@ -677,7 +680,34 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                             temporary->next = err;
                             semanticErrors->numberOfErr += 1;   
                         }
-                    } 
+                    }
+                    ASTNode *temp = node->sc->rs;
+                    while(temp != NULL)
+                    {
+                        if(temp->sc->rs->type == boolNode && ((strcmp(temp->sc->rs->node.boolNode.token,"FALSE")==0)||(strcmp(temp->sc->rs->node.boolNode.token,"TRUE")==0)))
+                            temp = temp->next;
+                        else
+                        {
+                            //semantic error case node is not an integer
+                            Error *err = createErrorObject();   err->lineNo = temp->node.caseNode.line;  strcpy(err->error,"Case Node is not an boolean "); 
+                            printf("LINE %d: %s\n",err->lineNo,err->error);
+                            Error *temporary = semanticErrors->head;
+                            if(temporary == NULL)
+                            {
+                                semanticErrors->head = err;    
+                                semanticErrors->numberOfErr += 1; 
+                            }
+                            else
+                            {
+                                while(temporary->next != NULL)
+                                    temporary = temporary->next;
+                                temporary->next = err;
+                                semanticErrors->numberOfErr += 1;   
+                            }
+                            temp = temp->next;
+                            //break;
+                        }
+                    }
                 }
             }
             

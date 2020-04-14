@@ -59,6 +59,7 @@ typedef struct ModuleNode{
     //2nd child : ((nonempty)list of input parameters)linkedlist of InputParamNodes
     //3rd child : ((empty/nonempty)list of output parameters)linkedlist of OutputParamNodes
     //4th child : ((empty/nonempty)list of statements of the module)linkedlist of statementNodes (can be any one of the possible statement structures)
+    bool isOverloaded;
     FunctionType* typeOfFunc;
 }ModuleNode;
 

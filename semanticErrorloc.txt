@@ -56,3 +56,14 @@ YE SAB BACHA HE ABHI::
     
 15.An identifier used beyond its scope must be viewed as undefined 
     need to do everywhere almost
+
+
+
+
+/*
+var_demo_array 0
+function2 1
+function3 3
+function4 4
+
+*/

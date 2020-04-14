@@ -679,6 +679,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
             }
             else{
                 //semantic error : function overloading
+                node->node.moduleNode.isOverloaded = true;
                 Error *err = createErrorObject();
                 strcpy(err->error,info->symbol.functionEntry.functionName);
                 err->lineNo = node->sc->node.idnode.line_no;
@@ -888,9 +889,9 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
             //curr->scope.scope points to current function's name
             if(curr->tableType == functionBlock) {
                 if(strcmp(node->sc->rs->node.idnode.lexeme, curr->scope.scope) == 0){
-                    //recrusive call
+                    //recursive call
                     Error *err = createErrorObject();
-                    err->lineNo = node->sc->node.idnode.line_no; 
+                    err->lineNo = node->sc->rs->node.idnode.line_no; 
                     strcpy(err->error,"Recursive call of function :"); // error msg me line no aur variable print karva do
                     strcat(err->error,curr->scope.scope);
                     printf("LINE %d: %s\n",err->lineNo,err->error);

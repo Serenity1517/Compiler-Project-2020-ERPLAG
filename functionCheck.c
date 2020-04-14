@@ -28,6 +28,7 @@
 bool* isDeclared;
 bool* isCorrect;
 char** modules;
+int *lines; //lines[i] stores the line number for defiinition of func with seq no. i
 int n;
 
 int currModuleNo = 0;
@@ -44,6 +45,7 @@ void populateModuleSequenceMap(ASTNode* root, SymbolTable* rootSymbolTable){
     modules = (char**)malloc(sizeof(char*));
     int i;
     n=root->node.programNode.noOfModules;
+    lines = (int *)malloc(sizeof(int)*n);
     for(i=0; i<n; i++){
         modules[i] = (char*)malloc(sizeof(char)*21);
     }
@@ -53,6 +55,7 @@ void populateModuleSequenceMap(ASTNode* root, SymbolTable* rootSymbolTable){
 		{
 		    SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1); 
 		    strcpy(modules[sym->symbol.functionEntry.sequenceNumber],trav->sc->node.idnode.lexeme);
+            lines[sym->symbol.functionEntry.sequenceNumber] = trav->sc->node.idnode.line_no;
 		    trav = trav->next;
 		}
 	}
@@ -66,6 +69,7 @@ void populateModuleSequenceMap(ASTNode* root, SymbolTable* rootSymbolTable){
 		{
 		    SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1); 
 		    strcpy(modules[sym->symbol.functionEntry.sequenceNumber],trav->sc->node.idnode.lexeme);
+            lines[sym->symbol.functionEntry.sequenceNumber] = trav->sc->node.idnode.line_no;
 		    trav = trav->next;
 		}
 	}
@@ -124,7 +128,7 @@ void checkModules(ASTNode* root, ListOfErrors* semanticErrors){
         if(isCorrect[i])
             continue;
         //semantic error: Module declarataion is not needed for this function
-        Error *err = createErrorObject();   err->lineNo = 0;  strcpy(err->error,"Module Declaration is not needed for this function- ");
+        Error *err = createErrorObject();   err->lineNo = lines[i];  strcpy(err->error,"Module Declaration is not needed for this function- ");
         strcat(err->error, modules[i]); 
         printf("LINE %d: %s",err->lineNo,err->error);
         Error *temporary = semanticErrors->head;
@@ -218,8 +222,9 @@ void processStmt(ASTNode* stmtNode, ListOfErrors *semanticErrors){
                 }
                 break;
             }
-            else{   //not possible
-                printf("\nSequence numbers not populated correctly");
+            else{  
+                if(calledSequenceNo != currModuleNo)
+                    printf("Sequence numbers not populated correctly\n");
                 break;
             }
         }
