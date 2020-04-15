@@ -17,6 +17,7 @@
 
 int computeStringHash(char* s);
 int computeBlockHash(Block* b);
+Symbol* createSymbol(ASTNode* astNode);
 SymbolTable* createSymbolTable(SymbolTableType type);
 SymbolTableEntry* createSymbolTableEntry(Symbol* s, SymbolForm f);
 SymbolTableEntry* lookupString(char* s, SymbolTable* table, SymbolForm f, bool deepSearch, int lineNo);
