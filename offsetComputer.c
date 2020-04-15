@@ -169,6 +169,8 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
 
     if(currModule->type == nullNode)
         return;
+    if(currModule->node.moduleNode.isOverloaded == true)
+        return;
     ASTNode* stmtNode = currModule->sc->rs->rs->rs;
 	if(currModule->sc->type == nullNode){
 		SymbolTableEntry* sym = lookupString("driverModule",rootSymbolTable,driverEntry,false,-1);
@@ -224,31 +226,33 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
 
     //process output parameters
     ASTNode* outputParams = currModule->sc->rs->rs;
-    while(outputParams != NULL)
-    {
-        SymbolTableEntry* sym = lookupString(outputParams->sc->node.idnode.lexeme,currTable,idEntry,false,outputParams->sc->node.idnode.line_no);
-        if(sym->symbol.idEntry.type.tag == array){
-            printf("Output Parameters cannot be array :-check symboltable entry for outputparam\n");
+    if(outputParams->type != nullNode){
+        while(outputParams != NULL)
+        {
+            SymbolTableEntry* sym = lookupString(outputParams->sc->node.idnode.lexeme,currTable,idEntry,false,outputParams->sc->node.idnode.line_no);
+            if(sym->symbol.idEntry.type.tag == array){
+                printf("Output Parameters cannot be array :-check symboltable entry for outputparam\n");
+            }
+            else{ // primitive type
+                PrimitiveType t = sym->symbol.idEntry.type.type.primitiveType;
+                if(t == integer){
+                    sym->symbol.idEntry.offset = offset;
+                    sym->symbol.idEntry.width = 2;
+                    offset += 2;
+                }
+                else if(t == boolean){
+                    sym->symbol.idEntry.offset = offset;
+                    sym->symbol.idEntry.width = 1;
+                    offset += 2;
+                }
+                else { // real  
+                    sym->symbol.idEntry.offset = offset;
+                    sym->symbol.idEntry.width = 4;
+                    offset += 4;
+                }
+            }
+            outputParams = outputParams->next;
         }
-        else{ // primitive type
-            PrimitiveType t = sym->symbol.idEntry.type.type.primitiveType;
-            if(t == integer){
-                sym->symbol.idEntry.offset = offset;
-                sym->symbol.idEntry.width = 2;
-                offset += 2;
-            }
-            else if(t == boolean){
-                sym->symbol.idEntry.offset = offset;
-                sym->symbol.idEntry.width = 1;
-                offset += 2;
-            }
-            else { // real  
-                sym->symbol.idEntry.offset = offset;
-                sym->symbol.idEntry.width = 4;
-                offset += 4;
-            }
-        }
-        outputParams = outputParams->next;
     }
 }
 
