@@ -1,7 +1,7 @@
 section .data
      ; eg: myName db "Shreyas",10,0; 0 is null, 10 is \n
 
-section .code
+section .text
     global _start
 
 start:
