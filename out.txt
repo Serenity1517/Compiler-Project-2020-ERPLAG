@@ -59,20 +59,17 @@ start	8	START	 RULE NO !!!! -1	----	moduleDef	yes
 ---- ---- ---- ---- RULE NO !!! 24	module	no moduleDef	
 declare	9	DECLARE	 RULE NO !!!! -1	----	declareStmt	yes	
 ---- ---- ---- ---- RULE NO !!! 92	statement	no declareStmt	
-x	7	ID	 RULE NO !!!! -1	----	idList	yes	
+a	9	ID	 RULE NO !!!! -1	----	idList	yes	
 ---- ---- ---- ---- RULE NO !!! 52	declareStmt	no idList	
-,	7	COMMA	 RULE NO !!!! -1	----	N3	yes	
+,	9	COMMA	 RULE NO !!!! -1	----	N3	yes	
 ---- ---- ---- ---- RULE NO !!! 53	idList	no N3	
-y	7	ID	 RULE NO !!!! -1	----	N3	yes	
-,	7	COMMA	 RULE NO !!!! -1	----	N3	yes	
----- ---- ---- ---- RULE NO !!! 53	N3	no N3	
-z	7	ID	 RULE NO !!!! -1	----	N3	yes	
+b	9	ID	 RULE NO !!!! -1	----	N3	yes	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N3	yes	
 ---- ---- ---- ---- RULE NO !!! 54	N3	no N3	
-:	7	COLON	 RULE NO !!!! -1	----	declareStmt	yes	
-integer	7	INTEGER	 RULE NO !!!! -1	----	dataType	yes	
+:	9	COLON	 RULE NO !!!! -1	----	declareStmt	yes	
+integer	9	INTEGER	 RULE NO !!!! -1	----	dataType	yes	
 ---- ---- ---- ---- RULE NO !!! 17	declareStmt	no dataType	
-;	7	SEMICOL	 RULE NO !!!! -1	----	declareStmt	yes	
+;	9	SEMICOL	 RULE NO !!!! -1	----	declareStmt	yes	
 ---- ---- ---- ---- RULE NO !!! 29	statements	no statement	
 ---- ---- ---- ---- RULE NO !!! 25	moduleDef	no statements	
 a	10	ID	 RULE NO !!!! -1	----	assignmentStmt	yes	
@@ -181,7 +178,7 @@ q	15	ID	 RULE NO !!!! -1	----	var_id_num	yes
 ---- ---- ---- ---- RULE NO !!! 39	var_id_num	no whichId	
 ---- ---- ---- ---- RULE NO !!! 76	term	no factor	
 ---- ---- ---- ---- RULE NO !!! 72	N4	no term	
-*	13	MUL	 RULE NO !!!! -1	----	op2	yes	
+*	15	MUL	 RULE NO !!!! -1	----	op2	yes	
 ---- ---- ---- ---- RULE NO !!! 82	N5	no op2	
 ---- ---- ---- ---- RULE NO !!! 73	term	no N5	
 r	15	ID	 RULE NO !!!! -1	----	var_id_num	yes	
@@ -340,15 +337,16 @@ w	20	ID	 RULE NO !!!! -1	----	assignmentStmt	yes
 23	20	NUM	 RULE NO !!!! -1	23.000000 var_id_num	yes	
 ---- ---- ---- ---- RULE NO !!! 78	factor	no var_id_num	
 ---- ---- ---- ---- RULE NO !!! 76	term	no factor	
----- ---- ---- ---- RULE NO !!! 72	N4	no term	
+---- ---- ---- ---- RULE NO !!! 72	arithmeticExpr	no term	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N5	yes	
 ---- ---- ---- ---- RULE NO !!! 74	term	no N5	
+---- ---- ---- ---- RULE NO !!! 69	AnyTerm	no arithmeticExpr	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N4	yes	
----- ---- ---- ---- RULE NO !!! 71	N4	no N4	
+---- ---- ---- ---- RULE NO !!! 71	arithmeticExpr	no N4	
 ---- ---- ---- ---- RULE NO !!! 63	arithOrBoolExpr	no AnyTerm	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N8	yes	
 ---- ---- ---- ---- RULE NO !!! 68	AnyTerm	no N8	
----- ---- ---- ---- RULE NO !!! 60	factor	no arithOrBoolExpr	
+---- ---- ---- ---- RULE NO !!! 60	expression	no arithOrBoolExpr	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N7	yes	
 ---- ---- ---- ---- RULE NO !!! 62	arithOrBoolExpr	no N7	
 ---- ---- ---- ---- RULE NO !!! 55	lvalueIDStmt	no expression	
@@ -612,7 +610,7 @@ abc_1	34	ID	 RULE NO !!!! -1	----	var_id_num	yes
 ---- ---- ---- ---- RULE NO !!! 76	term	no factor	
 ---- ---- ---- ---- RULE NO !!! 72	N4	no term	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N5	yes	
----- ---- ---- ---- RULE NO !!! 74	N5	no N5	
+---- ---- ---- ---- RULE NO !!! 74	term	no N5	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N4	yes	
 ---- ---- ---- ---- RULE NO !!! 71	N4	no N4	
 ---- ---- ---- ---- RULE NO !!! 63	arithOrBoolExpr	no AnyTerm	

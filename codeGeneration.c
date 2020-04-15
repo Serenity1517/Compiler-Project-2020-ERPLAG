@@ -21,7 +21,7 @@ int forLoopLabel;
 int whileLoopLabel;
 int caseLabel;
 
-void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithExprType){
+void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithExprType, int* currTempNo){
     switch(node->type){
         case programNode:{
             ASTNode* mod1 = node->sc->rs;
@@ -32,7 +32,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithE
                 while(mod1 != NULL){
                     SymbolTableEntry* mod1_entry = lookupString(mod1->sc->node.idnode.lexeme, table, functionEntry, false, -1);
                     fprintf(file, "\nmodule%d:\n", mod1_entry->symbol.functionEntry.sequenceNumber);
-                    codeGen(mod1, mod1_entry->table, file,-1);
+                    codeGen(mod1, mod1_entry->table, file,-1,NULL);
                 }
             } 
             //2. Process mod2's module list 
@@ -40,13 +40,13 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithE
                 while(mod2 != NULL){
                     SymbolTableEntry* mod2_entry = lookupString(mod2->sc->node.idnode.lexeme, table, functionEntry, false, -1);
                     fprintf(file, "\nmodule%d:\n", mod2_entry->symbol.functionEntry.sequenceNumber);
-                    codeGen(mod2, mod2_entry->table, file,-1);
+                    codeGen(mod2, mod2_entry->table, file,-1,NULL);
                 }
             }   
             //3. Process driver module
             SymbolTableEntry* driver_entry = lookupString("driverModule", table, driverEntry, false, -1);
             fprintf(file, "\n_start:\n");
-            codeGen(driverMod, driver_entry->table, file,-1);
+            codeGen(driverMod, driver_entry->table, file,-1,NULL);
             break;
         }
         case moduleNode:{
@@ -55,7 +55,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithE
                 fprintf(file, "\tmov rbp, rsp\n");  //for driver, the frame base is same as bottom of stack.(as the frame/activation record for the driver function is located right at the bottom of the stack)
                 ASTNode* stmt = node->sc->rs->rs->rs;
                 while(stmt != NULL){
-                    codeGen(stmt, table, file,-1);
+                    codeGen(stmt, table, file,-1,NULL);
                     stmt = stmt->next;
                 }
             }
@@ -92,12 +92,13 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithE
                         case opNode:{   //eg: a:=b+c
                             if(node->sc->rs->node.opNode.typeOfExpr == integer){
                                 fprintf(file,"\n\tpush ax\n");
-                                codeGen(node->sc->rs, table, file,integer); //this produces output value in ax register (for int) OR al (bool) OR eax(real)
+                                int currTempNo = 1;
+                                codeGen(node->sc->rs, table, file,integer,&currTempNo); //this produces output value in ax register (for int) OR al (bool) OR eax(real)
                                 fprintf(file, "\tmov [ebp+%d],ax\n\tpop ax\n", sym->symbol.idEntry.offset);
                             }
                             else if(node->sc->rs->node.opNode.typeOfExpr == boolean){
                                 fprintf(file, "\n\tpush al\n");
-                                codeGen(node->sc->rs,table,file,boolean);
+                                codeGen(node->sc->rs,table,file,boolean,&currTempNo);
                                 fprintf(file, "\tmov [ebp+%d],al\n\tpop al\n", sym->symbol.idEntry.offset);
                             }
                             else{       //real
@@ -162,14 +163,18 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithE
             break;
         }
         case opNode:{
+            
             //in the end, rax register will store the value of the expression. rax is already pushed onto stack in case before this
             //depending on typeOfExpr (int, bool, real) result will be stored in ax, al, OR ___(xmm?)
             switch(arithExprType){
                 case integer:{
-                    if(node->sc->rs->type == nullNode){ //special unary op case
-                        break;
+                    if(node->sc->rs->type == nullNode){ //unary op case
+                        
                     }
-                    
+                    else{       //binary op
+
+                    }
+                    break;
                 }
                 case real:{
                     break;

@@ -23,11 +23,46 @@
 int offset;
 int declaredVarOffset;
 
-SymbolTableEntry* createTemporory(int i)
+SymbolTableEntry* createTemporory(int i,PrimitiveType p)
 {
     SymbolTableEntry *s =  (SymbolTableEntry *)malloc(sizeof(SymbolTableEntry));
     ASTNode *tempASTNode = createASTNode(idNode);
-    strcpy(tempASTNode->node.idnode.lexeme,"tInt");
+    switch (p)
+    {
+    case integer:{
+        sprintf(tempASTNode->node.idnode.lexeme,"tInt%d",i);
+        s->tag = idEntry;
+        s->symbol.idEntry.node = tempASTNode;
+        s->symbol.idEntry.next = NULL;
+        s->symbol.idEntry.type.tag = primitive;
+        s->symbol.idEntry.type.type.primitiveType =  integer;
+        s->symbol.idEntry.isInputParam = false;
+        s->next = NULL;
+        break;
+    }
+    case boolean:{
+        sprintf(tempASTNode->node.idnode.lexeme,"tBool%d",i);
+        s->tag = idEntry;
+        s->symbol.idEntry.node = tempASTNode;
+        s->symbol.idEntry.next = NULL;
+        s->symbol.idEntry.type.tag = primitive;
+        s->symbol.idEntry.type.type.primitiveType =  boolean;
+        s->symbol.idEntry.isInputParam = false;
+        s->next = NULL;
+        break;
+    }
+    case real:{
+        sprintf(tempASTNode->node.idnode.lexeme,"tReal%d",i);
+        s->tag = idEntry;
+        s->symbol.idEntry.node = tempASTNode;
+        s->symbol.idEntry.next = NULL;
+        s->symbol.idEntry.type.tag = primitive;
+        s->symbol.idEntry.type.type.primitiveType =  real;
+        s->symbol.idEntry.isInputParam = false;
+        s->next = NULL;
+        break;
+    }
+    }
     return s;
 }
 
@@ -37,18 +72,73 @@ currOffset -> offset to be given to first temporary variable
 */
 void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbolTable){
     //ti%d, tr%d, tb%d
+    if(currMod->type == nullNode)
+        return;
+    if(currMod->sc->type == nullNode)
+        return;
     SymbolTableEntry* sym = lookupString(currMod->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1);
     SymbolTable* currTable = sym->table;
-    int i = 0;
-    int count =  currMod->node.moduleNode.maxTempInt-2;
+    int i = 1;
+    int count =  currMod->node.moduleNode.maxTempInt-1;
     
     while(count > 0)
     {
-        
-        
+        SymbolTableEntry* s = createTemporory(i,integer);
+        int hash = computeStringHash(s->symbol.idEntry.node->node.idnode.lexeme);
+        SymbolTableEntry* temp = currTable->listHeads[hash];
+        if(temp == NULL)
+        {
+            temp = s;
+        }
+        else
+        {
+            while(temp->next != NULL)
+                temp =  temp->next;
+            temp->next = s;
+        }
+        i++;
         count--;
     }
-
+    i = 1;
+    count =  currMod->node.moduleNode.maxTempBool-1;
+    while(count > 0)
+    {
+        SymbolTableEntry* s = createTemporory(i,boolean);
+        int hash = computeStringHash(s->symbol.idEntry.node->node.idnode.lexeme);
+        SymbolTableEntry* temp = currTable->listHeads[hash];
+        if(temp == NULL)
+        {
+            temp = s;
+        }
+        else
+        {
+            while(temp->next != NULL)
+                temp =  temp->next;
+            temp->next = s;
+        }
+        i++;
+        count--;    
+    }
+    i = 1;
+    count = currMod->node.moduleNode.maxTempReal-1;
+    while(count > 0)
+    {
+        SymbolTableEntry* s = createTemporory(i,real);
+        int hash = computeStringHash(s->symbol.idEntry.node->node.idnode.lexeme);
+        SymbolTableEntry* temp = currTable->listHeads[hash];
+        if(temp == NULL)
+        {
+            temp = s;
+        }
+        else
+        {
+            while(temp->next != NULL)
+                temp =  temp->next;
+            temp->next = s;
+        }
+        i++;
+        count--;    
+    }
 }
 
 void computeOffsets(ASTNode* root, SymbolTable* rootSymbolTable){

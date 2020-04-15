@@ -15,7 +15,7 @@
 #include "symboltable.h"
 #include "parser.h"
 
-void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithExprType);
+void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithExprType, int* currTempNo);
 void codeGenControl(ASTNode* root, SymbolTable* table, char* fileName);
 
 #endif   

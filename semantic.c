@@ -312,8 +312,15 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                     }
                 }
             }
+            /*
+            while(rhsProcess != NULL)
+            {
+                analyzeAST(rhsProcess,table,semanticErrors);
+                rhsProcess = rhsProcess->next;
+            }
+            */
             PrimitiveType t_lhs = extractTypeOfExpression(node->sc,table,semanticErrors);
-            PrimitiveType t_rhs = extractTypeOfExpression(rhsProcess,table,semanticErrors);
+            PrimitiveType t_rhs = extractTypeOfExpression(node->sc->rs,table,semanticErrors);
             if(t_rhs == -1 || t_lhs == -1)
                 break;
             //type mismatch : int:=boolean
