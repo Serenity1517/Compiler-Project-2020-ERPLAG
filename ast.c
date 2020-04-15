@@ -179,6 +179,9 @@ void createAST(ParseTreeNode *node){
             curr->sc->rs->rs = createASTNode(nullNode);
             curr->sc->rs->rs->parent = curr;
             curr->node.moduleNode.isOverloaded = false;
+            curr->node.moduleNode.maxTempBool = 0;
+            curr->node.moduleNode.maxTempInt = 0;
+            curr->node.moduleNode.maxTempReal = 0;
             
             curr->sc->rs->rs->rs = node->sc->rs->rs->rs->rs->syn;
             
@@ -211,6 +214,9 @@ void createAST(ParseTreeNode *node){
             curr->sc->node.idnode.line_no=node->sc->rs->rs->tkn->line_no;
             curr->sc->parent = curr;
             curr->node.moduleNode.isOverloaded = false;
+            curr->node.moduleNode.maxTempReal = 0;
+            curr->node.moduleNode.maxTempInt = 0;
+            curr->node.moduleNode.maxTempBool = 0;
             //compute <input_plist>.syn and update parent pointers
             //of all inputparamnodes present in it
             createAST(node->sc->rs->rs->rs->rs->rs->rs->rs);

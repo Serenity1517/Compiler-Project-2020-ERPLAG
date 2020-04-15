@@ -42,7 +42,7 @@ start
 	m:= m OR (a <= b) AND (res_2_b >= 30.65);
 	res_1:= (true AND c==b)OR(b>s AND (a<=d));	**ERROR: variable d is not declared**
 	declare new: integer;				**ERROR: variable new is re-declared**
-	new:= a<b;
+	new:= a<b; 
 	print(res_1);
 end
 

@@ -60,6 +60,9 @@ typedef struct ModuleNode{
     //3rd child : ((empty/nonempty)list of output parameters)linkedlist of OutputParamNodes
     //4th child : ((empty/nonempty)list of statements of the module)linkedlist of statementNodes (can be any one of the possible statement structures)
     bool isOverloaded;
+    int maxTempInt;
+    int maxTempBool;
+    int maxTempReal;
     FunctionType* typeOfFunc;
 }ModuleNode;
 
@@ -180,6 +183,7 @@ typedef struct IdNode{
     char token[21];
     char lexeme[21];
     int line_no;
+    bool isDuplicate;
 }IdNode;
 
 typedef struct NullNode{

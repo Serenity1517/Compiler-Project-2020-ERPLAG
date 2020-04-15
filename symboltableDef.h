@@ -47,7 +47,8 @@ typedef struct IdEntry{
 
 /* Driver Module*/
 typedef struct DriverEntry{
-    int sequenceNumber;     
+    int sequenceNumber; 
+    struct ASTNode* driverNode;  //ast node pointer to moduleNode of driver    
 }DriverEntry;
 
 /*Module*/

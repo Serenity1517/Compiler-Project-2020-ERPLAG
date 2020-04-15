@@ -180,14 +180,36 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
         }
 
         case opNode:{
-            extractTypeOfExpression(node, table, semanticErrors);
-            // int countTemp = countLeaves(node) - 2;    //count number of temporaries needed to solve this expression
-            // int i;
-            // for(i=0; i<countTemp; i++){
-            //     Symbol* tempSymbol = createSymbol()
-            //     SymbolTableEntry* tempEntry = createSymbolTableEntry()   
-            // }
-            // break;
+            PrimitiveType t = extractTypeOfExpression(node, table, semanticErrors);
+            if(t == -1) break;
+            SymbolTable* currFuncTable = table;
+            while(currFuncTable->tableType != functionBlock)
+                currFuncTable = currFuncTable->parent;
+
+            ASTNode* currModNode;
+            if(strcmp(currFuncTable->scope.scope, "driverModule") == 0){
+                SymbolTableEntry* driverFunction = lookupString("driverModule", getsymbolTable(), driverEntry, false, -1);
+                currModNode = driverFunction->symbol.driverEntry.driverNode;
+            }
+            else{
+                SymbolTableEntry* currFunction = lookupString(currFuncTable->scope.scope, getsymbolTable(), functionEntry, false, -1);
+                currModNode = currFunction->symbol.functionEntry.inputListHead->parent;
+            }
+            
+            int leafCount = countLeaves(node);
+            if(t==integer){
+                if(leafCount > currModNode->node.moduleNode.maxTempInt)
+                    currModNode->node.moduleNode.maxTempInt = leafCount;
+            }
+            else if(t==real){
+                if(leafCount > currModNode->node.moduleNode.maxTempReal)
+                    currModNode->node.moduleNode.maxTempReal = leafCount;
+            }
+            else{
+                if(leafCount > currModNode->node.moduleNode.maxTempBool)
+                    currModNode->node.moduleNode.maxTempBool = leafCount;
+            }
+            break;
         }
 
         case assignmentNode:{
