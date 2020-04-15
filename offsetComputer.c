@@ -88,7 +88,7 @@ void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbo
         SymbolTableEntry* temp = currTable->listHeads[hash];
         if(temp == NULL)
         {
-            temp = s;
+            currTable->listHeads[hash] = s;
         }
         else
         {
@@ -108,7 +108,7 @@ void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbo
         SymbolTableEntry* temp = currTable->listHeads[hash];
         if(temp == NULL)
         {
-            temp = s;
+            currTable->listHeads[hash] = s;
         }
         else
         {
@@ -128,7 +128,7 @@ void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbo
         SymbolTableEntry* temp = currTable->listHeads[hash];
         if(temp == NULL)
         {
-            temp = s;
+            currTable->listHeads[hash] = s;
         }
         else
         {
