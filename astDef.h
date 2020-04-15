@@ -59,6 +59,10 @@ typedef struct ModuleNode{
     //2nd child : ((nonempty)list of input parameters)linkedlist of InputParamNodes
     //3rd child : ((empty/nonempty)list of output parameters)linkedlist of OutputParamNodes
     //4th child : ((empty/nonempty)list of statements of the module)linkedlist of statementNodes (can be any one of the possible statement structures)
+    bool isOverloaded;
+    int maxTempInt;
+    int maxTempBool;
+    int maxTempReal;
     FunctionType* typeOfFunc;
 }ModuleNode;
 
@@ -134,6 +138,7 @@ typedef struct OpNode{   // this node stores arithmetic operators like PLUS, MIN
     char token[21];
     char lexeme[21];
     int line_no;
+    int temporaries;
     PrimitiveType typeOfExpr;
 }OpNode;
 
@@ -150,7 +155,7 @@ typedef struct ConditionalNode{
     struct Block block;
 }ConditionalNode;
 
-typedef struct CaseNode{
+typedef struct CaseNode{    
     //1st child : ((empty/nonempty)list of statements in case body)linkedlist of statement nodes (can be any of the possible statements)
     /*2nd child : (case value) NumNode or BoolNode
                     OR
@@ -178,6 +183,7 @@ typedef struct IdNode{
     char token[21];
     char lexeme[21];
     int line_no;
+    bool isDuplicate;
 }IdNode;
 
 typedef struct NullNode{

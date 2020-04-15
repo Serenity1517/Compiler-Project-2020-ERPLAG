@@ -167,6 +167,13 @@ void testFirstFollow(){
 	//printf("%d ",findNonTerminal("arithOrBoolExp"));
 }
 
+/*This function returns the no of parse tree nodes*/
+int getParseTreeNode()
+{
+    return no_of_nodes;
+}
+
+
 /*This function is used to print the grammar rules onto a file
     Used for debugging purposes
 */

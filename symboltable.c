@@ -203,7 +203,7 @@ SymbolTableEntry* lookupString(char* s, SymbolTable* table, SymbolForm f, bool d
                 if(temp->symbol.idEntry.next != NULL)   //inputParam overshadowing
                 {
                     //return temp ya fir return temp->symbol.idEntry.next
-                    if(lineNo > temp->symbol.idEntry.next->symbol.idEntry.node->node.idnode.line_no){
+                    if(lineNo >= temp->symbol.idEntry.next->symbol.idEntry.node->node.idnode.line_no){
                         return temp->symbol.idEntry.next;
                     }
                     else
@@ -433,6 +433,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 //2. insert SymbolTableEntry of SymbolForm : driverEntry
                 Symbol* s = (Symbol*)malloc(sizeof(Symbol)); //node->type is moduleNode here
                 s->driverEntry.sequenceNumber = moduleNumber;
+                s->driverEntry.driverNode = node;
                 moduleNumber++;
                 SymbolTableEntry *sym = createSymbolTableEntry(s, driverEntry);
                 
@@ -526,7 +527,6 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                             temptrav = temptrav->next;
                         temptrav->next = inputParamEntry;
                     }
-                    processStatement(dummyDeclare, newTable);
                     travInp = travInp->next;
                 }
                 if(travOut->type != nullNode){
@@ -549,7 +549,6 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
 		                        entry = entry->next;
 		                    entry->next = outputParamEntry;
 		                }
-						processStatement(dummyDeclare2, newTable);
 		                travOut = travOut->next;
 		            }
 				}
@@ -679,6 +678,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
             }
             else{
                 //semantic error : function overloading
+                node->node.moduleNode.isOverloaded = true;
                 Error *err = createErrorObject();
                 strcpy(err->error,info->symbol.functionEntry.functionName);
                 err->lineNo = node->sc->node.idnode.line_no;
@@ -886,25 +886,27 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
         case functionCallNode:{
             //curr points to the table for current scope
             //curr->scope.scope points to current function's name
-            if(strcmp(node->sc->rs->node.idnode.lexeme, curr->scope.scope) == 0){
-                //recrusive call
-                Error *err = createErrorObject();
-                err->lineNo = node->sc->node.idnode.line_no; 
-                strcpy(err->error,"Recursive call of function :"); // error msg me line no aur variable print karva do
-                strcat(err->error,curr->scope.scope);
-                printf("LINE %d: %s\n",err->lineNo,err->error);
-                Error *temporary = semanticErrors->head;
-                if(temporary == NULL)
-                {
-                    semanticErrors->head = err;    
-                    semanticErrors->numberOfErr += 1; 
-                }
-                else
-                {
-                    while(temporary->next != NULL)
-                        temporary = temporary->next;
-                    temporary->next = err;
-                    semanticErrors->numberOfErr += 1;   
+            if(curr->tableType == functionBlock) {
+                if(strcmp(node->sc->rs->node.idnode.lexeme, curr->scope.scope) == 0){
+                    //recursive call
+                    Error *err = createErrorObject();
+                    err->lineNo = node->sc->rs->node.idnode.line_no; 
+                    strcpy(err->error,"Recursive call of function :"); // error msg me line no aur variable print karva do
+                    strcat(err->error,curr->scope.scope);
+                    printf("LINE %d: %s\n",err->lineNo,err->error);
+                    Error *temporary = semanticErrors->head;
+                    if(temporary == NULL)
+                    {
+                        semanticErrors->head = err;    
+                        semanticErrors->numberOfErr += 1; 
+                    }
+                    else
+                    {
+                        while(temporary->next != NULL)
+                            temporary = temporary->next;
+                        temporary->next = err;
+                        semanticErrors->numberOfErr += 1;   
+                    }
                 }
             }
             break;
@@ -924,11 +926,15 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
         case caseNode:{
             //just process the statements in this case block
             //now process the statements in the module
-            ASTNode* traverse = node->sc->rs;
+            ASTNode* traverse = node->sc;
+            
             while(traverse != NULL){
                 processAST(traverse, curr,semanticErrors);
                 traverse = traverse->next;
             }
+            
+           
+            
             break;
         }
         case conditionalNode:{
@@ -1008,29 +1014,31 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                         //semantic error: duplicate module declaration
                         Error *err = createErrorObject();
                         SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,functionEntry,false,node->node.idnode.line_no);
-                        err->lineNo = sym->symbol.idEntry.node->node.idnode.line_no;
-                        strcpy(err->error,sym->symbol.idEntry.node->node.idnode.lexeme);
-                        strcat(err->error," Duplicate module declaration in line  "); // error msg me line no aur variable print karva do
-                        printf("LINE %d: %s\n",err->lineNo,err->error);
-                        Error *temporary = semanticErrors->head;
-                        if(temporary == NULL)
-                        {
-                            semanticErrors->head = err;    
-                            semanticErrors->numberOfErr += 1; 
-                        }
-                        else
-                        {
-                            while(temporary->next != NULL)
-                                temporary = temporary->next;
-                            temporary->next = err;
-                            semanticErrors->numberOfErr += 1;   
+                        if(sym->symbol.functionEntry.isDeclared == true && sym->symbol.functionEntry.isDefined == false) {
+                            err->lineNo = node->node.idnode.line_no;
+                            strcpy(err->error,sym->symbol.functionEntry.functionName);
+                            strcat(err->error,"Duplicate module declaration in line "); // error msg me line no aur variable print karva do
+                            printf("LINE %d: %s\n",err->lineNo,err->error);
+                            Error *temporary = semanticErrors->head;
+                            if(temporary == NULL)
+                            {
+                                semanticErrors->head = err;    
+                                semanticErrors->numberOfErr += 1; 
+                            }
+                            else
+                            {
+                                while(temporary->next != NULL)
+                                    temporary = temporary->next;
+                                temporary->next = err;
+                                semanticErrors->numberOfErr += 1;   
+                            }
                         }
                     }
 
                     //process remaining moduleDeclarations(remaining idNodes in linkedlist)
-                    ASTNode *temp = node->next;
+                    /*ASTNode *temp = node->next;
                     if(temp != NULL)
-			            processAST(temp, curr,semanticErrors);
+			            processAST(temp, curr,semanticErrors);*/
                     break;
                 }
                 case moduleNode:{
@@ -1062,8 +1070,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                     }
                     else
                     {
-                        // semantic error. variable already declared 
-                        Error *err = createErrorObject();
+                        //check for input param overshadowing
                         SymbolTableEntry *sym = lookupString(node->node.idnode.lexeme,curr,idEntry,false,node->node.idnode.line_no);
                         if(sym->symbol.idEntry.isInputParam){
                             SymbolTableEntry *sym2 = createSymbolTableEntry(createSymbol(node),idEntry);
@@ -1073,7 +1080,10 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                             sym->symbol.idEntry.next = sym2;
                         }
                         else{
+                        // semantic error. variable already declared 
+                            Error *err = createErrorObject();
                             err->lineNo = node->node.idnode.line_no;
+                            node->node.idnode.isDuplicate = true;
                             strcpy(err->error,sym->symbol.idEntry.node->node.idnode.lexeme);
                             strcat(err->error," Redeclaration of variable in line  "); // error msg me line no aur variable print karva do
                             printf("LINE %d: %s\n",err->lineNo,err->error);
@@ -1137,7 +1147,6 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
         }
     }
 }
-
 
 
 //temporary function

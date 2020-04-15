@@ -13,7 +13,8 @@
 #include <string.h>
 #define sc startChild
 #define rs rightSibling       
-  
+
+int total_ast_nodes = 0;  
 //(enum NodeType)int to char* map for astNodes
 char *astNodeMap[] = {
     "ProgramNode",
@@ -50,6 +51,7 @@ ASTNode* createASTNode(NodeType type){
     node->rightSibling = NULL;
     node->startChild = NULL;
     node->next = NULL;
+    total_ast_nodes++;
     return node;
 }
 
@@ -58,6 +60,22 @@ ASTNode* createASTNode(NodeType type){
 ASTNode* getAST()
 {
 	return AST;
+}
+
+/*This function returns no of astNodes*/
+int getAstNodes()
+{
+    return total_ast_nodes;
+}
+
+/*This function returns compression ratio*/
+int getCompressionRatio()
+{
+    int compression ;
+    int sizeAST = total_ast_nodes * sizeof(ASTNode);
+    int sizeParseTree =  getParseTreeNode() * sizeof(ParseTreeNode);
+    compression = ((sizeParseTree - sizeAST)*100)/sizeParseTree;
+    return compression; 
 }
 
 /*This function traverses parse tree and creates AST*/
@@ -160,6 +178,10 @@ void createAST(ParseTreeNode *node){
             curr->sc->rs->parent = curr;
             curr->sc->rs->rs = createASTNode(nullNode);
             curr->sc->rs->rs->parent = curr;
+            curr->node.moduleNode.isOverloaded = false;
+            curr->node.moduleNode.maxTempBool = 0;
+            curr->node.moduleNode.maxTempInt = 0;
+            curr->node.moduleNode.maxTempReal = 0;
             
             curr->sc->rs->rs->rs = node->sc->rs->rs->rs->rs->syn;
             
@@ -191,7 +213,10 @@ void createAST(ParseTreeNode *node){
             strcpy(curr->sc->node.idnode.lexeme,node->sc->rs->rs->tkn->lexeme);
             curr->sc->node.idnode.line_no=node->sc->rs->rs->tkn->line_no;
             curr->sc->parent = curr;
-
+            curr->node.moduleNode.isOverloaded = false;
+            curr->node.moduleNode.maxTempReal = 0;
+            curr->node.moduleNode.maxTempInt = 0;
+            curr->node.moduleNode.maxTempBool = 0;
             //compute <input_plist>.syn and update parent pointers
             //of all inputparamnodes present in it
             createAST(node->sc->rs->rs->rs->rs->rs->rs->rs);
@@ -259,9 +284,20 @@ void createAST(ParseTreeNode *node){
             ASTNode* curr = createASTNode(caseNode);
             curr->node.caseNode.line = node->sc->tkn->line_no;
             node->sc->rs->rs->inh = NULL;
-            createAST(node->sc->rs->rs);
+            createAST(node->sc->rs->rs);    //statements process kia he
             curr->sc = node->sc->rs->rs->syn;
-            curr->sc->parent = curr;
+
+            //set parents of statemnt nodes
+            ASTNode *traverse = curr->sc;
+            if(traverse->type == nullNode)
+                traverse->parent = curr;
+            else {
+                while(traverse != NULL){
+                    traverse->parent = curr;
+                    traverse = traverse->next;
+                }
+            }
+
             curr->sc->rs = NULL;
             node->syn = curr;
             free(node->sc->rs->rs->rs->rs);
@@ -957,16 +993,19 @@ void createAST(ParseTreeNode *node){
 		case 95: {
             ASTNode *temp = createASTNode(caseNode);
             temp->node.caseNode.line = node->sc->tkn->line_no;
-            //compute <value>.syn
-            createAST(node->sc->rs);
-            temp->sc = node->sc->rs->syn;
-            temp->sc->parent = temp;
             
             //compute <statements>.syn and update its parents
             node->sc->rs->rs->rs->inh = NULL;
             createAST(node->sc->rs->rs->rs);
-            temp->sc->rs = node->sc->rs->rs->rs->syn; 
-            ASTNode *traverse = temp->sc->rs;
+            temp->sc = node->sc->rs->rs->rs->syn; 
+
+            //compute <value>.syn
+            createAST(node->sc->rs);
+            temp->sc->rs = node->sc->rs->syn;
+            temp->sc->rs->parent = temp;
+            
+            //set parents of statemnt nodes
+            ASTNode *traverse = temp->sc;
             if(traverse->type == nullNode)
                 traverse->parent = temp;
             else {
@@ -998,16 +1037,19 @@ void createAST(ParseTreeNode *node){
 		case 96: {
             ASTNode *temp = createASTNode(caseNode);
             temp->node.caseNode.line = node->sc->tkn->line_no;
-            //compute <value>.syn
-            createAST(node->sc->rs);
-            temp->sc = node->sc->rs->syn;
-            temp->sc->parent = temp;
-
+            
             //compute <statements>.syn and update parent pointers
             node->sc->rs->rs->rs->inh = NULL;
             createAST(node->sc->rs->rs->rs);
-            temp->sc->rs = node->sc->rs->rs->rs->syn;
-            ASTNode *traverse = temp->sc->rs;
+            temp->sc = node->sc->rs->rs->rs->syn;
+
+            //compute <value>.syn
+            createAST(node->sc->rs);
+            temp->sc->rs = node->sc->rs->syn;
+            temp->sc->rs->parent = temp;
+
+            //set statement nodes' parents
+            ASTNode *traverse = temp->sc;
             if(traverse->type == nullNode){
                 traverse->parent = temp;
             }

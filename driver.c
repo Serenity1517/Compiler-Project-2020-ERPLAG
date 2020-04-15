@@ -71,6 +71,8 @@ int main (int argc,char **argv)
 				semanticAnalyzer();
 				SymbolTable* s = getsymbolTable();
 				ListOfErrors* semanticErrors = getSemanticErrorObject();
+				int compressionR =  getCompressionRatio();
+				printf("Compression Ratio: %d\n",compressionR);
 				return 0;
 			}
 			case 8:{

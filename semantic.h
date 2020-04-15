@@ -15,6 +15,8 @@ Error* createErrorObject();
 ListOfErrors* getSemanticErrorObject();
 void initializeErrorObject();
 void semanticAnalyzer();
+int countLeaves(ASTNode* node);
 void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors);
+Error* removeDuplicates(Error* head);
 
 #endif
