@@ -23,22 +23,18 @@
 int offset;
 
 void computeOffsets(ASTNode* root, SymbolTable* rootSymbolTable){
-    int activation = 0;
     ASTNode* otherMod = root->sc->rs;  
     ASTNode* driverMod = root->sc->rs->rs;
     ASTNode* otherMod2 = root->sc->rs->rs->rs;
     while(otherMod != NULL){
         offset = 0;
-        activation = 0;
         calcOffsets(otherMod, rootSymbolTable);
         otherMod = otherMod->next;
     }
     offset = 0;
-    activation = 0;
     calcOffsets(driverMod, rootSymbolTable);   
     while(otherMod2 != NULL){
         offset = 0;
-        activation = 0;
         calcOffsets(otherMod2, rootSymbolTable);
         otherMod2 = otherMod2->next;
     }
@@ -47,26 +43,26 @@ void computeOffsets(ASTNode* root, SymbolTable* rootSymbolTable){
 
 void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
 
-   if(currModule->type == nullNode)
-	return;
-   ASTNode* stmtNode = currModule->sc->rs->rs->rs;
+    if(currModule->type == nullNode)
+        return;
+    ASTNode* stmtNode = currModule->sc->rs->rs->rs;
 	if(currModule->sc->type == nullNode){
 		SymbolTableEntry* sym = lookupString("driverModule",rootSymbolTable,driverEntry,false,-1);
    		SymbolTable* currTable = sym->table;//ye calcculate karke neeche function me pass karna he
    		while(stmtNode != NULL){
-       processStatement(stmtNode, currTable);
-       stmtNode = stmtNode->next;
+            processStatement(stmtNode, currTable);
+            stmtNode = stmtNode->next;
    		}
         sym->symbol.functionEntry.activationRecordSize = offset;
 		return;			
 	}
-   SymbolTableEntry* sym = lookupString(currModule->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1);
-   SymbolTable* currTable = sym->table;//ye calcculate karke neeche function me pass karna he
-   while(stmtNode != NULL){
-       processStatement(stmtNode, currTable);
-       stmtNode = stmtNode->next;
-   } 
-   sym->symbol.functionEntry.activationRecordSize = offset;
+    SymbolTableEntry* sym = lookupString(currModule->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1);
+    SymbolTable* currTable = sym->table;//ye calcculate karke neeche function me pass karna he
+    while(stmtNode != NULL){
+        processStatement(stmtNode, currTable);
+        stmtNode = stmtNode->next;
+    } 
+    sym->symbol.functionEntry.activationRecordSize = offset;
 }
 
 void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
@@ -99,8 +95,8 @@ void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
                         sym->symbol.idEntry.width = 2;
                         offset += 2;
                         declareId = declareId->next;
-                    }   //let's run code
-                }   //ok
+                    }
+                }
             }
             else{       //primitive
                 ASTNode* idtraverse = stmtNode->sc;

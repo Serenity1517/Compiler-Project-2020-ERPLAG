@@ -69,6 +69,25 @@ void semanticAnalyzer(){
 	return;
 }
 
+int countLeaves(ASTNode* node)
+{
+    if(node == NULL)
+        return 0;
+    if(node->sc == NULL)
+        return 1;
+    else{
+        int count = 0;
+        ASTNode* temp = node->sc;
+        while(temp != NULL)
+        {
+            count += countLeaves(temp);    
+            temp = temp->rightSibling;
+        }
+        return count;
+    }
+    return 0;    
+}
+
 
 /*This recursive function traverses AST and performs various semantic checks*/
 void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors){
@@ -162,7 +181,13 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
 
         case opNode:{
             extractTypeOfExpression(node, table, semanticErrors);
-            break;
+            // int countTemp = countLeaves(node) - 2;    //count number of temporaries needed to solve this expression
+            // int i;
+            // for(i=0; i<countTemp; i++){
+            //     Symbol* tempSymbol = createSymbol()
+            //     SymbolTableEntry* tempEntry = createSymbolTableEntry()   
+            // }
+            // break;
         }
 
         case assignmentNode:{
@@ -790,3 +815,60 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
         }
     }
 }
+
+
+
+void swapNodes(Error* a, Error* b){
+	struct Error* tnext;
+	char terror[150];
+	int tlineNo;
+	tnext = a->next;
+	a->next = b->next;
+	b->next = tnext; 
+	strcpy(terror,a->error);
+	strcpy(a->error,b->error);
+	strcpy(b->error,terror);
+	tlineNo = a->lineNo;
+	a->lineNo = b->lineNo;
+	b->lineNo = tlineNo;
+}
+
+int checkEquality(Error* a, Error* b){
+	if((a->lineNo == b->lineNo) && !strcmp(a->error, b->error))
+		return 1;
+	else
+		return 0;
+}
+
+Error* sortLinkedList(Error* head){
+	Error* iter;
+    Error* temp;
+	for(iter=head; iter->next!=NULL; iter=iter->next){
+		for(temp = iter->next; temp != NULL; temp = temp->next){
+			if(iter->lineNo > temp->lineNo){
+				swapNodes(iter, temp);
+			}
+		}
+	}
+	return head;
+}
+
+Error* removeDuplicates(Error* head){
+	Error* head2 = sortLinkedList(head);
+	Error* current = head2;
+	Error* temp;
+    if (current == NULL)
+    	return NULL;
+	while (current -> next != NULL){
+        if (checkEquality(current, current->next)){
+            temp = current -> next -> next;
+            free(current -> next);
+            current -> next = temp;
+        }
+        else{
+            current = current -> next;
+        }
+    }
+	return head;
+}
+

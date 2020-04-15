@@ -526,7 +526,6 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                             temptrav = temptrav->next;
                         temptrav->next = inputParamEntry;
                     }
-                    processStatement(dummyDeclare, newTable);
                     travInp = travInp->next;
                 }
                 if(travOut->type != nullNode){
@@ -549,7 +548,6 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
 		                        entry = entry->next;
 		                    entry->next = outputParamEntry;
 		                }
-						processStatement(dummyDeclare2, newTable);
 		                travOut = travOut->next;
 		            }
 				}

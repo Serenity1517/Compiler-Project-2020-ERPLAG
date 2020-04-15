@@ -135,6 +135,7 @@ typedef struct OpNode{   // this node stores arithmetic operators like PLUS, MIN
     char token[21];
     char lexeme[21];
     int line_no;
+    int temporaries;
     PrimitiveType typeOfExpr;
 }OpNode;
 
