@@ -15,7 +15,11 @@
 #include "symboltable.h"
 #include "parser.h"
 
-void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithExprType, int* currTempNo);
+char* createTempVarName(int num, PrimitiveType type);
+void processIntegerExpr(ASTNode* node, SymbolTable* table, FILE* file, int* currTempNo);
+void processBooleanExpr(ASTNode* node, SymbolTable* table, FILE* file, int* currTempNo);
+int processExpression(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType exprType);
+void codeGen(ASTNode* node, SymbolTable* table, FILE* file);
 void codeGenControl(ASTNode* root, SymbolTable* table, char* fileName);
 
 #endif   
