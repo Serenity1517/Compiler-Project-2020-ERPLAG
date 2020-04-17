@@ -44,6 +44,7 @@ typedef struct IdEntry{
     bool isInputParam;
     bool isTemporary;
     struct SymbolTableEntry* next;
+    bool isOutputParam;
 }IdEntry;
 
 /* Driver Module*/
@@ -51,6 +52,7 @@ typedef struct DriverEntry{
     int sequenceNumber; 
     struct ASTNode* driverNode;  //ast node pointer to moduleNode of driver    
     int activationRecordSize;
+    int ARSizeWithTemp;
     Block block;
 }DriverEntry;
 
@@ -65,6 +67,7 @@ typedef struct FunctionEntry{
     bool isDefined;         //true if function definition exists, false if not
     struct FunctionType inOutType;      //type (input/output) of the function..DONE
     int activationRecordSize;   //size of activation record (basically sum of all offsets in function)
+    int ARSizeWithTemp;
     Block block;
 }FunctionEntry;
 

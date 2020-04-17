@@ -71,6 +71,7 @@ int main (int argc,char **argv)
 				testAST(argv[1],argv[2]);
 				semanticAnalyzer();
 				SymbolTable* s = getsymbolTable();
+    			printf("variable_name	scope(module_name)	scope(line_numbers)     width	isArray		static_or_dynamic   range_lexemes    type_of_element    offset  nesting_level\n");
 				printSymbolTable(s);
 				ListOfErrors* semanticErrors = getSemanticErrorObject();
 				int compressionR =  getCompressionRatio();
