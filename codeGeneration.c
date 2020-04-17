@@ -130,7 +130,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             }   
             //3. Process driver module
             SymbolTableEntry* driver_entry = lookupString("driverModule", table, driverEntry, false, -1);
-            fprintf(file, "\n_start:\n");
+            fprintf(file, "\nmain:\n");
             codeGen(driverMod, driver_entry->table, file);
             break;
         }
@@ -138,7 +138,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             //1. Special case of driver module
             if(node->sc->type == nullNode){
                 SymbolTableEntry* sym = lookupString("driverModule", table->parent, driverEntry, false, -1);
-                fprintf(file, "\tsub rsp, %d\n", sym->symbol.driverEntry.activationRecordSize);
+                fprintf(file, "\tsub rsp, %d\n", sym->symbol.driverEntry.ARSizeWithTemp);
                 fprintf(file, "\tmov rbp, rsp\n");  //for driver, the frame base is same as bottom of stack.(as the frame/activation record for the driver function is located right at the bottom of the stack)
                 ASTNode* stmt = node->sc->rs->rs->rs;
                 while(stmt != NULL){
@@ -273,9 +273,9 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 case primitive:{
                     switch(sym->symbol.idEntry.type.type.primitiveType){
                         case integer:{
-                            fprintf(file, "\n;-----code for scanning integer variable----\npush inputInt\n\tcall _printf\n");
+                            fprintf(file, "\n;-----code for scanning integer variable----\npush inputInt\n\tcall printf\n");
                             //write code for scanning input integer
-                            fprintf(file, "\tpush int1\n\tpush Input_Format\n\tcall _scanf\n\tadd esp, 6\n");//6 = 4 + 2//lite.. sahi he na.. u sure?pretty suresill...i
+                            fprintf(file, "\tpush int1\n\tpush Input_Format\n\tcall scanf\n\tadd esp, 6\n");//6 = 4 + 2//lite.. sahi he na.. u sure?pretty suresill...i
                             fprintf(file, "\tmov ax, [int1]\n");// scanned value now in ax
                             fprintf(file, "\tmov [ebp+%d],ax\n;-----------\n", sym->symbol.idEntry.offset);
                             break;
@@ -300,7 +300,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                         switch(sym->symbol.idEntry.type.type.primitiveType){
                             case integer:{  //eg: print(z) where z is an integer
                                 fprintf(file, "\n;------code for printing integer variable-----\n\tmov bx, [ebp + %d]\n",sym->symbol.idEntry.offset);
-                                fprintf(file, "\tpush bx\n\tpush output\n\tcall _printf\n\tadd esp, 6\n;------------\n");
+                                fprintf(file, "\tpush bx\n\tpush output\n\tcall printf\n\tadd esp, 6\n;------------\n");
 
                                 break;
                             }
@@ -316,7 +316,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                 //for that you need to create labels
                                 //so
                                 //see upar in this file
-                                printf("");
+                                //printf("");
                                 break;// achha samajh gya.....yes jne and je yes yes..yaad hai....wo 2 ghante ki playlist me ye sab hi hai
                             }
                         }
@@ -408,7 +408,7 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout, "\tlenTrueOutput equ 5\n");
     fprintf(fout, "\tfalseOutput db \"false\",10,0\n");//listen// did you change this
     fprintf(fout, "\tlenFalseOutput equ 6");
-    fprintf(fout, "\nsection .bss\n\tint1 : resw 1\nsection .text\n\tglobal _start\n\textern _scanf\n\textern _printf\n");
+    fprintf(fout, "\nsection .bss\n\tint1 : resw 1\nsection .text\n\tglobal main\n\textern scanf\n\textern printf\n");
     codeGen(root, table, fout);
     fprintf(fout, "\n\n\tmov rax, 1\n\tint 80h");   //exit the program
     fclose(fout);

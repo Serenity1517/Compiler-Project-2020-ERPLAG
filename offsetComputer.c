@@ -83,7 +83,7 @@ void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbo
     int ofs;
     SymbolTable* currTable;
     if(currMod->sc->type == nullNode){
-         sym = lookupString("driverModule",rootSymbolTable,driverEntry,false,-1);
+        sym = lookupString("driverModule",rootSymbolTable,driverEntry,false,-1);
         currTable = sym->table;
         ofs = sym->symbol.driverEntry.activationRecordSize;
     }
@@ -160,6 +160,14 @@ void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbo
         }
         i++;
         count--;    
+    }
+    
+    if(currMod->sc->type == nullNode){
+        sym->symbol.driverEntry.ARSizeWithTemp = ofs;
+    }
+    else
+    {
+        sym->symbol.functionEntry.ARSizeWithTemp = ofs;
     }
 }
 
@@ -396,27 +404,42 @@ void printSymbolTableEntry(SymbolTableEntry* sym,SymbolTable* currTable)
 {
     switch(sym->tag){
         case idEntry:{
-            /*if(sym->symbol.idEntry.isTemporary == true)
-                break;*/
+            if((sym->symbol.idEntry.isTemporary == true))
+                break;
 
-            int nestingLevel = 0;
+            int nestingLevel = 1;
+            if((sym->symbol.idEntry.isInputParam == true)||(sym->symbol.idEntry.isOutputParam == true))
+                nestingLevel = 0;
+            
             SymbolTable* table = currTable;
             while(table->tableType != functionBlock){
                 nestingLevel++;
                 table = table->parent;
             }
+            SymbolTable* tab = currTable;
             if(strcmp(table->scope.scope,"driverModule")==0){ // case for driverModule
                 SymbolTableEntry* s = lookupString(table->scope.scope,table->parent,driverEntry,false,-1);
                 if(sym->symbol.idEntry.type.tag == primitive){
                     ASTNode* temp = sym->symbol.idEntry.node;
-                    printf("%s  %s  %d-%d   %d  ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end, temp->node.idnode.line_no);
-                    printf("%d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.width, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset,nestingLevel);
+                    if(tab->tableType == functionBlock){
+                        printf("%s  %s  %d-%d   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end);
+                        printf("%d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.width, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset,nestingLevel);
+                    }
+                    else{
+                        printf("%s  %s  %d-%d   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end);
+                        printf("%d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.width, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset,nestingLevel);
+                    }
                 }
                 else{// array node
                     if((sym->symbol.idEntry.type.type.arrayType.low == -1) ||(sym->symbol.idEntry.type.type.arrayType.high == -1)){ //dynamic array
                         ASTNode* temp = sym->symbol.idEntry.node;
                         temp = temp->rs->sc->sc;// range node's first child (low index)
-                        printf("%s  %s  %d-%d   %d  yes   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end, sym->symbol.idEntry.node->node.idnode.line_no);
+                        if(tab->tableType == functionBlock){
+                            printf("%s  %s  %d-%d   yes   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end);
+                        }
+                        else{
+                            printf("%s  %s  %d-%d   yes   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end);
+                        }
                         if(sym->symbol.idEntry.type.type.arrayType.low == -1){ //low is idNode
                             printf("%d  dynamic    [%s", sym->symbol.idEntry.width, temp->node.idnode.lexeme);
                         }
@@ -432,7 +455,7 @@ void printSymbolTableEntry(SymbolTableEntry* sym,SymbolTable* currTable)
                     }
                     else //static array
                     {
-                        printf("%s  %s  %d-%d   %d  yes  ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end, sym->symbol.idEntry.node->node.idnode.line_no);
+                        printf("%s  %s  %d-%d  yes  ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end);
                         printf("%d  static [%d,%d] %s  %d  %d\n", sym->symbol.idEntry.width, sym->symbol.idEntry.type.type.arrayType.low, sym->symbol.idEntry.type.type.arrayType.high, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset,nestingLevel);
                     }                    
                 }
@@ -440,11 +463,56 @@ void printSymbolTableEntry(SymbolTableEntry* sym,SymbolTable* currTable)
             else {   // case for otherModules
                 SymbolTableEntry* s = lookupString(table->scope.scope,table->parent,functionEntry,false,-1);
                 if(sym->symbol.idEntry.type.tag == primitive){
-                    printf("%s  %s  %d-%d   %d  %d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.node->node.idnode.lexeme,table->scope.scope,s->symbol.functionEntry.block.start,s->symbol.functionEntry.block.end,sym->symbol.idEntry.node->node.idnode.line_no,sym->symbol.idEntry.width,type_of_element[sym->symbol.idEntry.type.type.primitiveType],sym->symbol.idEntry.offset,nestingLevel);
+                    if(tab->tableType == functionBlock){
+                        printf("%s  %s  %d-%d   %d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.node->node.idnode.lexeme,table->scope.scope,s->symbol.functionEntry.block.start,s->symbol.functionEntry.block.end, sym->symbol.idEntry.width,type_of_element[sym->symbol.idEntry.type.type.primitiveType],sym->symbol.idEntry.offset,nestingLevel);
+                    }
+                    else{    
+                        printf("%s  %s  %d-%d   %d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.node->node.idnode.lexeme,table->scope.scope,tab->scope.block_scope.start, tab->scope.block_scope.end, sym->symbol.idEntry.width,type_of_element[sym->symbol.idEntry.type.type.primitiveType],sym->symbol.idEntry.offset,nestingLevel);
+                    }
                 }
                 else{ // array node
 
+                    if((sym->symbol.idEntry.type.type.arrayType.low == -1) ||(sym->symbol.idEntry.type.type.arrayType.high == -1)){ //dynamic array
+                        ASTNode* temp = sym->symbol.idEntry.node;
+                        temp = temp->parent->sc->rs->sc->sc;// range node's first child (low index)
+                        if(tab->tableType == functionBlock){
+                            printf("%s  %s  %d-%d   yes   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.functionEntry.block.start, s->symbol.functionEntry.block.end);
+                        }
+                        else
+                        {
+                            printf("%s  %s  %d-%d   yes   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end);
+                        }
+                        if(sym->symbol.idEntry.type.type.arrayType.low == -1){ //low is idNode
+                            printf("%d  dynamic    [%s", sym->symbol.idEntry.width, temp->node.idnode.lexeme);
+                        }
+                        else{
+                            printf("%d  dynamic    [%s", sym->symbol.idEntry.width, temp->node.numNode.lexeme);
+                        }
+                        if(sym->symbol.idEntry.type.type.arrayType.high == -1){ // high is idnode
+                            printf(",%s]    %s  %d  %d\n", temp->rs->node.idnode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset, nestingLevel);
+                        }
+                        else{
+                            printf(",%s]    %s  %d  %d\n", temp->rs->node.numNode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset, nestingLevel);
+                        }
+                    }
+                    else //static array
+                    {
+                        if(tab->tableType == functionBlock){
+                            printf("%s  %s  %d-%d   yes  ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.functionEntry.block.start, s->symbol.functionEntry.block.end);
+                        }
+                        else{
+                            printf("%s  %s  %d-%d   yes  ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end);
+                        }
+                        printf("%d  static [%d,%d] %s  %d  %d\n", sym->symbol.idEntry.width, sym->symbol.idEntry.type.type.arrayType.low, sym->symbol.idEntry.type.type.arrayType.high, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset,nestingLevel);
+                    }
+
                 }
+            }
+            SymbolTableEntry* temp = sym->symbol.idEntry.next;
+            while(temp != NULL)
+            {
+                printSymbolTableEntry(temp,currTable);
+                temp = temp->next;
             }
             break;
         }
@@ -473,7 +541,6 @@ void printSymbolTableEntry(SymbolTableEntry* sym,SymbolTable* currTable)
 
 void printSymbolTable(SymbolTable* root)
 {
-    //printf("variable_name	scope(module_name)	scope(line_numbers)     width	isArray	static_or_dynamic   range_lexemes    type_of_element    offset  nesting_level\n");
     if(root == NULL)
         return;
     SymbolTableEntry* tab;

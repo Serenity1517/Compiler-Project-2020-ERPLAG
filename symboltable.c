@@ -97,6 +97,7 @@ Symbol* createSymbol(ASTNode* astNode){    //need to check node->type and create
         sym->idEntry.next = NULL;
         sym->idEntry.isInputParam = false;
         sym->idEntry.isTemporary = false;
+        sym->idEntry.isOutputParam =false;
     }
     else if(astNode->type == moduleNode){       //module Definition
         strcpy(sym->functionEntry.functionName, astNode->sc->node.idnode.lexeme);
@@ -546,6 +547,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
 		                SymbolTableEntry* entry = newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)];
 		                outputParamEntry->symbol.idEntry.isInputParam = false;
 		                outputParamEntry->symbol.idEntry.type = *t2;
+                        outputParamEntry->symbol.idEntry.isOutputParam = true;
 		                if(entry == NULL)
 		                    newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)] = outputParamEntry;
 		                else{
@@ -649,6 +651,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
 		                SymbolTableEntry* entry = newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)];
 		                outputParamEntry->symbol.idEntry.isInputParam = false;
 		                outputParamEntry->symbol.idEntry.type = *t2;
+                        outputParamEntry->symbol.idEntry.isOutputParam = true;
 		                if(entry == NULL)
 		                    newTable->listHeads[computeStringHash(travOut->sc->node.idnode.lexeme)] = outputParamEntry;
 		                else{
