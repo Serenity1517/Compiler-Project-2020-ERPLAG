@@ -25,11 +25,11 @@ char* createTempVarName(int num, PrimitiveType type){
     char* res = malloc(sizeof(char)*4);
     refreshBuffer(res, 4);
     if(type == integer)
-        sprintf(res, "ti%d", num);
+        sprintf(res, "TI%d", num);
     else if(type == boolean)
-        sprintf(res, "tb%d", num);
+        sprintf(res, "TB%d", num);
     else
-        sprintf(res, "tr%d", num);
+        sprintf(res, "TR%d", num);
     return res;
 }
 
