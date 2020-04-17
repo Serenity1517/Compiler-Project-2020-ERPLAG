@@ -18,5 +18,5 @@ void semanticAnalyzer();
 int countLeaves(ASTNode* node);
 void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors);
 Error* removeDuplicates(Error* head);
-
+void printErrors(ListOfErrors *errors);
 #endif

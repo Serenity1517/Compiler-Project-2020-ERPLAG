@@ -23,33 +23,34 @@ int main (int argc,char **argv)
     while(1){
 		printf("Please Select Option\n");
 		printf("***********************\n");
-		printf("1. Press 1 to check for removal of comments.  \n");
-		printf("2. Press 2 to print the list of tokens on the console. \n");
-		printf("3. Press 3 to parse the input file. \n");
-		printf("4. Press 4 to find the time taken for parsing the input. \n");
-		printf("5. Press 5 to find AST. \n");
-		printf("6. Press 6 to test symboltable. \n");
-		printf("7. Press 7 to test semantic analyzer.\n");
-        printf("8. Press 8 to generate assembly code\n");
-		printf("9. Press 0 for exit. \n");
+		printf("1. Press 1 to test lexer.  \n");
+		printf("2. Press 2 to print parse tree. \n");
+		printf("3. Press 3 to Print Abstract Syntax Tree (AST). \n");
+		printf("4. Press 4 to Find Compression Ratio. \n");
+		printf("5. Press 5 to Print Symbol Table. \n");
+		printf("6. Press 6 to Print Activation Record Size. \n");
+		printf("7. Press 7 to Print Static and Dynamic Arrays.\n");
+        printf("8. Press 8 to Check Errors and Total Compilation Time. \n");
+		printf("9. Press 9 for Assembly Code Generation. \n");
+		printf("10.Press 0 for Exit.\n");
 		printf("\n");    
 		scanf("%d", &option);
         switch(option){
  			case 0: printf("Exiting!\n");
 					return 0;
 
-            case 1: removeComments(argv[1]);
-					printf("Please check file named removedComments.txt for output\n`");
-					//printOnConsole();                    
+            case 1: testLexer(argv[1]);
+                    return 0;
+
+            case 2: testParseTree(argv[1], argv[2]);
+                    return 0;
+
+			case 3: {
+					testAST(argv[1],argv[2]);
 					return 0;
+			}
 
-            case 2: testLexer(argv[1]);
-                    return 0;
-
-            case 3: testParseTree(argv[1], argv[2]);
-                    return 0;
-
-            case 4: begin =clock();
+            case 11: begin =clock();
                     //double total_CPU_time, total_CPU_time_in_seconds;
                    
                     testParseTree(argv[1], argv[2]);		//during parsing, lexical analyzer will be used. So the total time taken would be for lexical+syntactical analysis
@@ -58,30 +59,50 @@ int main (int argc,char **argv)
                     total_CPU_time_in_seconds =   total_CPU_time / CLOCKS_PER_SEC;
 					printf("\n total_CPU_time = %f Total_CPU_time_in_seconds = %f\n\n",total_CPU_time,total_CPU_time_in_seconds);
                     return 0;
-
-            case 5: testAST(argv[1],argv[2]);
-                    return 0;
-            case 6:	{
-            		testAST(argv[1],argv[2]);
-            		//checkSymbolTable();
-            		//SymbolTable* tabble = getsymbolTable();
-            		return 0;
-            }
-			case 7: {
+			case 4: {
+					testAST(argv[1],argv[2]);
+					int parseNode = getParseTreeNode();
+					int astNodes = getAstNodes();
+					printf("Parse Tree Nodes: %d		Memory Used in Parse tree: %d\n",parseNode,parseNode*sizeof(ParseTreeNode));
+					printf("Abstract Syntax Tree Nodes: %d		Memory used in AST: %d\n",astNodes,parseNode*sizeof(ASTNode));
+					int compressionR =  getCompressionRatio();
+					printf("Compression Ratio: %d\n",compressionR);
+					return 0;
+			}
+			case 5: {
 				testAST(argv[1],argv[2]);
 				semanticAnalyzer();
 				SymbolTable* s = getsymbolTable();
     			printf("variable_name	scope(module_name)	scope(line_numbers)     width	isArray		static_or_dynamic   range_lexemes    type_of_element    offset  nesting_level\n");
 				printSymbolTable(s);
-				ListOfErrors* semanticErrors = getSemanticErrorObject();
-				int compressionR =  getCompressionRatio();
-				printf("Compression Ratio: %d\n",compressionR);
+				return 0;
+			}
+
+			case 6: {
+				testAST(argv[1],argv[2]);
+				semanticAnalyzer();
+				SymbolTable* s = getsymbolTable();
+				printActivationRecord(s);
+				return 0;
+			}
+			case 7: {
+				testAST(argv[1],argv[2]);
+				semanticAnalyzer();
+				SymbolTable* s = getsymbolTable();
+				printArrays(s);
 				return 0;
 			}
 			case 8:{
+				testAST(argv[1],argv[2]);
+				semanticAnalyzer();
+				ListOfErrors* error = getSemanticErrorObject();
+				printErrors(error);
+				return 0;
+			}
+			case 9:{
 				testAST(argv[1], argv[2]);
 				semanticAnalyzer();
-				codeGenControl(getAST(), getsymbolTable(), argv[3]);
+				//codeGenControl(getAST(), getsymbolTable(), argv[3]);
 				return 0;
 			}
             		

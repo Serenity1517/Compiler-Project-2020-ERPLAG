@@ -16,6 +16,7 @@ struct ASTNode* createASTNode(NodeType type);
 void createAST(ParseTreeNode *node);
 int getCompressionRatio();
 ASTNode* getAST();
+int getAstNodes();
 //For debugging
 void printAST(ASTNode *root);
 
