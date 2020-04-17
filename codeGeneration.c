@@ -16,7 +16,7 @@
 #define sc startChild
 #define rs rightSibling
 
-int utilLabel;
+int utilLabel;  //util%d, utilLabel; utilLabel++
 int forLoopLabel;
 int whileLoopLabel;
 int caseLabel;
@@ -307,7 +307,9 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                             case real:{
                                 break;
                             }
-                            case boolean:{  //eg: print(x) where x is a boolean (1 byte).. so use al
+                            case boolean:{  
+                                //[ebp+%d], sym->symbol.idEntry.offset --> al
+                                //eg: print(x) where x is a boolean (1 byte).. so use al
                                 //in memory true is stored as 1, false is stored as 0
                                 //same as before.. [ebp+%d], sym->symbol.idEntry,offset
                                 //isme check lagana padega.. whether the value is 1 or 0
@@ -316,7 +318,13 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                 //for that you need to create labels
                                 //so
                                 //see upar in this file
-                                //printf("");
+                                fprintf(file, "\n;------code for printing Boolean variable-----\n");
+                                fprintf(file,"\tmov al, [ebp + %d]\n",sym->symbol.idEntry.offset);
+                                fprintf(file,"\tcmp al, 1\n\tjne zero%d\n\tpush trueOutput\n\tcall printf\n",utilLabel++);
+                                fprintf(file,"\tjmp empty%d\n",utilLabel++);
+                                fprintf(file,"\tzero%d:\n\t\tpush falseOutput\n\t\tcall printf\n",utilLabel - 2);
+                                fprintf(file,"\tempty%d:\n",utilLabel - 1);
+
                                 break;// achha samajh gya.....yes jne and je yes yes..yaad hai....wo 2 ghante ki playlist me ye sab hi hai
                             }
                         }
@@ -324,6 +332,12 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                     else{   //if the id is an array, print like this : Output: 12 4 -8 9 10 -18
                         switch(sym->symbol.idEntry.type.type.arrayType.t){
                             case integer:{ //integer array
+                                if(sym->symbol.idEntry.type.type.arrayType.low>=0 && sym->symbol.idEntry.type.type.arrayType.high>=0){  //static array
+                                    
+                                }
+                                else{
+                                    //dynamic
+                                }
                                 break;
                             }
                             case real:{
@@ -404,9 +418,9 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout, "\tInput_Format : db \"%d\",0\n");
     fprintf(fout, "\tintInput db \'Input: Enter an integer value\',10,0\n");    //10 is newline character, 0 is null character
     fprintf(fout, "\tlenIntInput equ 30\n");
-    fprintf(fout, "\ttrueOutput db \"true\",10,0\n");   //string is terminated by newline followed by null char
     fprintf(fout, "\tlenTrueOutput equ 5\n");
-    fprintf(fout, "\tfalseOutput db \"false\",10,0\n");//listen// did you change this
+    fprintf(fout, "\ttrueOutput db \"Output: true\",10,0\n");   //string is terminated by newline followed by null char
+    fprintf(fout, "\tfalseOutput db \"Output: false\",10,0\n");//listen// did you change this
     fprintf(fout, "\tlenFalseOutput equ 6");
     fprintf(fout, "\nsection .bss\n\tint1 : resw 1\nsection .text\n\tglobal main\n\textern scanf\n\textern printf\n");
     codeGen(root, table, fout);
