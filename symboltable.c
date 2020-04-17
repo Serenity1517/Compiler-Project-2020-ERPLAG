@@ -96,6 +96,7 @@ Symbol* createSymbol(ASTNode* astNode){    //need to check node->type and create
         sym->idEntry.width = 0;
         sym->idEntry.next = NULL;
         sym->idEntry.isInputParam = false;
+        sym->idEntry.isTemporary = false;
     }
     else if(astNode->type == moduleNode){       //module Definition
         strcpy(sym->functionEntry.functionName, astNode->sc->node.idnode.lexeme);

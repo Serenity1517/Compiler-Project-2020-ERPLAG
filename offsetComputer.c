@@ -27,6 +27,7 @@ SymbolTableEntry* createTemporory(int i,PrimitiveType p)
 {
     SymbolTableEntry *s =  (SymbolTableEntry *)malloc(sizeof(SymbolTableEntry));
     ASTNode *tempASTNode = createASTNode(idNode);
+    s->symbol.idEntry.isTemporary = true;
     switch (p)
     {
     case integer:{
@@ -77,13 +78,25 @@ void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbo
     //ti%d, tr%d, tb%d
     if(currMod->type == nullNode)
         return;
-    if(currMod->sc->type == nullNode)
-        return;
-    SymbolTableEntry* sym = lookupString(currMod->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1);
-    SymbolTable* currTable = sym->table;
+
+    SymbolTableEntry* sym;  
+    int ofs;
+    SymbolTable* currTable;
+    if(currMod->sc->type == nullNode){
+         sym = lookupString("driverModule",rootSymbolTable,driverEntry,false,-1);
+        currTable = sym->table;
+        ofs = sym->symbol.driverEntry.activationRecordSize;
+    }
+    else
+    {
+        sym = lookupString(currMod->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1);
+        currTable = sym->table;
+        ofs = sym->symbol.functionEntry.activationRecordSize;
+    }
+        
     int i = 1;
     int count =  currMod->node.moduleNode.maxTempInt-1;
-    int ofs = sym->symbol.functionEntry.activationRecordSize;
+    
     while(count > 0)
     {
         SymbolTableEntry* s = createTemporory(i,integer);
@@ -383,6 +396,9 @@ void printSymbolTableEntry(SymbolTableEntry* sym,SymbolTable* currTable)
 {
     switch(sym->tag){
         case idEntry:{
+            /*if(sym->symbol.idEntry.isTemporary == true)
+                break;*/
+
             int nestingLevel = 0;
             SymbolTable* table = currTable;
             while(table->tableType != functionBlock){

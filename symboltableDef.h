@@ -42,6 +42,7 @@ typedef struct IdEntry{
     int offset;         // offset calculation field will be assigned in Semantic Analyser Phase
     struct Typeof type;        //type of the identifier..DONE
     bool isInputParam;
+    bool isTemporary;
     struct SymbolTableEntry* next;
 }IdEntry;
 

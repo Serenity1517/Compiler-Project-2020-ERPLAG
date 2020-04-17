@@ -348,7 +348,7 @@ m	17	ID	 RULE NO !!!! -1	----	var_id_num	yes
 ---- ---- ---- ---- RULE NO !!! 47	whichId	no Index	
 ]	17	SQBC	 RULE NO !!!! -1	----	whichId	yes	
 ---- ---- ---- ---- RULE NO !!! 76	term	no factor	
----- ---- ---- ---- RULE NO !!! 72	N4	no term	
+---- ---- ---- ---- RULE NO !!! 72	arithmeticExpr	no term	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N5	yes	
 ---- ---- ---- ---- RULE NO !!! 74	term	no N5	
 ---- ---- ---- ---- RULE NO !!! 69	N8	no arithmeticExpr	
