@@ -1,8 +1,8 @@
 
 section .data
-inputInt: db "Input: Enter an integer value",10,0
-	output: db "Output: 50", 0
-	Input_Format : db "50",0
+	inputInt: db "Input: Enter an integer value",10,0
+	output: db "Output: 6851344", 0
+	Input_Format : db "6851344",0
 	intInput db 'Input: Enter an integer value',10,0
 	lenIntInput equ 30
 	trueOutput db "true",10,0
@@ -12,12 +12,12 @@ inputInt: db "Input: Enter an integer value",10,0
 section .bss
 	int1 : resw 1
 section .text
-	global _start
-	extern _scanf
-	extern _printf
+	global main
+	extern scanf
+	extern printf
 
-_start:
-	sub rsp, 12
+main:
+	sub rsp, 30
 	mov rbp, rsp
 
 ;-------assignment stmt-----
@@ -36,10 +36,10 @@ _start:
 
 ;-----code for scanning integer variable----
 push inputInt
-	call _printf
+	call printf
 	push int1
 	push Input_Format
-	call _scanf
+	call scanf
 	add esp, 6
 	mov ax, [int1]
 	mov [ebp+0],ax
@@ -47,10 +47,10 @@ push inputInt
 
 ;-----code for scanning integer variable----
 push inputInt
-	call _printf
+	call printf
 	push int1
 	push Input_Format
-	call _scanf
+	call scanf
 	add esp, 6
 	mov ax, [int1]
 	mov [ebp+2],ax
@@ -150,7 +150,7 @@ push inputInt
 	mov bx, [ebp + 4]
 	push bx
 	push output
-	call _printf
+	call printf
 	add esp, 6
 ;------------
 
