@@ -16,7 +16,7 @@
 #define sc startChild
 #define rs rightSibling
 
-int utilLabel;
+int utilLabel;  //util%d, utilLabel; utilLabel++
 int forLoopLabel;
 int whileLoopLabel;
 int caseLabel;
@@ -130,7 +130,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             }   
             //3. Process driver module
             SymbolTableEntry* driver_entry = lookupString("driverModule", table, driverEntry, false, -1);
-            fprintf(file, "\n_start:\n");
+            fprintf(file, "\nmain:\n");
             codeGen(driverMod, driver_entry->table, file);
             break;
         }
@@ -138,7 +138,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             //1. Special case of driver module
             if(node->sc->type == nullNode){
                 SymbolTableEntry* sym = lookupString("driverModule", table->parent, driverEntry, false, -1);
-                fprintf(file, "\tsub rsp, %d\n", sym->symbol.driverEntry.activationRecordSize);
+                fprintf(file, "\tsub rsp, %d\n", sym->symbol.driverEntry.ARSizeWithTemp);
                 fprintf(file, "\tmov rbp, rsp\n");  //for driver, the frame base is same as bottom of stack.(as the frame/activation record for the driver function is located right at the bottom of the stack)
                 ASTNode* stmt = node->sc->rs->rs->rs;
                 while(stmt != NULL){
@@ -273,9 +273,9 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 case primitive:{
                     switch(sym->symbol.idEntry.type.type.primitiveType){
                         case integer:{
-                            fprintf(file, "\n;-----code for scanning integer variable----\npush inputInt\n\tcall _printf\n");
+                            fprintf(file, "\n;-----code for scanning integer variable----\npush inputInt\n\tcall printf\n");
                             //write code for scanning input integer
-                            fprintf(file, "\tpush int1\n\tpush Input_Format\n\tcall _scanf\n\tadd esp, 6\n");//6 = 4 + 2//lite.. sahi he na.. u sure?pretty suresill...i
+                            fprintf(file, "\tpush int1\n\tpush Input_Format\n\tcall scanf\n\tadd esp, 6\n");//6 = 4 + 2//lite.. sahi he na.. u sure?pretty suresill...i
                             fprintf(file, "\tmov ax, [int1]\n");// scanned value now in ax
                             fprintf(file, "\tmov [ebp+%d],ax\n;-----------\n", sym->symbol.idEntry.offset);
                             break;
@@ -300,14 +300,16 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                         switch(sym->symbol.idEntry.type.type.primitiveType){
                             case integer:{  //eg: print(z) where z is an integer
                                 fprintf(file, "\n;------code for printing integer variable-----\n\tmov bx, [ebp + %d]\n",sym->symbol.idEntry.offset);
-                                fprintf(file, "\tpush bx\n\tpush output\n\tcall _printf\n\tadd esp, 6\n;------------\n");
+                                fprintf(file, "\tpush bx\n\tpush output\n\tcall printf\n\tadd esp, 6\n;------------\n");
 
                                 break;
                             }
                             case real:{
                                 break;
                             }
-                            case boolean:{  //eg: print(x) where x is a boolean (1 byte).. so use al
+                            case boolean:{  
+                                //[ebp+%d], sym->symbol.idEntry.offset --> al
+                                //eg: print(x) where x is a boolean (1 byte).. so use al
                                 //in memory true is stored as 1, false is stored as 0
                                 //same as before.. [ebp+%d], sym->symbol.idEntry,offset
                                 //isme check lagana padega.. whether the value is 1 or 0
@@ -316,7 +318,13 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                 //for that you need to create labels
                                 //so
                                 //see upar in this file
-                                printf("");
+                                fprintf(file, "\n;------code for printing Boolean variable-----\n");
+                                fprintf(file,"\tmov al, [ebp + %d]\n",sym->symbol.idEntry.offset);
+                                fprintf(file,"\tcmp al, 1\n\tjne zero%d\n\tpush trueOutput\n\tcall printf\n",utilLabel++);
+                                fprintf(file,"\tjmp empty%d\n",utilLabel++);
+                                fprintf(file,"\tzero%d:\n\t\tpush falseOutput\n\t\tcall printf\n",utilLabel - 2);
+                                fprintf(file,"\tempty%d:\n",utilLabel - 1);
+
                                 break;// achha samajh gya.....yes jne and je yes yes..yaad hai....wo 2 ghante ki playlist me ye sab hi hai
                             }
                         }
@@ -324,6 +332,12 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                     else{   //if the id is an array, print like this : Output: 12 4 -8 9 10 -18
                         switch(sym->symbol.idEntry.type.type.arrayType.t){
                             case integer:{ //integer array
+                                if(sym->symbol.idEntry.type.type.arrayType.low>=0 && sym->symbol.idEntry.type.type.arrayType.high>=0){  //static array
+                                    
+                                }
+                                else{
+                                    //dynamic
+                                }
                                 break;
                             }
                             case real:{
@@ -404,11 +418,11 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout, "\tInput_Format : db \"%d\",0\n");
     fprintf(fout, "\tintInput db \'Input: Enter an integer value\',10,0\n");    //10 is newline character, 0 is null character
     fprintf(fout, "\tlenIntInput equ 30\n");
-    fprintf(fout, "\ttrueOutput db \"true\",10,0\n");   //string is terminated by newline followed by null char
     fprintf(fout, "\tlenTrueOutput equ 5\n");
-    fprintf(fout, "\tfalseOutput db \"false\",10,0\n");//listen// did you change this
+    fprintf(fout, "\ttrueOutput db \"Output: true\",10,0\n");   //string is terminated by newline followed by null char
+    fprintf(fout, "\tfalseOutput db \"Output: false\",10,0\n");//listen// did you change this
     fprintf(fout, "\tlenFalseOutput equ 6");
-    fprintf(fout, "\nsection .bss\n\tint1 : resw 1\nsection .text\n\tglobal _start\n\textern _scanf\n\textern _printf\n");
+    fprintf(fout, "\nsection .bss\n\tint1 : resw 1\nsection .text\n\tglobal main\n\textern scanf\n\textern printf\n");
     codeGen(root, table, fout);
     fprintf(fout, "\n\n\tmov rax, 1\n\tint 80h");   //exit the program
     fclose(fout);
