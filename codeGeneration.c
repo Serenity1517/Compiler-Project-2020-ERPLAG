@@ -21,7 +21,88 @@ int forLoopLabel;
 int whileLoopLabel;
 int caseLabel;
 
-void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithExprType, int* currTempNo){
+char* createTempVarName(int num, PrimitiveType type){
+    char* res = malloc(sizeof(char)*4);
+    refreshBuffer(res, 4);
+    if(type == integer)
+        sprintf(res, "ti%d", num);
+    else if(type == boolean)
+        sprintf(res, "tb%d", num);
+    else
+        sprintf(res, "tr%d", num);
+    return res;
+}
+
+void processIntegerExpr(ASTNode* node, SymbolTable* table, FILE* file, int* currTempNo){
+    //1. process left operand and load it in ax
+    if(node->sc->type == numNode)
+        fprintf(file, "\tmov ax, %d\n", (int)node->sc->node.numNode.value);
+    else if(node->sc->type == idNode){
+        SymbolTableEntry* sym1 = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, node->sc->node.idnode.line_no);
+        fprintf(file, "\tmov ax, [ebp+%d]\n", sym1->symbol.idEntry.offset);
+    }
+    else if(node->sc->type == opNode){
+        processIntegerExpr(node->sc, table, file, currTempNo);
+        char* tempName = createTempVarName(*currTempNo, integer);
+        SymbolTableEntry* sym2 = lookupString(tempName, table, idEntry, true, -1);
+        fprintf(file, "\tmov ax, [ebp+%d]\n", sym2->symbol.idEntry.offset);
+    }
+    else{
+           //arrayIdNode
+    }
+
+    //2. process right operand and load it in bx
+    if(node->sc->rs->type == numNode)
+        fprintf(file, "\tmov bx, %d\n", (int)node->sc->rs->node.numNode.value);
+    else if(node->sc->rs->type == idNode){
+        SymbolTableEntry* sym3 = lookupString(node->sc->rs->node.idnode.lexeme, table, idEntry, true, node->sc->rs->node.idnode.line_no);
+        fprintf(file, "\tmov bx, [ebp+%d]\n", sym3->symbol.idEntry.offset);
+    }
+    else if(node->sc->rs->type == opNode){
+        processIntegerExpr(node->sc->rs, table, file, currTempNo);
+        char* tempName = createTempVarName(*currTempNo, integer);
+        SymbolTableEntry* sym4 = lookupString(tempName, table, idEntry, true, -1);
+        fprintf(file, "\tmov bx, [ebp+%d]\n", sym4->symbol.idEntry.offset);
+    }
+    else{
+        //arrayIdNode
+    }
+
+    //3. perform the calculation
+    if(strcmp(node->node.opNode.token, "PLUS")==0)
+        fprintf(file, "\tadd ax,bx\n");
+    else if(strcmp(node->node.opNode.token, "MUL")==0)
+        fprintf(file, "\tmul bx\n");    //assumes no overflow.. result fits in 16 bit ax register
+    else if(strcmp(node->node.opNode.token, "MINUS")==0)
+        fprintf(file, "\nsub ax,bx\n");
+    else{
+        //DIV
+    }
+
+    //3. store final res(inside ax) into temporary variable
+    *currTempNo += 1;
+    char* finalTemp = createTempVarName(*currTempNo, integer);
+    SymbolTableEntry* sym = lookupString(finalTemp, table, idEntry, true, -1);
+    fprintf(file, "\tmov [ebp+%d], ax", sym->symbol.idEntry.offset);
+    return;
+}
+
+void processBooleanExpr(ASTNode* node, SymbolTable* table, FILE* file, int* currTempNo){
+
+}
+
+int processExpression(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType exprType){
+    int finalTempNo = 0;
+    if(exprType == integer)
+        processIntegerExpr(node, table, file, &finalTempNo);
+    else if(exprType == boolean)
+        processBooleanExpr(node, table, file, &finalTempNo);
+    else{}
+        //processRealExpr(node, table, file, &finalTempNo);
+    return finalTempNo;
+}   
+
+void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
     switch(node->type){
         case programNode:{
             ASTNode* mod1 = node->sc->rs;
@@ -32,7 +113,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithE
                 while(mod1 != NULL){
                     SymbolTableEntry* mod1_entry = lookupString(mod1->sc->node.idnode.lexeme, table, functionEntry, false, -1);
                     fprintf(file, "\nmodule%d:\n", mod1_entry->symbol.functionEntry.sequenceNumber);
-                    codeGen(mod1, mod1_entry->table, file,-1,NULL);
+                    codeGen(mod1, mod1_entry->table, file);
                 }
             } 
             //2. Process mod2's module list 
@@ -40,22 +121,24 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithE
                 while(mod2 != NULL){
                     SymbolTableEntry* mod2_entry = lookupString(mod2->sc->node.idnode.lexeme, table, functionEntry, false, -1);
                     fprintf(file, "\nmodule%d:\n", mod2_entry->symbol.functionEntry.sequenceNumber);
-                    codeGen(mod2, mod2_entry->table, file,-1,NULL);
+                    codeGen(mod2, mod2_entry->table, file);
                 }
             }   
             //3. Process driver module
             SymbolTableEntry* driver_entry = lookupString("driverModule", table, driverEntry, false, -1);
             fprintf(file, "\n_start:\n");
-            codeGen(driverMod, driver_entry->table, file,-1,NULL);
+            codeGen(driverMod, driver_entry->table, file);
             break;
         }
         case moduleNode:{
             //1. Special case of driver module
             if(node->sc->type == nullNode){
+                SymbolTableEntry* sym = lookupString("driverModule", table->parent, driverEntry, false, -1);
+                //fprintf(file, "\tsub rsp, %d", sym->symbol.driverEntry.activationRecordSize);
                 fprintf(file, "\tmov rbp, rsp\n");  //for driver, the frame base is same as bottom of stack.(as the frame/activation record for the driver function is located right at the bottom of the stack)
                 ASTNode* stmt = node->sc->rs->rs->rs;
                 while(stmt != NULL){
-                    codeGen(stmt, table, file,-1,NULL);
+                    codeGen(stmt, table, file);
                     stmt = stmt->next;
                 }
             }
@@ -70,126 +153,101 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithE
             break;
         }
         case assignmentNode:{
-            switch(node->sc->type){
+            //1.first compute rhs and store result in eax/ax/al
+            int type_of_assignment = -1;        //set 0 for boolean, 1 for int 2, for real
+            fprintf(file, "\n\tpush eax\n");
+            switch(node->sc->rs->type){
+                case numNode:{
+                    if(strcmp(node->sc->rs->node.numNode.token,"NUM")==0){
+                        fprintf(file, "\tmov ax, %d", (int)node->sc->rs->node.numNode.value);
+                        type_of_assignment = 1;
+                    }
+                    else{
+                        //real
+                        type_of_assignment = 2;
+                    }
+                    break;
+                }
+                case boolNode:{
+                    type_of_assignment = 0;
+                    if(strcmp(node->sc->rs->node.boolNode.token, "TRUE")==0)
+                        fprintf(file, "\tmov al, 1\n");
+                    else
+                        fprintf(file, "\tmov al, 0\n");
+                    break;
+                }
                 case idNode:{
-                    SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, -1);
-                    switch(node->sc->rs->type){
-                        case numNode:{  //eg: a:=5
-                            if(strcmp(node->sc->rs->node.numNode.token,"NUM")==0)   //integer
-                                fprintf(file, "\n\tpush ax\n\tmov ax,%d\n\tmov [ebp+%d],ax\n\tpop ax\n", (int)node->sc->rs->node.numNode.value, sym->symbol.idEntry.offset);
-                            else{   //real
-
-                            }
-                            break;
+                    SymbolTableEntry* rhsSym = lookupString(node->sc->rs->node.idnode.lexeme, table, idEntry, true, node->sc->rs->node.idnode.line_no);
+                    if(rhsSym->symbol.idEntry.type.tag == primitive){
+                        if(rhsSym->symbol.idEntry.type.type.primitiveType == boolean){
+                            fprintf(file, "\tmov al, [ebp+%d]\n", rhsSym->symbol.idEntry.offset);
+                            type_of_assignment = 0;
                         }
-                        case boolNode:{ //eg: a:=true
-                            break;    
+                        else if(rhsSym->symbol.idEntry.type.type.primitiveType == integer){
+                            fprintf(file, "\tmov ax, [ebp+%d]", rhsSym->symbol.idEntry.offset);
+                            type_of_assignment = 1;
                         }
-                        case idNode:{   //eg: a:=b
-                            //can have case A:=B where both A and B are arrays
-                            break;
+                        else{
+                            type_of_assignment = 2;
+                            //real
                         }
-                        case opNode:{   //eg: a:=b+c
-                            if(node->sc->rs->node.opNode.typeOfExpr == integer){
-                                fprintf(file,"\n\tpush ax\n");
-                                int currTempNo = 1;
-                                codeGen(node->sc->rs, table, file,integer,&currTempNo); //this produces output value in ax register (for int) OR al (bool) OR eax(real)
-                                fprintf(file, "\tmov [ebp+%d],ax\n\tpop ax\n", sym->symbol.idEntry.offset);
-                            }
-                            else if(node->sc->rs->node.opNode.typeOfExpr == boolean){
-                                fprintf(file, "\n\tpush al\n");
-                                codeGen(node->sc->rs,table,file,boolean,&currTempNo);
-                                fprintf(file, "\tmov [ebp+%d],al\n\tpop al\n", sym->symbol.idEntry.offset);
-                            }
-                            else{       //real
-
-                            }
-                            break;
-                        }
+                    }
+                    else{   //case A:=B where both A and B are arrays
+                        //array
                     }
                     break;
                 }
                 case arrayIdNode:{
-                    SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, -1);
-                    switch(node->sc->rs->type){
-                        case numNode:{
-                            switch(node->sc->sc->rs->type){
-                                case idNode:{   //eg: a[b]:=5
-                                    break;
-                                }
-                                case numNode:{  //eg: a[2]:=5
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                        case boolNode:{
-                            switch(node->sc->sc->rs->type){
-                                case idNode:{   //eg: a[b]:=false
-                                    break;
-                                }
-                                case numNode:{  //eg: a[2]:=false
-                                    break;                                    
-                                }
-                            }
-                            break;
-                        }
-                        case idNode:{
-                            switch(node->sc->sc->rs->type){
-                                case idNode:{   //eg: a[b]:=c
-                                    break;
-                                }
-                                case numNode:{  //eg: a[2]:=c
-                                    break;                                    
-                                }
-                            }
-                            break;
-                        }
-                        case opNode:{
-                            switch(node->sc->sc->rs->type){
-                                case idNode:{   //eg: a[b]:=c+d
-                                    break;
-                                }
-                                case numNode:{  //eg: a[2]:=c+d
-                                    break;                                    
-                                }
-                            }
-                            break;
-                        }
+                    //rhs is like A[3] or A[b]
+                    break;
+                }
+                case opNode:{
+                    if(node->sc->rs->node.opNode.typeOfExpr == integer){
+                        int tempIntVarNo = processExpression(node, table, file, integer);
+                        char* tempName = createTempVarName(tempIntVarNo, integer);
+                        SymbolTableEntry* sym = lookupString(tempName, table, idEntry, true, -1);
+                        fprintf(file, "\tmov ax, [ebp+%d]\n", sym->symbol.idEntry.offset);
+                        type_of_assignment = 1;
+                    }
+                    else if(node->sc->rs->node.opNode.typeOfExpr == boolean){
+                        int tempBoolVarNo = processExpression(node, table, file, boolean);
+                        char* tempName = createTempVarName(tempBoolVarNo, boolean);
+                        SymbolTableEntry* sym = lookupString(tempName, table, idEntry, true, -1);
+                        fprintf(file, "\tmov al, [ebp+%d]\n", sym->symbol.idEntry.offset);
+                        type_of_assignment = 0;
+                    }
+                    else{
+                        //real
                     }
                     break;
                 }
+
             }
+            //2. now perform the assignment
+            if(node->sc->type == arrayIdNode){  //lhs -> a[2] or a[b]
+                //a[2] = ...
+            }
+            else{       //idnode
+                SymbolTableEntry* lhsSym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, -1);
+                if(type_of_assignment == 0)
+                    fprintf(file, "\tmov [ebp+%d], al", lhsSym->symbol.idEntry.offset);
+                else if(type_of_assignment == 1)
+                    fprintf(file, "\tmov [ebp+%d], ax", lhsSym->symbol.idEntry.offset);
+                else if(type_of_assignment == 2){} //real
+            }
+                  
+            //3. restore eax  
+            fprintf(file, "\tpop eax\n");
             break;
         }
-        case opNode:{
-            
-            //in the end, rax register will store the value of the expression. rax is already pushed onto stack in case before this
-            //depending on typeOfExpr (int, bool, real) result will be stored in ax, al, OR ___(xmm?)
-            switch(arithExprType){
-                case integer:{
-                    if(node->sc->rs->type == nullNode){ //unary op case
-                        
-                    }
-                    else{       //binary op
-
-                    }
-                    break;
-                }
-                case real:{
-                    break;
-                }
-                case boolean:{
-                    break;
-                }
-            }
+        case opNode:{         
             break;
         }
         case idNode:{
-            
+            break;
         }
         case numNode:{
-
+            break;
         }
         case inputIONode:{
             SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,table,idEntry,true,-1);
@@ -254,6 +312,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveType arithE
                                 //for that you need to create labels
                                 //so
                                 //see upar in this file
+                                fprintf(file,"");
                                 break;// achha samajh gya.....yes jne and je yes yes..yaad hai....wo 2 ghante ki playlist me ye sab hi hai
                             }
                         }
@@ -345,7 +404,7 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout, "\tfalseOutput db \'false\',10,0\n");
     fprintf(fout, "\tlenFalseOutput equ 6");
     fprintf(fout, "\nsection .bss\n\tint1 : resw 1\nsection .text\n\tglobal _start\n\textern _scanf\n\textern _printf\n");
-    codeGen(root, table, fout, -1);
+    codeGen(root, table, fout);
     fprintf(fout, "\n\n\tmov rax, 1\n\tint 80h");   //exit the program
     fclose(fout);
     return;
