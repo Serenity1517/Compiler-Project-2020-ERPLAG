@@ -81,7 +81,8 @@ int main (int argc,char **argv)
 			case 8:{
 				testAST(argv[1], argv[2]);
 				semanticAnalyzer();
-				//codeGenControl(getAST(), getsymbolTable(), argv[3]);
+				codeGenControl(getAST(), getsymbolTable(), argv[3]);
+				return 0;
 			}
             		
         }
