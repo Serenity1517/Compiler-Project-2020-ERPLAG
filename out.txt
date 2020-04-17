@@ -1,4 +1,4 @@
-
+123456
 ----	-1	EPSILON	 RULE NO !!!! -1	----	moduleDeclarations	yes	
 ---- ---- ---- ---- RULE NO !!! 2	program	no moduleDeclarations	
 ---- ---- ---- ---- RULE NO !!! 0	ROOT	no program	
