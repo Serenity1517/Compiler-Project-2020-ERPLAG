@@ -30,7 +30,7 @@ SymbolTableEntry* createTemporory(int i,PrimitiveType p)
     switch (p)
     {
     case integer:{
-        sprintf(tempASTNode->node.idnode.lexeme,"tInt%d",i);
+        sprintf(tempASTNode->node.idnode.lexeme,"TI%d",i);
         s->tag = idEntry;
         s->symbol.idEntry.node = tempASTNode;
         s->symbol.idEntry.next = NULL;
@@ -38,10 +38,11 @@ SymbolTableEntry* createTemporory(int i,PrimitiveType p)
         s->symbol.idEntry.type.type.primitiveType =  integer;
         s->symbol.idEntry.isInputParam = false;
         s->next = NULL;
+        s->symbol.idEntry.width = 2;
         break;
     }
     case boolean:{
-        sprintf(tempASTNode->node.idnode.lexeme,"tBool%d",i);
+        sprintf(tempASTNode->node.idnode.lexeme,"TB%d",i);
         s->tag = idEntry;
         s->symbol.idEntry.node = tempASTNode;
         s->symbol.idEntry.next = NULL;
@@ -49,10 +50,11 @@ SymbolTableEntry* createTemporory(int i,PrimitiveType p)
         s->symbol.idEntry.type.type.primitiveType =  boolean;
         s->symbol.idEntry.isInputParam = false;
         s->next = NULL;
+        s->symbol.idEntry.width = 1;
         break;
     }
     case real:{
-        sprintf(tempASTNode->node.idnode.lexeme,"tReal%d",i);
+        sprintf(tempASTNode->node.idnode.lexeme,"TR%d",i);
         s->tag = idEntry;
         s->symbol.idEntry.node = tempASTNode;
         s->symbol.idEntry.next = NULL;
@@ -60,6 +62,7 @@ SymbolTableEntry* createTemporory(int i,PrimitiveType p)
         s->symbol.idEntry.type.type.primitiveType =  real;
         s->symbol.idEntry.isInputParam = false;
         s->next = NULL;
+        s->symbol.idEntry.width = 4;
         break;
     }
     }
@@ -80,10 +83,12 @@ void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbo
     SymbolTable* currTable = sym->table;
     int i = 1;
     int count =  currMod->node.moduleNode.maxTempInt-1;
-    
+    int ofs = sym->symbol.functionEntry.activationRecordSize;
     while(count > 0)
     {
         SymbolTableEntry* s = createTemporory(i,integer);
+        s->symbol.idEntry.offset = ofs;
+        ofs += s->symbol.idEntry.width;
         int hash = computeStringHash(s->symbol.idEntry.node->node.idnode.lexeme);
         SymbolTableEntry* temp = currTable->listHeads[hash];
         if(temp == NULL)
@@ -104,6 +109,8 @@ void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbo
     while(count > 0)
     {
         SymbolTableEntry* s = createTemporory(i,boolean);
+        s->symbol.idEntry.offset = ofs;
+        ofs += s->symbol.idEntry.width;
         int hash = computeStringHash(s->symbol.idEntry.node->node.idnode.lexeme);
         SymbolTableEntry* temp = currTable->listHeads[hash];
         if(temp == NULL)
@@ -124,6 +131,8 @@ void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbo
     while(count > 0)
     {
         SymbolTableEntry* s = createTemporory(i,real);
+        s->symbol.idEntry.offset = ofs;
+        ofs += s->symbol.idEntry.width;
         int hash = computeStringHash(s->symbol.idEntry.node->node.idnode.lexeme);
         SymbolTableEntry* temp = currTable->listHeads[hash];
         if(temp == NULL)
@@ -179,7 +188,7 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
             processStatement(stmtNode, currTable);
             stmtNode = stmtNode->next;
    		} 
-        sym->symbol.functionEntry.activationRecordSize = offset;
+        sym->symbol.driverEntry.activationRecordSize = offset;
         return;			
 	}
     
@@ -364,6 +373,102 @@ void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
         }
         default:{
             break;
+        }
+    }
+}
+
+char type_of_element[3][10] = {"integer","real","boolean"};
+
+void printSymbolTableEntry(SymbolTableEntry* sym,SymbolTable* currTable)
+{
+    switch(sym->tag){
+        case idEntry:{
+            int nestingLevel = 0;
+            SymbolTable* table = currTable;
+            while(table->tableType != functionBlock){
+                nestingLevel++;
+                table = table->parent;
+            }
+            if(strcmp(table->scope.scope,"driverModule")==0){ // case for driverModule
+                SymbolTableEntry* s = lookupString(table->scope.scope,table->parent,driverEntry,false,-1);
+                if(sym->symbol.idEntry.type.tag == primitive){
+                    ASTNode* temp = sym->symbol.idEntry.node;
+                    printf("%s  %s  %d-%d   %d  ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end, temp->node.idnode.line_no);
+                    printf("%d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.width, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset,nestingLevel);
+                }
+                else{// array node
+                    if((sym->symbol.idEntry.type.type.arrayType.low == -1) ||(sym->symbol.idEntry.type.type.arrayType.high == -1)){ //dynamic array
+                        ASTNode* temp = sym->symbol.idEntry.node;
+                        temp = temp->rs->sc->sc;// range node's first child (low index)
+                        printf("%s  %s  %d-%d   %d  yes   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end, sym->symbol.idEntry.node->node.idnode.line_no);
+                        if(sym->symbol.idEntry.type.type.arrayType.low == -1){ //low is idNode
+                            printf("%d  dynamic    [%s", sym->symbol.idEntry.width, temp->node.idnode.lexeme);
+                        }
+                        else{
+                            printf("%d  dynamic    [%s", sym->symbol.idEntry.width, temp->node.numNode.lexeme);
+                        }
+                        if(sym->symbol.idEntry.type.type.arrayType.high == -1){ // high is idnode
+                            printf(",%s]    %s  %d  %d\n", temp->rs->node.idnode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset, nestingLevel);
+                        }
+                        else{
+                            printf(",%s]    %s  %d  %d\n", temp->rs->node.numNode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset, nestingLevel);
+                        }
+                    }
+                    else //static array
+                    {
+                        printf("%s  %s  %d-%d   %d  yes  ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end, sym->symbol.idEntry.node->node.idnode.line_no);
+                        printf("%d  static [%d,%d] %s  %d  %d\n", sym->symbol.idEntry.width, sym->symbol.idEntry.type.type.arrayType.low, sym->symbol.idEntry.type.type.arrayType.high, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset,nestingLevel);
+                    }                    
+                }
+            } 
+            else {   // case for otherModules
+                SymbolTableEntry* s = lookupString(table->scope.scope,table->parent,functionEntry,false,-1);
+                if(sym->symbol.idEntry.type.tag == primitive){
+                    printf("%s  %s  %d-%d   %d  %d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.node->node.idnode.lexeme,table->scope.scope,s->symbol.functionEntry.block.start,s->symbol.functionEntry.block.end,sym->symbol.idEntry.node->node.idnode.line_no,sym->symbol.idEntry.width,type_of_element[sym->symbol.idEntry.type.type.primitiveType],sym->symbol.idEntry.offset,nestingLevel);
+                }
+                else{ // array node
+
+                }
+            }
+            break;
+        }
+        case driverEntry:{
+            printSymbolTable(sym->table);
+            break;
+        }
+        case functionEntry:{
+            printSymbolTable(sym->table);
+            break;
+        }
+        case forLoopEntry:{
+            printSymbolTable(sym->table);
+            break;
+        }
+        case whileLoopEntry:{
+            printSymbolTable(sym->table);
+            break;
+        }
+        case switchCaseEntry:{
+            printSymbolTable(sym->table);
+            break;
+        }
+    }
+}
+
+void printSymbolTable(SymbolTable* root)
+{
+    //printf("variable_name	scope(module_name)	scope(line_numbers)     width	isArray	static_or_dynamic   range_lexemes    type_of_element    offset  nesting_level\n");
+    if(root == NULL)
+        return;
+    SymbolTableEntry* tab;
+    int i;
+    for(i=0;i<SYM_TABLE_SLOTS;i++)
+    {
+        tab = root->listHeads[i];
+        while(tab != NULL)
+        {
+            printSymbolTableEntry(tab,root);
+            tab = tab->next;
         }
     }
 }

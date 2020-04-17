@@ -435,6 +435,8 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 s->driverEntry.sequenceNumber = moduleNumber;
                 s->driverEntry.driverNode = node;
                 moduleNumber++;
+                // storing scope values
+                s->driverEntry.block = node->node.moduleNode.block;
                 SymbolTableEntry *sym = createSymbolTableEntry(s, driverEntry);
                 
                 int hash = computeStringHash("driverModule");
@@ -456,7 +458,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                     processAST(traverse, newTable,semanticErrors);
                     traverse = traverse->next;
                 }
-
+                
                 break;
             }
 
@@ -488,7 +490,8 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 //2.Create an entry for this module in current table
                 Symbol *s = createSymbol(node);
                 int hash = computeStringHash(s->functionEntry.functionName);
-                
+                //storing scope(line nos.)
+                s->functionEntry.block = node->node.moduleNode.block;
                 // creating a symbol of type functionEntry and populating it's fields.
                 SymbolTableEntry *sym = createSymbolTableEntry(s,functionEntry);
 
@@ -580,7 +583,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 info->symbol.functionEntry.outputListHead = node->sc->rs->rs;
                 info->symbol.functionEntry.isDefined = true;
 				info->symbol.functionEntry.sequenceNumber = moduleNumber++;
-
+                info->symbol.functionEntry.block = node->node.moduleNode.block;
                 SymbolTable* newTable = createSymbolTable(functionBlock);
                 //set newTable.scope equal to the name of curr function
                 Scope scp;

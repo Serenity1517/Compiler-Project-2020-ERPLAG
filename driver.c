@@ -12,6 +12,7 @@
 #include "symboltable.h"
 #include "semantic.h"
 #include "codeGeneration.h"
+#include "offsetComputer.h"
 
 int main (int argc,char **argv)
 {
@@ -70,6 +71,7 @@ int main (int argc,char **argv)
 				testAST(argv[1],argv[2]);
 				semanticAnalyzer();
 				SymbolTable* s = getsymbolTable();
+				printSymbolTable(s);
 				ListOfErrors* semanticErrors = getSemanticErrorObject();
 				int compressionR =  getCompressionRatio();
 				printf("Compression Ratio: %d\n",compressionR);

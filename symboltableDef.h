@@ -49,6 +49,8 @@ typedef struct IdEntry{
 typedef struct DriverEntry{
     int sequenceNumber; 
     struct ASTNode* driverNode;  //ast node pointer to moduleNode of driver    
+    int activationRecordSize;
+    Block block;
 }DriverEntry;
 
 /*Module*/
@@ -62,6 +64,7 @@ typedef struct FunctionEntry{
     bool isDefined;         //true if function definition exists, false if not
     struct FunctionType inOutType;      //type (input/output) of the function..DONE
     int activationRecordSize;   //size of activation record (basically sum of all offsets in function)
+    Block block;
 }FunctionEntry;
 
 typedef struct ForLoopEntry{

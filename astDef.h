@@ -64,6 +64,7 @@ typedef struct ModuleNode{
     int maxTempBool;
     int maxTempReal;
     FunctionType* typeOfFunc;
+    Block block;
 }ModuleNode;
 
 typedef struct InputParamNode{

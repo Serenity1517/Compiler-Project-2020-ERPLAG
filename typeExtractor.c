@@ -143,19 +143,19 @@ Typeof* extractTypeOfId(ASTNode* node){
             /*int high = temp->sc->node.numNode.value;
             int low = temp->sc->rs->node.numNode.value;*/
             //temp =temp->rs;
-            if(strcmp(temp->rs->node.typeNode.token,"INTEGER")==0)
+            if(strcmp(temp->sc->rs->node.typeNode.token,"INTEGER")==0)
             {
                 Typeof* typeofnode = createTypeof(array,integer,-1,-1,temp->sc->node.idnode.lexeme,temp->sc->rs->node.idnode.lexeme,NULL,-1);
                 node->node.declareNode.typeOfId = *typeofnode;
                 return typeofnode;
             }
-            else if(strcmp(temp->rs->node.typeNode.token,"REAL")==0)
+            else if(strcmp(temp->sc->rs->node.typeNode.token,"REAL")==0)
             {
                 Typeof* typeofnode = createTypeof(array,real,-1,-1,temp->sc->node.idnode.lexeme,temp->sc->rs->node.idnode.lexeme,NULL,-1);
                 node->node.declareNode.typeOfId = *typeofnode;
                 return typeofnode;
             }
-            else if(strcmp(temp->rs->node.typeNode.token,"BOOLEAN")==0)
+            else if(strcmp(temp->sc->rs->node.typeNode.token,"BOOLEAN")==0)
             {
                 Typeof* typeofnode = createTypeof(array,boolean,-1,-1,temp->sc->node.idnode.lexeme,temp->sc->rs->node.idnode.lexeme,NULL,-1);
                 node->node.declareNode.typeOfId = *typeofnode;
@@ -668,7 +668,7 @@ PrimitiveType extractTypeOfExpression(ASTNode* node, SymbolTable* currTable, Lis
                 }
             }
             //5.if dynamic, check if index is integer or not
-            if(strcmp(node->sc->rs->node.numNode.token,"INTEGER")==0){  //index is integer, assume it is in bounds because 
+            if(strcmp(node->sc->rs->node.numNode.token,"NUM")==0){  //index is integer, assume it is in bounds because 
                 //bound checking will be done at runtime
                 return sym->symbol.idEntry.type.type.arrayType.t;
             }

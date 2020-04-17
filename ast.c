@@ -170,8 +170,10 @@ void createAST(ParseTreeNode *node){
 
         //<driverModule> --> DRIVERDEF DRIVER PROGRAM DRIVERENDDEF <moduleDef>
 		case 7: {
-            createAST(node->sc->rs->rs->rs->rs);
             ASTNode *curr = createASTNode(moduleNode);
+            curr->node.moduleNode.block.start = node->sc->rs->rs->rs->rs->sc->tkn->line_no;
+            curr->node.moduleNode.block.end = node->sc->rs->rs->rs->rs->sc->rs->rs->tkn->line_no;
+            createAST(node->sc->rs->rs->rs->rs);
             curr->sc = createASTNode(nullNode);
             curr->sc->parent = curr;
             curr->sc->rs = createASTNode(nullNode);
@@ -182,7 +184,6 @@ void createAST(ParseTreeNode *node){
             curr->node.moduleNode.maxTempBool = 0;
             curr->node.moduleNode.maxTempInt = 0;
             curr->node.moduleNode.maxTempReal = 0;
-            
             curr->sc->rs->rs->rs = node->sc->rs->rs->rs->rs->syn;
             
             ASTNode* traverse = curr->sc->rs->rs->rs;
@@ -197,6 +198,7 @@ void createAST(ParseTreeNode *node){
                 }
             }
             
+               
             node->syn = curr;
             free(node->sc->rs->rs->rs);
             free(node->sc->rs->rs);
@@ -217,6 +219,8 @@ void createAST(ParseTreeNode *node){
             curr->node.moduleNode.maxTempReal = 0;
             curr->node.moduleNode.maxTempInt = 0;
             curr->node.moduleNode.maxTempBool = 0;
+            curr->node.moduleNode.block.start = node->sc->rs->rs->rs->rs->rs->rs->rs->rs->rs->rs->rs->sc->tkn->line_no;   // update scope
+            curr->node.moduleNode.block.end = node->sc->rs->rs->rs->rs->rs->rs->rs->rs->rs->rs->rs->sc->rs->rs->tkn->line_no;
             //compute <input_plist>.syn and update parent pointers
             //of all inputparamnodes present in it
             createAST(node->sc->rs->rs->rs->rs->rs->rs->rs);
