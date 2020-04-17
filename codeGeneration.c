@@ -34,47 +34,50 @@ char* createTempVarName(int num, PrimitiveType type){
 }
 
 void processIntegerExpr(ASTNode* node, SymbolTable* table, FILE* file, int* currTempNo){
+    fprintf(file, "\n;------Processing integer expression-----\n");
     //1. process left operand and load it in ax
     if(node->sc->type == numNode)
-        fprintf(file, "\tmov ax, %d\n", (int)node->sc->node.numNode.value);
+        fprintf(file, "\n\tmov ax, %d\n", (int)node->sc->node.numNode.value);
     else if(node->sc->type == idNode){
         SymbolTableEntry* sym1 = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, node->sc->node.idnode.line_no);
-        fprintf(file, "\tmov ax, [ebp+%d]\n", sym1->symbol.idEntry.offset);
+        fprintf(file, "\n\tmov ax, [ebp+%d];\tleft operand is %s\n", sym1->symbol.idEntry.offset, node->sc->node.idnode.lexeme);
     }
     else if(node->sc->type == opNode){
         processIntegerExpr(node->sc, table, file, currTempNo);
         char* tempName = createTempVarName(*currTempNo, integer);
         SymbolTableEntry* sym2 = lookupString(tempName, table, idEntry, true, -1);
-        fprintf(file, "\tmov ax, [ebp+%d]\n", sym2->symbol.idEntry.offset);
+        fprintf(file, "\n\tmov ax, [ebp+%d];\tleft operand is %s\n", sym2->symbol.idEntry.offset, tempName);
     }
     else{
            //arrayIdNode
     }
 
-    //2. process right operand and load it in bx
+    //2. process right operand and load it in bx 
+    fprintf(file, "\tpush ax\n"); //save ax in case it is used below
     if(node->sc->rs->type == numNode)
         fprintf(file, "\tmov bx, %d\n", (int)node->sc->rs->node.numNode.value);
     else if(node->sc->rs->type == idNode){
         SymbolTableEntry* sym3 = lookupString(node->sc->rs->node.idnode.lexeme, table, idEntry, true, node->sc->rs->node.idnode.line_no);
-        fprintf(file, "\tmov bx, [ebp+%d]\n", sym3->symbol.idEntry.offset);
+        fprintf(file, "\tmov bx, [ebp+%d];\tright operand is %s\n", sym3->symbol.idEntry.offset, node->sc->rs->node.idnode.lexeme);
     }
     else if(node->sc->rs->type == opNode){
         processIntegerExpr(node->sc->rs, table, file, currTempNo);
         char* tempName = createTempVarName(*currTempNo, integer);
         SymbolTableEntry* sym4 = lookupString(tempName, table, idEntry, true, -1);
-        fprintf(file, "\tmov bx, [ebp+%d]\n", sym4->symbol.idEntry.offset);
+        fprintf(file, "\tmov bx, [ebp+%d];\tright operand is %s\n", sym4->symbol.idEntry.offset, tempName);
     }
     else{
         //arrayIdNode
     }
-
+    
     //3. perform the calculation
+    fprintf(file, "\tpop ax\n");
     if(strcmp(node->node.opNode.token, "PLUS")==0)
         fprintf(file, "\tadd ax,bx\n");
     else if(strcmp(node->node.opNode.token, "MUL")==0)
         fprintf(file, "\tmul bx\n");    //assumes no overflow.. result fits in 16 bit ax register
     else if(strcmp(node->node.opNode.token, "MINUS")==0)
-        fprintf(file, "\nsub ax,bx\n");
+        fprintf(file, "\tsub ax,bx\n");
     else{
         //DIV
     }
@@ -83,7 +86,7 @@ void processIntegerExpr(ASTNode* node, SymbolTable* table, FILE* file, int* curr
     *currTempNo += 1;
     char* finalTemp = createTempVarName(*currTempNo, integer);
     SymbolTableEntry* sym = lookupString(finalTemp, table, idEntry, true, -1);
-    fprintf(file, "\tmov [ebp+%d], ax", sym->symbol.idEntry.offset);
+    fprintf(file, "\tmov [ebp+%d], ax\n;------expression computed. result is in %s------", sym->symbol.idEntry.offset, finalTemp);
     return;
 }
 
@@ -99,6 +102,7 @@ int processExpression(ASTNode* node, SymbolTable* table, FILE* file, PrimitiveTy
         processBooleanExpr(node, table, file, &finalTempNo);
     else{}
         //processRealExpr(node, table, file, &finalTempNo);
+    fprintf(file, "\n;-----expression processed, result is stored inside temp number %d of type %d\n", finalTempNo, exprType);
     return finalTempNo;
 }   
 
@@ -134,7 +138,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             //1. Special case of driver module
             if(node->sc->type == nullNode){
                 SymbolTableEntry* sym = lookupString("driverModule", table->parent, driverEntry, false, -1);
-                //fprintf(file, "\tsub rsp, %d", sym->symbol.driverEntry.activationRecordSize);
+                fprintf(file, "\tsub rsp, %d\n", sym->symbol.driverEntry.activationRecordSize);
                 fprintf(file, "\tmov rbp, rsp\n");  //for driver, the frame base is same as bottom of stack.(as the frame/activation record for the driver function is located right at the bottom of the stack)
                 ASTNode* stmt = node->sc->rs->rs->rs;
                 while(stmt != NULL){
@@ -155,11 +159,11 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
         case assignmentNode:{
             //1.first compute rhs and store result in eax/ax/al
             int type_of_assignment = -1;        //set 0 for boolean, 1 for int 2, for real
-            fprintf(file, "\n\tpush eax\n");
+            fprintf(file, "\n;-------assignment stmt-----\n\tpush rax\n");
             switch(node->sc->rs->type){
                 case numNode:{
                     if(strcmp(node->sc->rs->node.numNode.token,"NUM")==0){
-                        fprintf(file, "\tmov ax, %d", (int)node->sc->rs->node.numNode.value);
+                        fprintf(file, "\tmov ax, %d\n", (int)node->sc->rs->node.numNode.value);
                         type_of_assignment = 1;
                     }
                     else{
@@ -184,7 +188,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                             type_of_assignment = 0;
                         }
                         else if(rhsSym->symbol.idEntry.type.type.primitiveType == integer){
-                            fprintf(file, "\tmov ax, [ebp+%d]", rhsSym->symbol.idEntry.offset);
+                            fprintf(file, "\tmov ax, [ebp+%d]\n", rhsSym->symbol.idEntry.offset);
                             type_of_assignment = 1;
                         }
                         else{
@@ -203,14 +207,14 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 }
                 case opNode:{
                     if(node->sc->rs->node.opNode.typeOfExpr == integer){
-                        int tempIntVarNo = processExpression(node, table, file, integer);
+                        int tempIntVarNo = processExpression(node->sc->rs, table, file, integer);
                         char* tempName = createTempVarName(tempIntVarNo, integer);
                         SymbolTableEntry* sym = lookupString(tempName, table, idEntry, true, -1);
                         fprintf(file, "\tmov ax, [ebp+%d]\n", sym->symbol.idEntry.offset);
                         type_of_assignment = 1;
                     }
                     else if(node->sc->rs->node.opNode.typeOfExpr == boolean){
-                        int tempBoolVarNo = processExpression(node, table, file, boolean);
+                        int tempBoolVarNo = processExpression(node->sc->rs, table, file, boolean);
                         char* tempName = createTempVarName(tempBoolVarNo, boolean);
                         SymbolTableEntry* sym = lookupString(tempName, table, idEntry, true, -1);
                         fprintf(file, "\tmov al, [ebp+%d]\n", sym->symbol.idEntry.offset);
@@ -230,14 +234,14 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             else{       //idnode
                 SymbolTableEntry* lhsSym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, -1);
                 if(type_of_assignment == 0)
-                    fprintf(file, "\tmov [ebp+%d], al", lhsSym->symbol.idEntry.offset);
+                    fprintf(file, "\tmov [ebp+%d], al\n", lhsSym->symbol.idEntry.offset);
                 else if(type_of_assignment == 1)
-                    fprintf(file, "\tmov [ebp+%d], ax", lhsSym->symbol.idEntry.offset);
+                    fprintf(file, "\tmov [ebp+%d], ax\n", lhsSym->symbol.idEntry.offset);
                 else if(type_of_assignment == 2){} //real
             }
                   
-            //3. restore eax  
-            fprintf(file, "\tpop eax\n");
+            //3. restore rax  
+            fprintf(file, "\tpop rax\n;--------------\n");
             break;
         }
         case opNode:{         
@@ -269,13 +273,13 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 case primitive:{
                     switch(sym->symbol.idEntry.type.type.primitiveType){
                         case integer:{
-                            fprintf(file, "\n\tpush rax\n\tpush rbx\n\tpush rcx\n\tpush rdx\n\tmov rax,4\n\tmov rbx,1\n\tmov rcx,intInput\n\tmov rdx,lenIntInput\n\tint 80h\n\tpop rdx\n\tpop rcx\n\tpop rbx\n\tpop rax\n");
+                            fprintf(file, "\n;-----code for scanning integer variable----\npush inputInt\n\tcall _printf\n");
                             //write code for scanning input integer
-                            fprintf(file,"\tpush int1\n\tpush Input_Format\n\tcall _scanf\n\tadd esp, 6\n");//6 = 4 + 2//lite.. sahi he na.. u sure?pretty suresill...i
-                            fprintf(file,"\tmov ax, [int1]\n");// scanned value now in ax
-                            fprintf(file, "\tmov [ebp+%d],ax\n", sym->symbol.idEntry.offset);   //ok
-                            break;//ok
-                        }   //sun.. neeche outputIoNode me case idNode wala likh de.,
+                            fprintf(file, "\tpush int1\n\tpush Input_Format\n\tcall _scanf\n\tadd esp, 6\n");//6 = 4 + 2//lite.. sahi he na.. u sure?pretty suresill...i
+                            fprintf(file, "\tmov ax, [int1]\n");// scanned value now in ax
+                            fprintf(file, "\tmov [ebp+%d],ax\n;-----------\n", sym->symbol.idEntry.offset);
+                            break;
+                        }
                         case real:{
                             break;
                         }   
@@ -295,8 +299,8 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                     if(sym->symbol.idEntry.type.tag == primitive){
                         switch(sym->symbol.idEntry.type.type.primitiveType){
                             case integer:{  //eg: print(z) where z is an integer
-                                fprintf(file,"\tmov bx, [ebp + %d]\n",sym->symbol.idEntry.offset);
-                                fprintf(file,"\tpush bx\n\tpush output\n\tcall _printf\n\tadd esp, 6\n");
+                                fprintf(file, "\n;------code for printing integer variable-----\n\tmov bx, [ebp + %d]\n",sym->symbol.idEntry.offset);
+                                fprintf(file, "\tpush bx\n\tpush output\n\tcall _printf\n\tadd esp, 6\n;------------\n");
 
                                 break;
                             }
@@ -312,7 +316,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                 //for that you need to create labels
                                 //so
                                 //see upar in this file
-                                fprintf(file,"");
+                                printf("");
                                 break;// achha samajh gya.....yes jne and je yes yes..yaad hai....wo 2 ghante ki playlist me ye sab hi hai
                             }
                         }
@@ -395,13 +399,17 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
 
     //add initial lines of code //:)we need headers....they'll go before this..
     fprintf(fout, "\nsection .data\n");
+    fprintf(fout,"\tinputInt: db \"Input: Enter an integer value\",10,0\n");//resume
     fprintf(fout,"\toutput: db \"Output: %d\", 0\n");
     fprintf(fout, "\tInput_Format : db \"%d\",0\n");
     fprintf(fout, "\tintInput db \'Input: Enter an integer value\',10,0\n");    //10 is newline character, 0 is null character
     fprintf(fout, "\tlenIntInput equ 30\n");
-    fprintf(fout, "\ttrueOutput db \'true\',10,0\n");   //string is terminated by newline followed by null char
-    fprintf(fout, "\tlenTrueOutput equ 5");
-    fprintf(fout, "\tfalseOutput db \'false\',10,0\n");
+    /*
+        //sun compile ho gaya. tu code likh de boolean scan/print karne ka
+    */
+    fprintf(fout, "\ttrueOutput db \"true\",10,0\n");   //string is terminated by newline followed by null char
+    fprintf(fout, "\tlenTrueOutput equ 5\n");
+    fprintf(fout, "\tfalseOutput db \"false\",10,0\n");//listen// did you change this
     fprintf(fout, "\tlenFalseOutput equ 6");
     fprintf(fout, "\nsection .bss\n\tint1 : resw 1\nsection .text\n\tglobal _start\n\textern _scanf\n\textern _printf\n");
     codeGen(root, table, fout);

@@ -81,6 +81,7 @@ int main (int argc,char **argv)
 				testAST(argv[1], argv[2]);
 				semanticAnalyzer();
 				codeGenControl(getAST(), getsymbolTable(), argv[3]);
+				return 0;
 			}
             		
         }
