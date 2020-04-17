@@ -404,9 +404,6 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout, "\tInput_Format : db \"%d\",0\n");
     fprintf(fout, "\tintInput db \'Input: Enter an integer value\',10,0\n");    //10 is newline character, 0 is null character
     fprintf(fout, "\tlenIntInput equ 30\n");
-    /*
-        //sun compile ho gaya. tu code likh de boolean scan/print karne ka
-    */
     fprintf(fout, "\ttrueOutput db \"true\",10,0\n");   //string is terminated by newline followed by null char
     fprintf(fout, "\tlenTrueOutput equ 5\n");
     fprintf(fout, "\tfalseOutput db \"false\",10,0\n");//listen// did you change this
