@@ -34,7 +34,39 @@ char* createTempVarName(int num, PrimitiveType type){
 }
 
 void processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, int* currTempNo){
+    fprintf(file, "\n;-------Processing arrayIdNode(array element)-------\n");
+    SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, table, file, true, node->sc->node.idnode.line_no);
+    Typeof* currType = &sym->symbol.idEntry.type;
+    if(currType->type.arrayType.high>=0 && currType->type.arrayType.low>=0){    //static array
+        if(node->sc->rs->type == idNode){   //eg: a[b]
 
+        }
+        else{       //eg: a[3]. bound already checked at compile time
+            int relIndex = ((int)node->sc->rs->node.numNode.value) - currType->type.arrayType.low;
+            if(currType->type.arrayType.t == integer){  //static integer array
+                fprintf("\tmov ax, WORD[rbp+%d]\n",(sym->symbol.idEntry.offset+(2*relIndex)));
+                *currTempNo += 1;
+                char* finalTemp = createTempVarName(*currTempNo, integer);
+                SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
+                fprintf(file, "\tmov WORD[rbp+%d], ax\n;------expression computed. result is in %s------\n", sym1->symbol.idEntry.offset, finalTemp);
+                return;
+            }
+            else if(currType->type.arrayType.t == boolean){ //static boolean array
+                fprintf("\tmov al, BYTE[rbp+%d]\n",(sym->symbol.idEntry.offset+(2*relIndex)));
+                *currTempNo += 1;
+                char* finalTemp = createTempVarName(*currTempNo, boolean);
+                SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
+                fprintf(file, "\tmov BYTE[rbp+%d], al\n;------expression computed. result is in %s------\n", sym1->symbol.idEntry.offset, finalTemp);
+                return;
+            }
+            else{
+                //static real array
+            }
+        }
+    }
+    else{
+        //dynamic
+    }
 }
 
 void processIntegerExpr(ASTNode* node, SymbolTable* table, FILE* file, int* currTempNo){
