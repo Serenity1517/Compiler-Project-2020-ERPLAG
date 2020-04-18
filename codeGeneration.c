@@ -507,7 +507,20 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                         switch(sym->symbol.idEntry.type.type.arrayType.t){
                             case integer:{ //integer array
                                 if(sym->symbol.idEntry.type.type.arrayType.low>=0 && sym->symbol.idEntry.type.type.arrayType.high>=0){  //static array
+                                    fprintf(file,"\n;-------code for printing static array---------\n");
+                                    int h = sym->symbol.idEntry.type.type.arrayType.high;
+                                    int l = sym->symbol.idEntry.type.type.arrayType.low;
+                                    int iteration = h-l+1;
+                                    int ofs = sym->symbol.idEntry.offset;
+                                    int i = 0;
+                                    fprintf(file, "\tpush rbp\n\tmov rdi, output_array\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
                                     
+                                    while(iteration > 0){
+                                        fprintf(file,"\tpush rbp\n\tmov ax, WORD[rbp + %d]\n",(ofs + 2*i));
+                                        fprintf(file, "\tmov rdi, array_value\n\tmovsx rsi, ax\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
+                                        i++;
+                                        iteration--;
+                                    } 
                                 }
                                 else{
                                     //dynamic
@@ -623,6 +636,8 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout, "\nsection .data\n");
     fprintf(fout,"\tinputInt: db \"Input: Enter an integer value\",10,0\n");//resume
     fprintf(fout,"\toutput: db \"Output: %%"); fprintf(fout, "d\", 10, 0\n");
+    fprintf(fout,"output_array : db \"Output: \",0\n");
+    fprintf(fout,"array_value : db \" %%"); fprintf(fout,"d\",0\n");
     fprintf(fout, "\tInput_Format : db \"%%"); fprintf(fout, "d\",0\n");
     fprintf(fout, "\tInput_Array1 : db \"Input: Enter %%"); fprintf(fout,"d elements of\", 0\n"); 
     fprintf(fout, "\tonScreenInt : db \"integer\", 0\n");

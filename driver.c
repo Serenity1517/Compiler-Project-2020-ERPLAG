@@ -47,18 +47,11 @@ int main (int argc,char **argv)
 
 			case 3: {
 					testAST(argv[1],argv[2]);
+					ASTNode* root = getAST();
+					printAST(root);
 					return 0;
 			}
 
-            case 11: begin =clock();
-                    //double total_CPU_time, total_CPU_time_in_seconds;
-                   
-                    testParseTree(argv[1], argv[2]);		//during parsing, lexical analyzer will be used. So the total time taken would be for lexical+syntactical analysis
-                    end = clock();
-                    total_CPU_time  =  (double) (end - begin);
-                    total_CPU_time_in_seconds =   total_CPU_time / CLOCKS_PER_SEC;
-					printf("\n total_CPU_time = %f Total_CPU_time_in_seconds = %f\n\n",total_CPU_time,total_CPU_time_in_seconds);
-                    return 0;
 			case 4: {
 					testAST(argv[1],argv[2]);
 					int parseNode = getParseTreeNode();
@@ -92,11 +85,17 @@ int main (int argc,char **argv)
 				printArrays(s);
 				return 0;
 			}
-			case 8:{
-				testAST(argv[1],argv[2]);
-				semanticAnalyzer();
-				ListOfErrors* error = getSemanticErrorObject();
-				printErrors(error);
+			case 8:{begin =clock();
+                    //double total_CPU_time, total_CPU_time_in_seconds;
+                   	testAST(argv[1],argv[2]);
+					semanticAnalyzer();
+					ListOfErrors* error = getSemanticErrorObject();
+					printErrors(error);
+                    end = clock();
+                    total_CPU_time  =  (double) (end - begin);
+                    total_CPU_time_in_seconds =   total_CPU_time / CLOCKS_PER_SEC;
+					printf("\n\n total_CPU_time = %f Total_CPU_time_in_seconds = %f\n\n",total_CPU_time,total_CPU_time_in_seconds);
+				
 				return 0;
 			}
 			case 9:{
