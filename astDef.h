@@ -102,10 +102,11 @@ typedef struct ForLoopNode {
 }ForLoopNode;
 
 typedef struct WhileLoopNode{
-    //1st Child : (arithematic or boolean expression)linked list of opnodes
+    //1st Child : (arithematic or boolean expression)opnodes OR idnode OR boolnode
     //2nd Child : ((empty/nonempty)list of statements inside body)linkedlist of statement nodes: can be any one of the possible statement structures 
     struct Block block;
 }WhileLoopNode;
+
 
 typedef struct InputIONode{
     //1st Child : (Identifierr into which input is being taken)IdNode

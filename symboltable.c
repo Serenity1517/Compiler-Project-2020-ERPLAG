@@ -98,6 +98,7 @@ Symbol* createSymbol(ASTNode* astNode){    //need to check node->type and create
         sym->idEntry.isInputParam = false;
         sym->idEntry.isTemporary = false;
         sym->idEntry.isOutputParam =false;
+        sym->idEntry.isWhileLoopCondition = false;
     }
     else if(astNode->type == moduleNode){       //module Definition
         strcpy(sym->functionEntry.functionName, astNode->sc->node.idnode.lexeme);
@@ -847,7 +848,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
                 if(sym == NULL){
                     Error *err = createErrorObject();  
                     err->lineNo = node->sc->node.idnode.line_no;    
-                    strcpy(err->error,"LHS of assignment statement has not been declared before");
+                    sprintf(err->error,"Variable %s used in this expression has not been declared.",node->sc->node.idnode.lexeme);
                     //printf("LINE %d: %s\n",err->lineNo,err->error);
                     Error *temporary = semanticErrors->head;
                     if(temporary == NULL)
@@ -871,7 +872,7 @@ void processAST(ASTNode* node, SymbolTable* curr, ListOfErrors* semanticErrors){
             else{
                 SymbolTableEntry* sym = lookupString(node->sc->sc->node.idnode.lexeme, curr, idEntry, true,node->sc->sc->node.idnode.line_no);
                 if(sym == NULL){
-                    Error *err = createErrorObject();   err->lineNo = node->sc->node.idnode.line_no;    strcpy(err->error,"LHS of assignment statement has not been declared before");
+                    Error *err = createErrorObject();   err->lineNo = node->sc->node.idnode.line_no;    sprintf(err->error,"Variable %s used in this expression has not been declared.",node->sc->node.idnode.lexeme);
                     //printf("LINE %d: %s\n",err->lineNo,err->error);
                     Error *temporary = semanticErrors->head;
                     if(temporary == NULL)

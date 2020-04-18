@@ -45,6 +45,7 @@ typedef struct IdEntry{
     bool isTemporary;
     struct SymbolTableEntry* next;
     bool isOutputParam;
+    bool isWhileLoopCondition;
 }IdEntry;
 
 /* Driver Module*/

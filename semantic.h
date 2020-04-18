@@ -19,4 +19,6 @@ int countLeaves(ASTNode* node);
 void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors);
 Error* removeDuplicates(Error* head);
 void printErrors(ListOfErrors *errors);
+void setWhileLoopConditionFlag(ASTNode* node, bool set,SymbolTable* currTable);
+
 #endif

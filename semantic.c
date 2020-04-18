@@ -20,6 +20,7 @@
 #define rs rightSibling
 
 ListOfErrors* semanticErrors;
+bool whileLoopAssignsValue;
 
 ListOfErrors* getSemanticErrorObject()
 {
@@ -87,7 +88,37 @@ int countLeaves(ASTNode* node)
     }
     return 0;    
 }
-
+//node opnode
+void setWhileLoopConditionFlag(ASTNode* node, bool set, SymbolTable* currtable){
+    switch(node->type)
+    {
+        case opNode:{
+            setWhileLoopConditionFlag(node->sc,set,currtable);
+            setWhileLoopConditionFlag(node->sc->rs,set,currtable);
+            return;
+        }
+        case idNode:{
+            SymbolTableEntry* entry = lookupString(node->node.idnode.lexeme,currtable,idEntry,true,node->node.idnode.line_no);
+            if(entry == NULL)
+                return;
+            entry->symbol.idEntry.isWhileLoopCondition = set;
+            return;
+        }
+        case arrayIdNode:{
+            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, currtable, idEntry, true, node->sc->node.idnode.line_no);
+            if(sym == NULL)
+                return;
+            sym->symbol.idEntry.isWhileLoopCondition = set;
+            return;
+        }
+        case boolNode: {
+            return;
+        }
+        case nullNode: {
+            return;
+        }
+    }
+}
 
 /*This recursive function traverses AST and performs various semantic checks*/
 void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors){
@@ -214,6 +245,30 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
 
         case assignmentNode:{
             //first check if lhs variable has been declared
+            
+            //0. check if this assignment statement is inside a whileloop. if yes,then check if one of the variables in its condition is assigned a value
+            SymbolTable* tempTable = table;
+            while(tempTable != NULL){
+                if(tempTable->tableType == whileLoopBlock)
+                    break;
+                tempTable = tempTable->parent;
+            }
+            if(tempTable != NULL){      //we are inside while loop
+                if(node->sc->type == idNode){
+                    SymbolTableEntry* lhsSym = lookupString(node->sc->node.idnode.lexeme,table,idEntry,true,node->sc->node.idnode.line_no);
+                    if(lhsSym != NULL){
+                        if(lhsSym->symbol.idEntry.isWhileLoopCondition)
+                            whileLoopAssignsValue = true;
+                    }
+                }
+                else if(node->sc->type == arrayIdNode){   //arrayIdNode
+                    SymbolTableEntry* lhsSym = lookupString(node->sc->sc->node.idnode.lexeme,table,idEntry,true,node->sc->sc->node.idnode.line_no);
+                    if(lhsSym != NULL){
+                        if(lhsSym->symbol.idEntry.isWhileLoopCondition)
+                            whileLoopAssignsValue = true;
+                    }
+                }
+            }
 
             //1. check if 'for-loop' iterating variable has been assigned 
             ASTNode *temp = node->parent;
@@ -267,7 +322,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                 if(sym1 == NULL){
                     Error *err_lhs = createErrorObject();
                     err_lhs->lineNo = node->sc->node.idnode.line_no;
-                    strcpy(err_lhs->error,"LHS of Assignment statement is not declared");
+                    sprintf(err_lhs->error,"Variable %s used in this expression has not been declared.",node->sc->node.idnode.lexeme);
                     //printf("LINE %d: %s\n",err_lhs->lineNo,err_lhs->error);
                     Error *temporary = semanticErrors->head;
                     if(temporary == NULL){
@@ -285,7 +340,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                 if(sym2 == NULL){
                     Error *err_lhs = createErrorObject();
                     err_lhs->lineNo = node->sc->rs->node.idnode.line_no;
-                    strcpy(err_lhs->error,"RHS of Assignment statement is not declared");
+                    sprintf(err_lhs->error,"Variable %s used in this expression has not been declared.",node->sc->rs->node.idnode.lexeme);
                     //printf("LINE %d: %s\n",err_lhs->lineNo,err_lhs->error);
                     Error *temporary = semanticErrors->head;
                     if(temporary == NULL){
@@ -853,6 +908,8 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
             }
             else
             {
+                setWhileLoopConditionFlag(node->sc, true, table);  //mark the variables that appear in while loop condition
+                whileLoopAssignsValue = false;
                 SymbolTableEntry* wloop = lookupBlock(&node->node.whileLoopNode.block,table,whileLoopEntry,false);
                 // Now process the statements
                 ASTNode* whileStmt =  node->sc->rs;
@@ -861,6 +918,28 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                     {
                         analyzeAST(whileStmt,wloop->table,semanticErrors);
                         whileStmt = whileStmt->next;
+                    }
+                }
+                setWhileLoopConditionFlag(node->sc, false,table);     //unmark the variables that appear in while loop condition 
+                //check if while loop assigns value to one of the variables in condition
+                if(!whileLoopAssignsValue){
+                    //semantic error
+                    Error* err = createErrorObject();
+                    err->lineNo = node->node.whileLoopNode.block.start;
+                    strcpy(err->error,"While Loop does not assign a value to one of the variables in its condition");
+                    //printf("LINE %d: %s\n",err->lineNo,err->error);
+                    Error *temporary = semanticErrors->head;
+                    if(temporary == NULL)
+                    {
+                        semanticErrors->head = err;    
+                        semanticErrors->numberOfErr += 1; 
+                    }
+                    else
+                    {
+                        while(temporary->next != NULL)
+                            temporary = temporary->next;
+                        temporary->next = err;
+                        semanticErrors->numberOfErr += 1;   
                     }
                 }
             }
