@@ -236,7 +236,9 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                 if(leafCount > currModNode->node.moduleNode.maxTempReal)
                     currModNode->node.moduleNode.maxTempReal = leafCount;
             }
-            else{
+            else{   //boolean. in this case we might also need integer temporaries
+                if(leafCount-1 > currModNode->node.moduleNode.maxTempInt)
+                    currModNode->node.moduleNode.maxTempInt = leafCount-1;
                 if(leafCount > currModNode->node.moduleNode.maxTempBool)
                     currModNode->node.moduleNode.maxTempBool = leafCount;
             }
