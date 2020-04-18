@@ -345,8 +345,10 @@ void createAST(ParseTreeNode *node){
             strcpy(temp->sc->node.idnode.token,node->sc->rs->tkn->token);
             strcpy(temp->sc->node.idnode.lexeme,node->sc->rs->tkn->lexeme);
             temp->sc->node.idnode.line_no=node->sc->rs->tkn->line_no;
+            temp->sc->parent = temp;
             createAST(node->sc->rs->rs->rs);
             temp->sc->rs = node->sc->rs->rs->rs->syn;
+            temp->sc->rs->parent = temp;
             node->sc->rs->rs->rs->rs->inh = temp;
             createAST(node->sc->rs->rs->rs->rs);
             if(node->inh != NULL){
@@ -403,8 +405,10 @@ void createAST(ParseTreeNode *node){
             strcpy(temp->sc->node.idnode.token,node->sc->rs->tkn->token);
             strcpy(temp->sc->node.idnode.lexeme,node->sc->rs->tkn->lexeme);
             temp->sc->node.idnode.line_no=node->sc->rs->tkn->line_no;
+            temp->sc->parent = temp;
             createAST(node->sc->rs->rs->rs);
             temp->sc->rs = node->sc->rs->rs->rs->syn;
+            temp->sc->rs->parent = temp;
             node->sc->rs->rs->rs->rs->inh = temp;
             createAST(node->sc->rs->rs->rs->rs);
             if(node->inh != NULL){
@@ -1270,7 +1274,96 @@ void createAST(ParseTreeNode *node){
     //In the end, syn attribute for <program> will contain the pointer to root of AST.
     if(node->node.type.nonterminal == (NonTerminal)program) {
         AST = node->syn;
-        printAST(AST);
+        //printAST(AST);
+    }
+}
+
+
+
+void printNode(ASTNode* node)
+{
+    switch (node->type)
+    {
+        case programNode:{
+            printf("%s  NULL  ---  ---  ---\n",astNodeMap[node->type]);
+            break;
+        }
+        case moduleNode:{
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);
+            break;
+        }
+        case forLoopNode:{
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);
+            break;
+        }
+        case whileLoopNode:{
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);
+            break;
+        }
+        case conditionalNode:{
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);
+            break;
+        }
+        case caseNode:{
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);
+            break;
+        }
+        case inputIONode:
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);{
+            break;
+        }
+        case outputIONode:{
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);
+            break;
+        }
+        case arrayTypeNode:{
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);
+            break;
+        }
+        case rangeNode:{
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);
+            break;
+        }
+        case arrayIdNode:{
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);
+            break;
+        }
+        case assignmentNode:{
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);
+            break;
+        }
+        case functionCallNode:{
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);
+            break;
+        }
+        
+        case declareNode:{
+            printf("%s  %s  ---  ---  ---\n",astNodeMap[node->type],astNodeMap[node->parent->type]);
+            break;
+        }
+        case numNode:{
+            printf("%s  %s  %s  %s  %d\n",astNodeMap[node->type],astNodeMap[node->parent->type],node->node.numNode.lexeme,node->node.numNode.token,node->node.numNode.line_no);
+            break;
+        }
+        case typeNode:{
+            printf("%s  %s  %s  %s  %d\n",astNodeMap[node->type],astNodeMap[node->parent->type],node->node.typeNode.lexeme,node->node.typeNode.token,node->node.typeNode.line_no);
+            break;
+        }
+        case opNode:{
+            printf("%s  %s  %s  %s  %d\n",astNodeMap[node->type],astNodeMap[node->parent->type],node->node.opNode.lexeme,node->node.opNode.token,node->node.opNode.line_no);
+            break;
+        }
+        case boolNode:{
+            printf("%s  %s  %s  %s  %d\n",astNodeMap[node->type],astNodeMap[node->parent->type],node->node.boolNode.lexeme,node->node.boolNode.token,node->node.boolNode.line_no);
+            break;
+        }
+        case idNode:{
+            printf("%s  %s  %s  ID  %d\n",astNodeMap[node->type],astNodeMap[node->parent->type],node->node.idnode.lexeme,node->node.idnode.line_no);
+            break;
+        }
+        case nullNode:{
+            break;
+        }
     }
 }
 
@@ -1285,22 +1378,24 @@ void printAST(ASTNode *root)
     printAST(root->sc);
 
     //2. Print Node
-    printf("%s\n",astNodeMap[root->type]);
+    printNode(root);
+    
     ASTNode* n = root->next;
-    while(n!=NULL){
-	printf("->%s",astNodeMap[n->type]);
-	n = n->next;
+    if(n != NULL){
+	    printAST(root->next);
     }
     
     //3. Print rest of the children
     if(root->sc == NULL)
         return;
     
-	ASTNode *temp = root->sc->rs;
+	ASTNode* temp = root->sc->rs;
 	while(temp != NULL)
 	{
 	    printAST(temp);
 		temp = temp->rs;
 	}
+
+    
 	//printf("%s\n",astNodeMap[temp->type]);
 }
