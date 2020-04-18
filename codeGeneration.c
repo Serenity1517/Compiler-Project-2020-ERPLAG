@@ -369,7 +369,40 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
         }
             break;
         case forLoopNode:{
+            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, node->sc->node.idnode.line_no);
+            // checking range of for loop iterating variable
+            fprintf(file, ";---------------Code for ForLoop-------------------\n");
+            if(node->sc->rs->sc->type == numNode && node->sc->rs->sc->rs->type == numNode){ //both range Nodes are integer
+                fprintf(file, "\tmov WORD[rbp + %d], %d\n",sym->symbol.idEntry.offset, node->sc->rs->sc->node.numNode.value);
+                fprintf(file,"forLoopEntry%d:\n",++forLoopLabel);
+                fprintf(file,"\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.offset);
+                fprintf(file,"\tcmp ax, %d\n", node->sc->rs->sc->rs->node.numNode.value+1);
+                fprintf(file, "\tje forLoopExit%d:",forLoopLabel);
+                SymbolTableEntry* sym2 = lookupBlock(&node->node.forLoopNode.block, table, forLoopEntry, false);
+                ASTNode* temp = node->sc->rs->rs;
+                if(temp->type != nullNode){
+                    while(temp != NULL){
+                        codeGen(temp, sym2->table, file);
+                        temp = temp->next;
+                    }
+                }
+                fprintf(file,"\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.offset);
+                fprintf(file,"\tinc ax\n");
+                fprintf(file,"\tmov [rbp + %d], ax\n",sym->symbol.idEntry.offset);
+                fprintf(file,"\tjmp forLoopEntryt%d\n",forLoopLabel);
+                fprintf(file,"foLoopExit%d:\n",forLoopLabel);
+            }
+            else if(node->sc->rs->sc->type == idNode && node->sc->rs->sc->rs->type == numNode)    
+            {
+                
+            }
+            else if(node->sc->rs->sc->type == numNode && node->sc->rs->sc->rs->type == idNode){
 
+            }
+            else{ // both idNodes
+
+            }
+            
             break;
         }
         case nullNode:{
@@ -410,7 +443,9 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     }
     
     utilLabel = 0;
-
+    forLoopLabel = 0;
+    whileLoopLabel = 0;
+    caseLabel = 0;
     //add initial lines of code //:)we need headers....they'll go before this..
     fprintf(fout, "\nsection .data\n");
     fprintf(fout,"\tinputInt: db \"Input: Enter an integer value\",10,0\n");//resume
