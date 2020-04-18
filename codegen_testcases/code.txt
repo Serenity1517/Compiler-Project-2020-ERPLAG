@@ -4,15 +4,14 @@
 
 <<<driver program>>>
 start
-**	declare x, y, z:integer;**
-**	declare a, b, c:integer;**
-	**a:= 5;**
-	**b:= 9;**
-	declare x:integer;
+	declare x, y, z:integer;
+	declare a, b, c:integer;
+	a:= 5;
+	b:= 9;
 	get_value(x);
-**	get_value(y);**
 **	z:= x + y*b +(a-b)*y+ a*2 - b*x;**
-	print(x);
+	z:= (x+a)*2;
+	print(z);
 	
 end
 

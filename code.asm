@@ -7,15 +7,29 @@ section .data
 	falseOutput db "Output: false",10,0
 	lenFalseOutput equ 6
 section .bss
-	int1 : resw 1
+	int1 : resd 1
 section .text
 	global main
 	extern scanf
 	extern printf
 
 main:
-	sub rsp, 2
+	sub rsp, 16
 	mov rbp, rsp
+
+;-------assignment stmt-----
+	push rax
+	mov ax, 5
+	mov WORD[rbp+6], ax
+	pop rax
+;--------------
+
+;-------assignment stmt-----
+	push rax
+	mov ax, 9
+	mov WORD[rbp+8], ax
+	pop rax
+;--------------
 
 ;-----code for scanning integer variable----
 	push rbp
@@ -24,17 +38,45 @@ main:
 	call printf
 	pop rbp
 	push rbp
-	mov rdi, 
-	push Input_Format
+	mov rdi, Input_Format
+	lea rsi,[int1]
+	xor rax,rax
 	call scanf
-	add esp, 6
+	pop rbp
 	mov ax, WORD[int1]
 	mov WORD[rbp+0],ax
 ;-----------
 
+;-------assignment stmt-----
+	push rax
+
+;------Processing integer expression-----
+
+;------Processing integer expression-----
+
+	mov ax, WORD[rbp+0];	left operand is x
+	push rax
+	mov bx, WORD[rbp+6];	right operand is a
+	pop rax
+	add ax,bx
+	mov WORD[rbp+12], ax
+;------expression computed. result is in TI1------
+	mov ax, WORD[rbp+12];	left operand is TI1
+	push rax
+	mov bx, 2
+	pop rax
+	mul bx
+	mov WORD[rbp+14], ax
+;------expression computed. result is in TI2------
+;-----expression processed, result is stored inside temp number 2 of type 0
+	mov ax, WORD[rbp+14]
+	mov WORD[rbp+4], ax
+	pop rax
+;--------------
+
 ;------code for printing integer variable-----
 	push rbp
-	mov ax, WORD[rbp + 0]
+	mov ax, WORD[rbp + 4]
 	mov rdi, output
 	movsx rsi, ax
 	xor rax, rax

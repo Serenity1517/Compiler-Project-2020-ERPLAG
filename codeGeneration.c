@@ -275,7 +275,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                         case integer:{
                             fprintf(file, "\n;-----code for scanning integer variable----\n\tpush rbp\n\tmov rdi, inputInt\n\txor rax, rax\n\tcall printf\n\tpop rbp\n");
                             //write code for scanning input integer
-                            fprintf(file, "\tpush int1\n\tpush Input_Format\n\tcall scanf\n\tadd esp, 6\n");//6 = 4 + 2//lite.. sahi he na.. u sure?pretty suresill...i
+                            fprintf(file, "\tpush rbp\n\tmov rdi, Input_Format\n\tlea rsi,[int1]\n\txor rax,rax\n\tcall scanf\n\tpop rbp\n");//6 = 4 + 2//lite.. sahi he na.. u sure?pretty suresill...i
                             fprintf(file, "\tmov ax, WORD[int1]\n");// scanned value now in ax
                             fprintf(file, "\tmov WORD[rbp+%d],ax\n;-----------\n", sym->symbol.idEntry.offset);
                             break;
@@ -419,7 +419,7 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout, "\ttrueOutput db \"Output: true\",10,0\n");   //string is terminated by newline followed by null char
     fprintf(fout, "\tfalseOutput db \"Output: false\",10,0\n");//listen// did you change this
     fprintf(fout, "\tlenFalseOutput equ 6");
-    fprintf(fout, "\nsection .bss\n\tint1 : resw 1\nsection .text\n\tglobal main\n\textern scanf\n\textern printf\n");
+    fprintf(fout, "\nsection .bss\n\tint1 : resd 1\nsection .text\n\tglobal main\n\textern scanf\n\textern printf\n");
     codeGen(root, table, fout);
     fprintf(fout, "\n\n\tmov rax, 1\n\tint 80h\n");   //exit the program
     fclose(fout);
