@@ -109,9 +109,14 @@ void processBooleanExpr(ASTNode* node, SymbolTable* table, FILE* file, int* curr
         else
             fprintf(file, "\tmov al, 0\n");
     }
+	else if(node->sc->type == numNode)
+		fprintf(file, "\n\tmov ax, %d\n", (int)node->sc->node.numNode.value);
     else if(node->sc->type == idNode){
          SymbolTableEntry* sym1 = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, node->sc->node.idnode.line_no);
-        fprintf(file, "\n\tmov al, BYTE[rbp+%d];\tleft operand is %s\n", sym1->symbol.idEntry.offset, node->sc->node.idnode.lexeme);
+		if(sym1->symbol.idEntry.type.type.primitiveType == boolean)
+        	fprintf(file, "\n\tmov al, BYTE[rbp+%d];\tleft operand is %s\n", sym1->symbol.idEntry.offset, node->sc->node.idnode.lexeme);
+		else
+			fprintf(file, "\n\tmov ax, WORD[rbp+%d];\tleft operand is %s\n", sym1->symbol.idEntry.offset, node->sc->node.idnode.lexeme);
     }
     else if(node->sc->type == opNode){
         if(strcmp(node->sc->node.opNode.token,"GE") ||
@@ -135,7 +140,7 @@ void processBooleanExpr(ASTNode* node, SymbolTable* table, FILE* file, int* curr
         }
     }
     else{
-        processArrayIdNode(node, table, file, currTempNo);
+        processArrayIdNode(node->sc, table, file, currTempNo);
         char* tempName = createTempVarName(*currTempNo, boolean);
         SymbolTableEntry* sym9 = lookupString(tempName,table,idEntry,true,-1);
         fprintf(file, "\n\tmov al, BYTE[rbp+%d];\tleft operand is %s", sym9->symbol.idEntry.offset, tempName);
@@ -143,39 +148,44 @@ void processBooleanExpr(ASTNode* node, SymbolTable* table, FILE* file, int* curr
     
     //2. process right operand and load it in bx/bl
     fprintf(file, "\tpush rax\n"); //save al in case it is used below
-    if(node->sc->type == boolNode){
-        if(strcmp(node->sc->node.boolNode.token, "TRUE")==0)
+    if(node->sc->rs->type == boolNode){
+        if(strcmp(node->sc->rs->node.boolNode.token, "TRUE")==0)
             fprintf(file, "\tmov bl, 1\n");
         else
             fprintf(file, "\tmov bl, 0\n");
     }
-    else if(node->sc->type == idNode){
-         SymbolTableEntry* sym1 = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, node->sc->node.idnode.line_no);
-        fprintf(file, "\n\tmov bl, BYTE[rbp+%d];\tleft operand is %s\n", sym1->symbol.idEntry.offset, node->sc->node.idnode.lexeme);
+	else if(node->sc->rs->type == numNode)
+		fprintf(file, "\n\tmov bx, %d\n", (int)node->sc->rs->node.numNode.value);
+    else if(node->sc->rs->type == idNode){
+         SymbolTableEntry* sym1 = lookupString(node->sc->rs->node.idnode.lexeme, table, idEntry, true, node->sc->rs->node.idnode.line_no);
+        if(sym1->symbol.idEntry.type.type.primitiveType == boolean)
+        	fprintf(file, "\n\tmov bl, BYTE[rbp+%d];\tleft operand is %s\n", sym1->symbol.idEntry.offset, node->sc->rs->node.idnode.lexeme);
+		else
+			fprintf(file, "\n\tmov bx, WORD[rbp+%d];\tleft operand is %s\n", sym1->symbol.idEntry.offset, node->sc->rs->node.idnode.lexeme);
     }
-    else if(node->sc->type == opNode){
-        if(strcmp(node->sc->node.opNode.token,"GE") ||
-            strcmp(node->sc->node.opNode.token,"LE") ||
-            strcmp(node->sc->node.opNode.token,"GT") ||
-            strcmp(node->sc->node.opNode.token,"LT") ||
-            strcmp(node->sc->node.opNode.token,"NE") ||
-            strcmp(node->sc->node.opNode.token,"EQ") ||
-            strcmp(node->sc->node.opNode.token,"AND") ||
-            strcmp(node->sc->node.opNode.token,"OR")){
-                processBooleanExpr(node->sc, table, file, currTempNo, currUtilIntNo);
+    else if(node->sc->rs->type == opNode){
+        if(strcmp(node->sc->rs->node.opNode.token,"GE") ||
+            strcmp(node->sc->rs->node.opNode.token,"LE") ||
+            strcmp(node->sc->rs->node.opNode.token,"GT") ||
+            strcmp(node->sc->rs->node.opNode.token,"LT") ||
+            strcmp(node->sc->rs->node.opNode.token,"NE") ||
+            strcmp(node->sc->rs->node.opNode.token,"EQ") ||
+            strcmp(node->sc->rs->node.opNode.token,"AND") ||
+            strcmp(node->sc->rs->node.opNode.token,"OR")){
+                processBooleanExpr(node->sc->rs, table, file, currTempNo, currUtilIntNo);
                 char* tempName = createTempVarName(*currTempNo, boolean);
                 SymbolTableEntry* sym2 = lookupString(tempName, table, idEntry, true, -1);
                 fprintf(file, "\n\tmov bl, BYTE[rbp+%d];\tright operand is %s\n", sym2->symbol.idEntry.offset, tempName);
             }
         else {  //arithmetic operator
-            processIntegerExpr(node->sc, table, file, currUtilIntNo);
+            processIntegerExpr(node->sc->rs, table, file, currUtilIntNo);
             char* tempName = createTempVarName(*currUtilIntNo, integer);
             SymbolTableEntry* sym2 = lookupString(tempName, table, idEntry, true, -1);
             fprintf(file, "\n\tmov bx, WORD[rbp+%d];\tright operand is %s\n", sym2->symbol.idEntry.offset, tempName);
         }
     }
     else{
-        processArrayIdNode(node, table, file, currTempNo);
+        processArrayIdNode(node->sc->rs, table, file, currTempNo);
         char* tempName = createTempVarName(*currTempNo, boolean);
         SymbolTableEntry* sym9 = lookupString(tempName,table,idEntry,true,-1);
         fprintf(file, "\n\tmov bl, BYTE[rbp+%d];\tleft operand is %s", sym9->symbol.idEntry.offset, tempName);
@@ -187,37 +197,37 @@ void processBooleanExpr(ASTNode* node, SymbolTable* table, FILE* file, int* curr
     if(strcmp(node->node.opNode.token, "GT")==0){
         fprintf(file, "\tcmp ax,bx\n\tjg greater%d\n",utilLabel);
         fprintf(file, "\tmov al,0\n\tjmp notgreater%d\n",utilLabel);
-        fprintf(file, "greater%d:\n\tmov al,1\nnotgreater:\n",utilLabel);
+        fprintf(file, "greater%d:\n\tmov al,1\nnotgreater%d:\n",utilLabel,utilLabel);
         utilLabel++;
     }
     else if(strcmp(node->node.opNode.token, "GE")==0){
         fprintf(file, "\tcmp ax,bx\n\tjge greatereq%d\n",utilLabel);
         fprintf(file, "\tmov al,0\n\tjmp notgreatereq%d\n",utilLabel);
-        fprintf(file, "greatereq%d:\n\tmov al,1\nnotgreatereq:\n",utilLabel);
+        fprintf(file, "greatereq%d:\n\tmov al,1\nnotgreatereq%d:\n",utilLabel,utilLabel);
         utilLabel++;
     }
     else if(strcmp(node->node.opNode.token, "LT")==0){
         fprintf(file, "\tcmp ax,bx\n\tjl lesser%d\n",utilLabel);
         fprintf(file, "\tmov al,0\n\tjmp notlesser%d\n",utilLabel);
-        fprintf(file, "lesser%d:\n\tmov al,1\nnotlesser:\n",utilLabel);
+        fprintf(file, "lesser%d:\n\tmov al,1\nnotlesser%d:\n",utilLabel,utilLabel);
         utilLabel++;
     }
     else if(strcmp(node->node.opNode.token, "LE")==0){
-        fprintf(file, "\tcmp ax,bx\n\tjle lesserEq%d\n",utilLabel);
+        fprintf(file, "\tcmp ax,bx\n\tjle lessereq%d\n",utilLabel);
         fprintf(file, "\tmov al,0\n\tjmp notlessereq%d\n",utilLabel);
-        fprintf(file, "lessereq%d:\n\tmov al,1\nnotlessereq:\n",utilLabel);
+        fprintf(file, "lessereq%d:\n\tmov al,1\nnotlessereq%d:\n",utilLabel,utilLabel);
         utilLabel++;
     }
     else if(strcmp(node->node.opNode.token, "NE")==0){
         fprintf(file, "\tcmp ax,bx\n\tjne notequal%d\n",utilLabel);
         fprintf(file, "\tmov al,0\n\tjmp notnotequal%d\n",utilLabel);
-        fprintf(file, "notequal%d:\n\tmov al,1\nnotnotequal:\n",utilLabel);
+        fprintf(file, "notequal%d:\n\tmov al,1\nnotnotequal%d:\n",utilLabel,utilLabel);
         utilLabel++;
     }
     else if(strcmp(node->node.opNode.token, "EQ")==0){
         fprintf(file, "\tcmp ax,bx\n\tje equal%d\n",utilLabel);
         fprintf(file, "\tmov al,0\n\tjmp notequal%d\n",utilLabel);
-        fprintf(file, "equal%d:\n\tmov al,1\nnotequal:\n",utilLabel);
+        fprintf(file, "equal%d:\n\tmov al,1\nnotequal%d:\n",utilLabel,utilLabel);
         utilLabel++;
     }
     //Next 2 operators operate on booleans stored in al,bl
