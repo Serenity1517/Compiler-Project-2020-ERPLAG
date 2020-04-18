@@ -109,9 +109,7 @@ z	13	ID	 RULE NO !!!! -1	----	assignmentStmt	yes
 ---- ---- ---- ---- RULE NO !!! 42	simpleStmt	no assignmentStmt	
 :=	13	ASSIGNOP	 RULE NO !!!! -1	----	lvalueIDStmt	yes	
 ---- ---- ---- ---- RULE NO !!! 45	whichStmt	no lvalueIDStmt	
-(	13	BO	 RULE NO !!!! -1	----	factor	yes	
----- ---- ---- ---- RULE NO !!! 75	term	no factor	
-x	13	ID	 RULE NO !!!! -1	----	var_id_num	yes	
+a	13	ID	 RULE NO !!!! -1	----	var_id_num	yes	
 ---- ---- ---- ---- RULE NO !!! 77	factor	no var_id_num	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	whichId	yes	
 ---- ---- ---- ---- RULE NO !!! 39	var_id_num	no whichId	
@@ -123,24 +121,12 @@ x	13	ID	 RULE NO !!!! -1	----	var_id_num	yes
 +	13	PLUS	 RULE NO !!!! -1	----	op1	yes	
 ---- ---- ---- ---- RULE NO !!! 80	N4	no op1	
 ---- ---- ---- ---- RULE NO !!! 70	arithmeticExpr	no N4	
-a	13	ID	 RULE NO !!!! -1	----	var_id_num	yes	
+c	13	ID	 RULE NO !!!! -1	----	var_id_num	yes	
 ---- ---- ---- ---- RULE NO !!! 77	factor	no var_id_num	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	whichId	yes	
 ---- ---- ---- ---- RULE NO !!! 39	var_id_num	no whichId	
 ---- ---- ---- ---- RULE NO !!! 76	term	no factor	
 ---- ---- ---- ---- RULE NO !!! 72	N4	no term	
-----	-1	EPSILON	 RULE NO !!!! -1	----	N5	yes	
----- ---- ---- ---- RULE NO !!! 74	term	no N5	
-----	-1	EPSILON	 RULE NO !!!! -1	----	N4	yes	
----- ---- ---- ---- RULE NO !!! 71	N4	no N4	
----- ---- ---- ---- RULE NO !!! 63	arithOrBoolExpr	no AnyTerm	
-----	-1	EPSILON	 RULE NO !!!! -1	----	N8	yes	
----- ---- ---- ---- RULE NO !!! 68	AnyTerm	no N8	
----- ---- ---- ---- RULE NO !!! 60	factor	no arithOrBoolExpr	
-----	-1	EPSILON	 RULE NO !!!! -1	----	N7	yes	
----- ---- ---- ---- RULE NO !!! 62	arithOrBoolExpr	no N7	
-)	13	BC	 RULE NO !!!! -1	----	factor	yes	
----- ---- ---- ---- RULE NO !!! 72	arithmeticExpr	no term	
 *	13	MUL	 RULE NO !!!! -1	----	op2	yes	
 ---- ---- ---- ---- RULE NO !!! 82	N5	no op2	
 ---- ---- ---- ---- RULE NO !!! 73	term	no N5	
@@ -149,9 +135,8 @@ a	13	ID	 RULE NO !!!! -1	----	var_id_num	yes
 ---- ---- ---- ---- RULE NO !!! 76	N5	no factor	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N5	yes	
 ---- ---- ---- ---- RULE NO !!! 74	N5	no N5	
----- ---- ---- ---- RULE NO !!! 69	AnyTerm	no arithmeticExpr	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N4	yes	
----- ---- ---- ---- RULE NO !!! 71	arithmeticExpr	no N4	
+---- ---- ---- ---- RULE NO !!! 71	N4	no N4	
 ---- ---- ---- ---- RULE NO !!! 63	arithOrBoolExpr	no AnyTerm	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N8	yes	
 ---- ---- ---- ---- RULE NO !!! 68	AnyTerm	no N8	

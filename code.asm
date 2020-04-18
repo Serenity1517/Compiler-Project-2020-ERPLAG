@@ -52,22 +52,24 @@ main:
 
 ;------Processing integer expression-----
 
+	mov ax, WORD[rbp+6];	left operand is a
+	push rax
+
 ;------Processing integer expression-----
 
-	mov ax, WORD[rbp+0];	left operand is x
-	push rax
-	mov bx, WORD[rbp+6];	right operand is a
-	pop rax
-	add ax,bx
-	mov WORD[rbp+12], ax
-;------expression computed. result is in TI1------
-	mov ax, WORD[rbp+12];	left operand is TI1
+	mov ax, WORD[rbp+10];	left operand is c
 	push rax
 	mov bx, 2
 	pop rax
 	mul bx
+	mov WORD[rbp+12], ax
+;------expression computed. result is in TI1------
+	mov bx, WORD[rbp+12];	right operand is TI1
+	pop rax
+	add ax,bx
 	mov WORD[rbp+14], ax
 ;------expression computed. result is in TI2------
+
 ;-----expression processed, result is stored inside temp number 2 of type 0
 	mov ax, WORD[rbp+14]
 	mov WORD[rbp+4], ax

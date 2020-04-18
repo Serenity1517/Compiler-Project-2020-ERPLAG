@@ -10,7 +10,7 @@ start
 	b:= 9;
 	get_value(x);
 **	z:= x + y*b +(a-b)*y+ a*2 - b*x;**
-	z:= (x+a)*2;
+	z:= a+c*2;
 	print(z);
 	
 end

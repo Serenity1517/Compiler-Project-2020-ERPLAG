@@ -86,7 +86,7 @@ void processIntegerExpr(ASTNode* node, SymbolTable* table, FILE* file, int* curr
     *currTempNo += 1;
     char* finalTemp = createTempVarName(*currTempNo, integer);
     SymbolTableEntry* sym = lookupString(finalTemp, table, idEntry, true, -1);
-    fprintf(file, "\tmov WORD[rbp+%d], ax\n;------expression computed. result is in %s------", sym->symbol.idEntry.offset, finalTemp);
+    fprintf(file, "\tmov WORD[rbp+%d], ax\n;------expression computed. result is in %s------\n", sym->symbol.idEntry.offset, finalTemp);
     return;
 }
 
