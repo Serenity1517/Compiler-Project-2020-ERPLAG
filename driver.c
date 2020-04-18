@@ -63,8 +63,8 @@ int main (int argc,char **argv)
 					testAST(argv[1],argv[2]);
 					int parseNode = getParseTreeNode();
 					int astNodes = getAstNodes();
-					printf("Parse Tree Nodes: %d		Memory Used in Parse tree: %d\n",parseNode,parseNode*sizeof(ParseTreeNode));
-					printf("Abstract Syntax Tree Nodes: %d		Memory used in AST: %d\n",astNodes,parseNode*sizeof(ASTNode));
+					printf("Parse Tree Nodes: %d		Memory Used in Parse tree: %ld\n",parseNode,parseNode*sizeof(ParseTreeNode));
+					printf("Abstract Syntax Tree Nodes: %d		Memory used in AST: %ld\n",astNodes,parseNode*sizeof(ASTNode));
 					int compressionR =  getCompressionRatio();
 					printf("Compression Ratio: %d\n",compressionR);
 					return 0;
@@ -102,7 +102,7 @@ int main (int argc,char **argv)
 			case 9:{
 				testAST(argv[1], argv[2]);
 				semanticAnalyzer();
-				//codeGenControl(getAST(), getsymbolTable(), argv[3]);
+				codeGenControl(getAST(), getsymbolTable(), argv[3]);
 				return 0;
 			}
             		

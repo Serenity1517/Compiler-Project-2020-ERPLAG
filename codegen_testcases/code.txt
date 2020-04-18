@@ -4,14 +4,16 @@
 
 <<<driver program>>>
 start
-	declare x, y, z:integer;
-	declare a, b, c:integer;
-	a:= 5;
-	b:= 9;
-	x:= 10
-	y:= 11;
-	z:= x + y*b +(a-b)*y+ a*2 - b*x;	
-        print(z);
+**	declare x, y, z:integer;**
+**	declare a, b, c:integer;**
+	**a:= 5;**
+	**b:= 9;**
+	declare x:integer;
+	get_value(x);
+**	get_value(y);**
+**	z:= x + y*b +(a-b)*y+ a*2 - b*x;**
+	print(x);
+	
 end
 
 ** On the console

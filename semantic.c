@@ -1011,6 +1011,7 @@ void printErrors(ListOfErrors *errors)
     if(errors->head == NULL)
     {
         printf("NO ERRORS FOUND\n");
+		return;
     }
     errors->head = removeDuplicates(errors->head);
     Error* err = errors->head;
