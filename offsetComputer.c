@@ -315,14 +315,14 @@ void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
                         declareId = declareId->next;
                     }
                 }
-                else{       //dynamic..assign width 2
+                else{       //dynamic..assign width 8
                     ASTNode* declareId = stmtNode->sc;
                     while(declareId != NULL){
                         if(declareId->node.idnode.isDuplicate == false){
                             SymbolTableEntry* sym = lookupString(declareId->node.idnode.lexeme,currTable,idEntry,false,declareId->node.idnode.line_no);
                             sym->symbol.idEntry.offset = offset;
-                            sym->symbol.idEntry.width = 1;
-                            offset += 2;
+                            sym->symbol.idEntry.width = 8;
+                            offset += 8;
                         }
                         declareId = declareId->next;
                     }

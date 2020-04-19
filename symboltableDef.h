@@ -46,6 +46,7 @@ typedef struct IdEntry{
     struct SymbolTableEntry* next;
     bool isOutputParam;
     bool isWhileLoopCondition;
+    int widthOnScreen;
 }IdEntry;
 
 /* Driver Module*/
