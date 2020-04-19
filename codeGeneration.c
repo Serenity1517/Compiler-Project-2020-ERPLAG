@@ -723,15 +723,15 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 {
                     fprintf(file,"\tmov dx, %d\n",(int)cases->sc->rs->node.numNode.value);
                     fprintf(file,"\tcmp ax, dx\n");
-                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
-                    codeGen(cases->sc, cond->table, file);
-                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tjne nextCase%d\n",caseLabel++);
+					codeGen(cases, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d\n",utilLabel);
                     fprintf(file,"\tnextCase%d:\n",caseLabel-1);
                     cases = cases->next;
                 }
                 //default statement
-                ASTNode* deflt = node->sc->rs->rs;
-                codeGen(deflt->sc, cond->table, file);
+                ASTNode* deflt = node->sc->rs->rs;	//this is a caseNode
+				codeGen(deflt, cond->table, file);
                 fprintf(file,"\tendSwitchCase%d:\n",utilLabel);
                 utilLabel++;
             }
@@ -742,38 +742,48 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 if(strcmp(cases->sc->rs->node.boolNode.token,"TRUE")==0){ // first case is true 
                     fprintf(file,"\tmov dl, 1\n");
                     fprintf(file,"\tcmp al, dl\n");
-                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
-                    codeGen(cases->sc, cond->table, file);
-                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tjne nextCase%d\n",caseLabel++);
+                    codeGen(cases, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d\n",utilLabel);
                     fprintf(file,"\tnextCase%d:\n",caseLabel-1);
                     cases = cases->next;
                     fprintf(file,"\tmov dl, 0\n");
                     fprintf(file,"\tcmp al, dl\n");
-                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
-                    codeGen(cases->sc, cond->table, file);
-                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tjne nextCase%d\n",caseLabel++);
+                    codeGen(cases, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d\n",utilLabel);
                     fprintf(file,"\tnextCase%d:\n",caseLabel-1);
                 }
                 else // first case is false
                 {
                     fprintf(file,"\tmov dl, 0\n");
                     fprintf(file,"\tcmp al, dl\n");
-                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
-                    codeGen(cases->sc, cond->table, file);
-                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tjne nextCase%d\n",caseLabel++);
+                    codeGen(cases, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d\n",utilLabel);
                     fprintf(file,"\tnextCase%d:\n",caseLabel-1);
                     cases = cases->next;
                     fprintf(file,"\tmov dl, 1\n");
                     fprintf(file,"\tcmp al, dl\n");
-                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
-                    codeGen(cases->sc, cond->table, file);
-                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tjne nextCase%d\n",caseLabel++);
+                    codeGen(cases, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d\n",utilLabel);
                     fprintf(file,"\tnextCase%d:\n",caseLabel-1);
                 }
                 
             }
             break;
         }
+		case caseNode:{
+			ASTNode* stmt = node->sc;
+			if(stmt->type != nullNode){
+				while(stmt != NULL){
+					codeGen(stmt, table, file);
+					stmt = stmt->next;
+				}
+			}
+			break;
+		}
         case whileLoopNode:{
             SymbolTableEntry* wLoop = lookupBlock(&node->node.whileLoopNode.block, table, whileLoopEntry, false);
            switch(node->sc->type)
@@ -784,9 +794,9 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                     fprintf(file,"\twhileLoopEntry%d:\n",whileLoopLabel++);
                     fprintf(file,"\tmov al, BYTE[ebp + %d]\n",sym->symbol.idEntry.offset);
                     fprintf(file,"\tcmp al, 1\n");
-                    fprintf(file,"\tjne whileLoopExit%d:\n",whileLoopLabel-1);
+                    fprintf(file,"\tjne whileLoopExit%d\n",whileLoopLabel-1);
                     codeGen(node->sc->rs, wLoop->table, file);
-                    fprintf(file,"\tjmp whileLoopEntry%d:\n",whileLoopLabel-1);
+                    fprintf(file,"\tjmp whileLoopEntry%d\n",whileLoopLabel-1);
                     fprintf(file,"\twhileLoopExit%d:\n",whileLoopLabel-1);
                     break;
                }

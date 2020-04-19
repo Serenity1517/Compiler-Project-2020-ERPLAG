@@ -24,9 +24,28 @@ section .text
 	extern printf
 
 main:
-	sub rsp, 15
+	sub rsp, 20
 	mov rbp, rsp
 
+;-------assignment stmt-----
+	push rax
+	mov ax, 19
+	mov WORD[rbp+2], ax
+	pop rax
+;--------------
+
+;-------assignment stmt-----
+	push rax
+	mov ax, 56
+	mov WORD[rbp+4], ax
+	pop rax
+;--------------
+;---------------Code for ForLoop-------------------
+	mov WORD[rbp + 7], 3
+forLoopEntry0:
+	mov ax, WORD[rbp + 7]
+	cmp ax, 7
+	je forLoopExit0
 ;-----code for scanning integer variable----
 	push rbp
 	mov rdi, inputInt
@@ -42,28 +61,16 @@ main:
 	mov ax, WORD[int1]
 	mov WORD[rbp+0],ax
 ;-----------
-
-;-------assignment stmt-----
-	push rax
-	mov ax, 19
-	mov WORD[rbp+2], ax
-	pop rax
-;--------------
-
-;-------assignment stmt-----
-	push rax
-	mov ax, 56
-	mov WORD[rbp+4], ax
-	pop rax
-;--------------
 ;---------Code for Switch-Case Statements----------
 	mov ax, WORD[rbp + 0]
 	mov dx, 1
 	cmp ax, dx
-	jne nextCase0:
+	jne nextCase0
 
 ;-------assignment stmt-----
 	push rax
+
+;------Processing integer expression-----
 
 ;------Processing integer expression-----
 
@@ -74,30 +81,50 @@ main:
 	mov bx, 2
 	pop rax
 	mul bx
-	mov WORD[rbp+6], ax
+	mov WORD[rbp+9], ax
 ;------expression computed. result is in TI1------
 
-	mov ax, WORD[rbp+6];	left operand is TI1
+	mov ax, WORD[rbp+9];	left operand is TI1
 	push rax
 	mov bx, WORD[rbp+2];	right operand is y
 	pop rax
 	sub ax,bx
-	mov WORD[rbp+8], ax
+	mov WORD[rbp+11], ax
 ;------expression computed. result is in TI2------
 
-;-----expression processed, result is stored inside temp number 2 of type 0
-	mov ax, WORD[rbp+8]
+	mov ax, WORD[rbp+11];	left operand is TI2
+	push rax
+	mov bx, WORD[rbp+7];	right operand is loop_var
+	pop rax
+	add ax,bx
+	mov WORD[rbp+13], ax
+;------expression computed. result is in TI3------
+
+;-----expression processed, result is stored inside temp number 3 of type 0
+	mov ax, WORD[rbp+13]
 	mov WORD[rbp+2], ax
 	pop rax
 ;--------------
-	jmp endSwitchCase0:
+
+;------code for printing integer variable-----
+	push rbp
+	mov ax, WORD[rbp + 2]
+	mov rdi, output
+	movsx rsi, ax
+	xor rax, rax
+	call printf
+	pop rbp
+;------------
+	jmp endSwitchCase0
 	nextCase0:
 	mov dx, 2
 	cmp ax, dx
-	jne nextCase1:
+	jne nextCase1
 
 ;-------assignment stmt-----
 	push rax
+
+;------Processing integer expression-----
 
 ;------Processing integer expression-----
 
@@ -108,23 +135,41 @@ main:
 	mov bx, 3
 	pop rax
 	mul bx
-	mov WORD[rbp+6], ax
+	mov WORD[rbp+9], ax
 ;------expression computed. result is in TI1------
 
-	mov ax, WORD[rbp+6];	left operand is TI1
+	mov ax, WORD[rbp+9];	left operand is TI1
 	push rax
 	mov bx, WORD[rbp+4];	right operand is z
 	pop rax
 	sub ax,bx
-	mov WORD[rbp+8], ax
+	mov WORD[rbp+11], ax
 ;------expression computed. result is in TI2------
 
-;-----expression processed, result is stored inside temp number 2 of type 0
-	mov ax, WORD[rbp+8]
+	mov ax, WORD[rbp+11];	left operand is TI2
+	push rax
+	mov bx, WORD[rbp+7];	right operand is loop_var
+	pop rax
+	add ax,bx
+	mov WORD[rbp+13], ax
+;------expression computed. result is in TI3------
+
+;-----expression processed, result is stored inside temp number 3 of type 0
+	mov ax, WORD[rbp+13]
 	mov WORD[rbp+4], ax
 	pop rax
 ;--------------
-	jmp endSwitchCase0:
+
+;------code for printing integer variable-----
+	push rbp
+	mov ax, WORD[rbp + 4]
+	mov rdi, output
+	movsx rsi, ax
+	xor rax, rax
+	call printf
+	pop rbp
+;------------
+	jmp endSwitchCase0
 	nextCase1:
 
 ;------code for printing integer variable-----
@@ -157,6 +202,11 @@ main:
 	call printf
 	pop rbp
 ;------------
+	mov ax, WORD[rbp + 7]
+	inc ax
+	mov WORD[rbp + 7], ax
+	jmp forLoopEntry0
+forLoopExit0:
 
 
 	mov rax, 1
