@@ -817,6 +817,28 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
                             semanticErrors->numberOfErr += 1;   
                         }
                     }
+                    else 
+                    {
+                        if(strcmp(node->sc->rs->sc->rs->node.boolNode.token,node->sc->rs->next->sc->rs->node.boolNode.token)==0)
+                        {
+                            Error *err = createErrorObject();   err->lineNo = node->sc->rs->node.caseNode.line;  strcpy(err->error,"Duplicate case conditions"); 
+                            //printf("LINE %d: %s\n",err->lineNo,err->error);
+                            Error *temporary = semanticErrors->head;
+                            if(temporary == NULL)
+                            {
+                                semanticErrors->head = err;    
+                                semanticErrors->numberOfErr += 1; 
+                            }
+                            else
+                            {
+                                while(temporary->next != NULL)
+                                    temporary = temporary->next;
+                                temporary->next = err;
+                                semanticErrors->numberOfErr += 1;   
+                            }
+                        }
+                    }
+                    
                     ASTNode *temp = node->sc->rs;
                     while(temp != NULL)
                     {
