@@ -558,7 +558,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                             int h = sym->symbol.idEntry.type.type.arrayType.high;
                             int l = sym->symbol.idEntry.type.type.arrayType.low;
                             int iteration = h-l+1;
-                            fprintf(file,"\n;-------code for scanning integer array-------\n");
+                            fprintf(file,"\n;-------code for scanning boolean array-------\n");
                             fprintf(file,"\tpush rbp\n");
                             fprintf(file,"\tmov rdi, Input_Array1\n");
                             fprintf(file,"\tmov rsi, %d\n",iteration);
@@ -584,7 +584,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                 fprintf(file,"\tcall scanf\n");
                                 fprintf(file,"\tpop rbp\n");
 								fprintf(file,"\tmov al, BYTE[bool1]\n");
-                                fprintf(file,"\tmov BYTE[rbp + %d], al\n",(1+i*2 + off));
+                                fprintf(file,"\tmov BYTE[rbp + %d], al\n",(1+i + off));
                                 i++;
                                 iteration--;
                             }
@@ -687,9 +687,9 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                     
                                     while(iteration > 0){
                                         fprintf(file,";----printing %s[%d]---\n\tpush rbp\n\tmov al, BYTE[rbp + %d]\n",sym->symbol.idEntry.node->node.idnode.lexeme,l+i,(1+ofs + i)); 
-                                        fprintf(file,"\tcmp al, 1\n\tjne zero%d\n\tpush rbp\n\tmov rdi, trueOutput\n\txor rax, rax\n\tcall printf\n\tpop rbp\n",utilLabel++);
+                                        fprintf(file,"\tcmp al, 1\n\tjne zero%d\n\tpush rbp\n\tmov rdi, bool_true\n\txor rax, rax\n\tcall printf\n\tpop rbp\n",utilLabel++);
                                         fprintf(file,"\tjmp empty%d\n",utilLabel++);
-                                        fprintf(file,"\tzero%d:\n\tpush rbp\n\tmov rdi, falseOutput\n\t\txor rax, rax\n\t\tcall printf\n\tpop rbp\n",utilLabel - 2);
+                                        fprintf(file,"\tzero%d:\n\tpush rbp\n\tmov rdi, bool_false\n\t\txor rax, rax\n\t\tcall printf\n\tpop rbp\n",utilLabel - 2);
                                         fprintf(file,"\tempty%d:\n",utilLabel - 1);
                                         
                                         i++;
@@ -727,15 +727,15 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 {
                     fprintf(file,"\tmov dx, %d\n",(int)cases->sc->rs->node.numNode.value);
                     fprintf(file,"\tcmp ax, dx\n");
-                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
-                    codeGen(cases->sc, cond->table, file);
-                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tjne nextCase%d\n",caseLabel++);
+					codeGen(cases, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d\n",utilLabel);
                     fprintf(file,"\tnextCase%d:\n",caseLabel-1);
                     cases = cases->next;
                 }
                 //default statement
-                ASTNode* deflt = node->sc->rs->rs;
-                codeGen(deflt->sc, cond->table, file);
+                ASTNode* deflt = node->sc->rs->rs;	//this is a caseNode
+				codeGen(deflt, cond->table, file);
                 fprintf(file,"\tendSwitchCase%d:\n",utilLabel);
                 utilLabel++;
             }
@@ -746,38 +746,48 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 if(strcmp(cases->sc->rs->node.boolNode.token,"TRUE")==0){ // first case is true 
                     fprintf(file,"\tmov dl, 1\n");
                     fprintf(file,"\tcmp al, dl\n");
-                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
-                    codeGen(cases->sc, cond->table, file);
-                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tjne nextCase%d\n",caseLabel++);
+                    codeGen(cases, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d\n",utilLabel);
                     fprintf(file,"\tnextCase%d:\n",caseLabel-1);
                     cases = cases->next;
                     fprintf(file,"\tmov dl, 0\n");
                     fprintf(file,"\tcmp al, dl\n");
-                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
-                    codeGen(cases->sc, cond->table, file);
-                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tjne nextCase%d\n",caseLabel++);
+                    codeGen(cases, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d\n",utilLabel);
                     fprintf(file,"\tnextCase%d:\n",caseLabel-1);
                 }
                 else // first case is false
                 {
                     fprintf(file,"\tmov dl, 0\n");
                     fprintf(file,"\tcmp al, dl\n");
-                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
-                    codeGen(cases->sc, cond->table, file);
-                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tjne nextCase%d\n",caseLabel++);
+                    codeGen(cases, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d\n",utilLabel);
                     fprintf(file,"\tnextCase%d:\n",caseLabel-1);
                     cases = cases->next;
                     fprintf(file,"\tmov dl, 1\n");
                     fprintf(file,"\tcmp al, dl\n");
-                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
-                    codeGen(cases->sc, cond->table, file);
-                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tjne nextCase%d\n",caseLabel++);
+                    codeGen(cases, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d\n",utilLabel);
                     fprintf(file,"\tnextCase%d:\n",caseLabel-1);
                 }
                 
             }
             break;
         }
+		case caseNode:{
+			ASTNode* stmt = node->sc;
+			if(stmt->type != nullNode){
+				while(stmt != NULL){
+					codeGen(stmt, table, file);
+					stmt = stmt->next;
+				}
+			}
+			break;
+		}
         case whileLoopNode:{
             SymbolTableEntry* wLoop = lookupBlock(&node->node.whileLoopNode.block, table, whileLoopEntry, false);
            switch(node->sc->type){
@@ -959,6 +969,8 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout, "\tInput_Array2 : db \" for range %%"); fprintf(fout, "d to %%"); fprintf(fout, "d\", 10, 0\n");
     fprintf(fout, "\ttrueOutput : db \"Output: true\",10,0\n");   //string is terminated by newline followed by null char
     fprintf(fout, "\tfalseOutput : db \"Output: false\",10,0\n");
+    fprintf(fout, "\tbool_true : db \"true \", 0\n"); // use only for printing arr
+    fprintf(fout, "\tbool_false : db \"false \", 0\n");  // use only for printing array variables
 	fprintf(fout, "\tnewline_char : db \"\",10,0\n");
     fprintf(fout, "\trunTimeErrorMsg : db \"RUN TIME ERROR: Array Index out of bound\",10,0");
     fprintf(fout, "\nsection .bss\n\tint1 : resd 1\n\tbool1 : resd 1\nsection .text\n\tglobal main\n\textern scanf\n\textern printf\n");
