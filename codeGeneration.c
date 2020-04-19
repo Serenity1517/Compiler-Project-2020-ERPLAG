@@ -92,8 +92,52 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
             }
         }
     }
-    else{
-        //dynamic
+    else{   //dynamic
+        //1.load lower bound in cx
+        if(currType->type.arrayType.low>=0)
+            fprintf(file,"\tmov cx, %d\n\tand cx,000000000000FFFFh\n", currType->type.arrayType.low);
+        else{
+            SymbolTableEntry* leftVar = lookupString(currType->type.arrayType.left, table, idEntry, true, -1);
+            fprintf(file,"\tmov cx, WORD[rbp+%d]\n\tand cx,000000000000FFFFh\n", leftVar->symbol.idEntry.offset);
+        }
+        //2.load upper bound in dx
+        if(currType->type.arrayType.high>=0)
+            fprintf(file,"\tmov dx, %d\n\tand dx,000000000000FFFFh\n", currType->type.arrayType.low);
+        else{
+            SymbolTableEntry* leftVar = lookupString(currType->type.arrayType.left, table, idEntry, true, -1);
+            fprintf(file,"\tmov dx, WORD[rbp+%d]\n\tand dx,000000000000FFFFh\n", leftVar->symbol.idEntry.offset);
+        }
+        //3. load the index in ax.
+        fprintf(file, "\n;----code for dynamic bound checking of dynamic array element %s[",node->sc->node.idnode.lexeme);
+        if(node->sc->rs->type == numNode)
+            fprintf(file,"%d]----\n\tmov ax, %d\n\tand ax,000000000000FFFFh\n", (int)node->sc->rs->node.numNode.value, (int)node->sc->rs->node.numNode.value);
+        else{
+            SymbolTableEntry* dynArrIndex = lookupString(node->sc->rs->node.idnode.lexeme, table, idEntry, true, node->sc->rs->node.idnode.line_no);
+            fprintf(file,"%s]----\n\tmov ax,WORD[rbp+%d]\n\tand ax,000000000000FFFFh\n",node->sc->rs->node.idnode.lexeme,  dynArrIndex->symbol.idEntry.offset);
+        } 
+        //4. check if cx<=ax<=dx
+        fprintf(file, "\tcmp ax,cx\n\tjl runTimeErrorMsg\n\tcmp ax,dx\n\tjg runTimeErrorMsg\n");
+
+        //5. bounds are ok, now retrieve the element
+        fprintf(file,";----loading rsp value for dynamic array %s into rdx----\n",node->sc->node.idnode.lexeme);
+        fprintf(file,"\tmov rdx, [rbp+%d]\t;dont need rdx(upper bound)anymore\n", sym->symbol.idEntry.offset);
+        fprintf(file,"\tsub ax,cx\t;ax now contains relOffset for this array element\n");
+        if(currType->type.arrayType.t == integer){  //integer dynamic array
+            fprintf(file, "\tmov bx,2\n\tmul bx\n\tmov cx,WORD[rdx+rax]\t;now cx contains the required array element\n");
+            *currTempNo += 1;
+            char* tempName = createTempVarName(*currTempNo, integer);
+            SymbolTableEntry* tempIntVar = lookupString(tempName, table, idEntry, true, -1);
+            fprintf(file, "\tmov WORD[rbp+%d], cx\n;------array element fetched and stored in %s------\n", tempIntVar->symbol.idEntry.offset, tempName);
+            return integer;
+        }
+        else{   //boolean dynamic array
+            fprintf(file, "\tmov cl,BYTE[rdx+rax]\t;now cl contains the required array element\n");
+            *currTempNo += 1;
+            char* tempName = createTempVarName(*currTempNo, boolean);
+            SymbolTableEntry* tempIntVar = lookupString(tempName, table, idEntry, true, -1);
+            fprintf(file, "\tmov BYTE[rbp+%d], cl\n;------array element fetched and stored in %s------\n", tempIntVar->symbol.idEntry.offset, tempName);
+            return boolean;
+        }
     }
 }
 
@@ -392,14 +436,14 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                         fprintf(file, "\tmov bx,%d\t;-----left index----\n",(int)currRangeNode->sc->node.numNode.value);
                     else{
                         SymbolTableEntry* leftVar = lookupString(currRangeNode->sc->node.idnode.lexeme,table,idEntry,true,currRangeNode->sc->node.idnode.line_no);
-                        fprintf(file, "\tmov bx,[rbp+%d]\t;----left index----\n",leftVar->symbol.idEntry.offset);
+                        fprintf(file, "\tmov bx,WORD[rbp+%d]\t;----left index----\n",leftVar->symbol.idEntry.offset);
                     }
                     //2.load value of higher index in ax
                     if(currRangeNode->sc->rs->type == numNode)
                         fprintf(file, "\tmov ax,%d\t;---right index----\n",(int)currRangeNode->sc->rs->node.numNode.value);
                     else{
                         SymbolTableEntry* rightVar = lookupString(currRangeNode->sc->rs->node.idnode.lexeme,table,idEntry,true,currRangeNode->sc->rs->node.idnode.line_no);
-                        fprintf(file, "\tmov ax,[rbp+%d]\t;----right index----\n",rightVar->symbol.idEntry.offset);
+                        fprintf(file, "\tmov ax,WORD[rbp+%d]\t;----right index----\n",rightVar->symbol.idEntry.offset);
                     }
                     //3. check if ax<bx (or else runtime error)
                     fprintf(file, "\tcmp ax,bx\n\tjl runTimeErrorMsg\n");
