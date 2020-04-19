@@ -19,11 +19,11 @@ m	9	ID	 RULE NO !!!! -1	----	idList	yes
 ---- ---- ---- ---- RULE NO !!! 53	idList	no N3	
 temp	9	ID	 RULE NO !!!! -1	----	N3	yes	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N3	yes	
----- ---- ---- ---- RULE NO !!! 54	idList	no N3	
-:	7	COLON	 RULE NO !!!! -1	----	declareStmt	yes	
-boolean	7	BOOLEAN	 RULE NO !!!! -1	----	dataType	yes	
----- ---- ---- ---- RULE NO !!! 19	declareStmt	no dataType	
-;	7	SEMICOL	 RULE NO !!!! -1	----	declareStmt	yes	
+---- ---- ---- ---- RULE NO !!! 54	N3	no N3	
+:	9	COLON	 RULE NO !!!! -1	----	declareStmt	yes	
+integer	9	INTEGER	 RULE NO !!!! -1	----	dataType	yes	
+---- ---- ---- ---- RULE NO !!! 17	declareStmt	no dataType	
+;	9	SEMICOL	 RULE NO !!!! -1	----	declareStmt	yes	
 ---- ---- ---- ---- RULE NO !!! 29	statements	no statement	
 ---- ---- ---- ---- RULE NO !!! 25	moduleDef	no statements	
 declare	10	DECLARE	 RULE NO !!!! -1	----	declareStmt	yes	
@@ -152,31 +152,11 @@ temp	17	ID	 RULE NO !!!! -1	----	var_id_num	yes
 ---- ---- ---- ---- RULE NO !!! 39	var_id_num	no whichId	
 ---- ---- ---- ---- RULE NO !!! 76	term	no factor	
 ---- ---- ---- ---- RULE NO !!! 72	arithmeticExpr	no term	
-*	22	MUL	 RULE NO !!!! -1	----	op2	yes	
----- ---- ---- ---- RULE NO !!! 82	N5	no op2	
----- ---- ---- ---- RULE NO !!! 73	term	no N5	
-12	22	NUM	 RULE NO !!!! -1	12.000000 var_id_num	yes	
----- ---- ---- ---- RULE NO !!! 78	factor	no var_id_num	
----- ---- ---- ---- RULE NO !!! 76	N5	no factor	
-----	-1	EPSILON	 RULE NO !!!! -1	----	N5	yes	
----- ---- ---- ---- RULE NO !!! 74	N5	no N5	
----- ---- ---- ---- RULE NO !!! 69	AnyTerm	no arithmeticExpr	
-+	110	PLUS	 RULE NO !!!! -1	----	op1	yes	
----- ---- ---- ---- RULE NO !!! 80	N4	no op1	
----- ---- ---- ---- RULE NO !!! 70	arithmeticExpr	no N4	
-B	110	ID	 RULE NO !!!! -1	----	var_id_num	yes	
----- ---- ---- ---- RULE NO !!! 77	factor	no var_id_num	
-[	110	SQBO	 RULE NO !!!! -1	----	whichId	yes	
----- ---- ---- ---- RULE NO !!! 38	var_id_num	no whichId	
-6	110	NUM	 RULE NO !!!! -1	6.000000 Index	yes	
----- ---- ---- ---- RULE NO !!! 47	whichId	no Index	
-]	110	SQBC	 RULE NO !!!! -1	----	whichId	yes	
----- ---- ---- ---- RULE NO !!! 76	term	no factor	
----- ---- ---- ---- RULE NO !!! 72	N4	no term	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N5	yes	
 ---- ---- ---- ---- RULE NO !!! 74	term	no N5	
+---- ---- ---- ---- RULE NO !!! 69	AnyTerm	no arithmeticExpr	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N4	yes	
----- ---- ---- ---- RULE NO !!! 71	N4	no N4	
+---- ---- ---- ---- RULE NO !!! 71	arithmeticExpr	no N4	
 ---- ---- ---- ---- RULE NO !!! 63	arithOrBoolExpr	no AnyTerm	
 ----	-1	EPSILON	 RULE NO !!!! -1	----	N8	yes	
 ---- ---- ---- ---- RULE NO !!! 68	AnyTerm	no N8	

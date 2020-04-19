@@ -1,11 +1,12 @@
-**Single driver module with single level nesting **
-
 <<<driver program>>>
 start
-	declare a:integer;
-	declare A: array[10..15] of integer;
-	get_value(A); 
-	a:= A[11]+A[12];
-	print(a);
-	print(A);
+	declare m, temp:integer;	
+	declare A: array[2..5] of integer;
+	get_value(A);
+	for(m in 2..5)
+        start
+		temp:= A[m]*3;
+		print(temp);
+	end
 end
+

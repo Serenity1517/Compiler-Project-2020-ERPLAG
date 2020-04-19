@@ -183,14 +183,15 @@ forLoopEntry0:
 	jl runTimeError
 	cmp ax, 10
 	jg runTimeError
-	mov rdx,rbp
-	mov ax,4
-	and rax,0000000000001111h
+	mov cx,4
+	and rcx,000000000000FFFFh
+	add cx,1
+	and rax,000000000000FFFFh
 	sub ax,6
-	mul 2
-	add ax,1
-	add rdx,rax
-	mov ax,WORD[rdx]
+	mov bx,2
+	mul bx
+	add rcx,rax
+	mov ax,WORD[rbp+rcx]
 	mov WORD[rbp+37], ax
 ;------array element fetched and stored in TI1------
 
@@ -205,14 +206,15 @@ forLoopEntry0:
 	jl runTimeError
 	cmp ax, 10
 	jg runTimeError
-	mov rdx,rbp
-	mov ax,15
-	and rax,0000000000001111h
+	mov cx,15
+	and rcx,000000000000FFFFh
+	add cx,1
+	and rax,000000000000FFFFh
 	sub ax,6
-	mul 2
-	add ax,1
-	add rdx,rax
-	mov ax,WORD[rdx]
+	mov bx,2
+	mul bx
+	add rcx,rax
+	mov ax,WORD[rbp+rcx]
 	mov WORD[rbp+39], ax
 ;------array element fetched and stored in TI2------
 
@@ -245,7 +247,7 @@ forLoopEntry0:
 ;--------------
 	mov ax, WORD[rbp + 0]
 	inc ax
-	mov [rbp + 0], ax
+	mov WORD[rbp + 0], ax
 	jmp forLoopEntry0
 forLoopExit0:
 

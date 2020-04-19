@@ -47,7 +47,8 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
             
             //2.index is within bounds. now fetch array element
             if(currType->type.arrayType.t == integer){  //static integer array
-                fprintf(file, "\tmov rdx,rbp\n\tmov ax,%d\n\tand rax,0000000000001111h\n\tsub ax,%d\n\tmul 2\n\tadd ax,1\n\tadd rdx,rax\n\tmov ax,WORD[rdx]\n",sym->symbol.idEntry.offset, currType->type.arrayType.low);
+                //fprintf(file, "\tmov rdx,rbp\n\tmov cx,%d\n\tand rcx,000000000000FFFFh\n\tadd cx,1\n\tand rax,000000000000FFFFh\n\tsub ax,%d\n\tmov bx,2\n\tmul bx\n\tadd rcx,rax\n\tadd rdx,rcx\n\tmov ax,WORD[rdx]\n",sym->symbol.idEntry.offset, currType->type.arrayType.low);
+				fprintf(file, "\tmov cx,%d\n\tand rcx,000000000000FFFFh\n\tadd cx,1\n\tand rax,000000000000FFFFh\n\tsub ax,%d\n\tmov bx,2\n\tmul bx\n\tadd rcx,rax\n\tmov ax,WORD[rbp+rcx]\n",sym->symbol.idEntry.offset, currType->type.arrayType.low);
                 *currTempNo += 1;
                 char* finalTemp = createTempVarName(*currTempNo, integer);
                 SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
@@ -55,7 +56,7 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
                 return integer;
             }
             else if(currType->type.arrayType.t == boolean){ //static boolean array
-                fprintf(file, "\tmov rdx,rbp\n\tmov ax,%d\n\tand rax,0000000000001111h\n\tsub ax,%d\n\tmul 2\n\tadd rdx,rax\n\tmov al,BYTE[rdx]\n",sym->symbol.idEntry.offset, currType->type.arrayType.low);
+                //fprintf(file, "\tmov rdx,rbp\n\tmov cx,%d\n\tand rcx,000000000000FFFFh\n\tadd cx,1\n\tand rax,000000000000FFFFh\n\tsub ax,%d\n\tadd rcx,rax\n\tadd rdx,rcx\n\tmov al,BYTE[rdx]\n",sym->symbol.idEntry.offset, currType->type.arrayType.low);
                 *currTempNo += 1;
                 char* finalTemp = createTempVarName(*currTempNo, boolean);
                 SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
@@ -78,7 +79,7 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
                 return integer;
             }
             else if(currType->type.arrayType.t == boolean){ //static boolean array
-                fprintf(file,"\tmov al, BYTE[rbp+%d]\n",(sym->symbol.idEntry.offset+(2*relIndex)+1));
+                fprintf(file,"\tmov al, BYTE[rbp+%d]\n",(sym->symbol.idEntry.offset+(relIndex)+1));
                 *currTempNo += 1;
                 char* finalTemp = createTempVarName(*currTempNo, boolean);
                 SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
@@ -454,7 +455,11 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             }
             //2. now perform the assignment
             if(node->sc->type == arrayIdNode){  //lhs -> a[2] or a[b]
-                //a[2] = ...
+                if(node->sc->sc->rs->type == idNode){	//a[b]
+					
+				}
+				else{		//a[2]
+				}
             }
             else{       //idnode
                 SymbolTableEntry* lhsSym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, -1);
@@ -752,7 +757,7 @@ nextcase3:
                 }
                 fprintf(file,"\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.offset);
                 fprintf(file,"\tinc ax\n");
-                fprintf(file,"\tmov [rbp + %d], ax\n",sym->symbol.idEntry.offset);
+                fprintf(file,"\tmov WORD[rbp + %d], ax\n",sym->symbol.idEntry.offset);
                 fprintf(file,"\tjmp forLoopEntry%d\n",forLoopLabel-1);
                 fprintf(file,"forLoopExit%d:\n",forLoopLabel-1);
             }
