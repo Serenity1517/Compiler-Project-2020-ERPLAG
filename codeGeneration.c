@@ -629,7 +629,6 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                             case integer:{  //eg: print(z) where z is an integer
                                 fprintf(file, "\n;------code for printing integer variable-----\n\tpush rbp\n\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.offset);
                                 fprintf(file, "\tmov rdi, output\n\tmovsx rsi, ax\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
-
                                 break;
                             }
                             case real:{
@@ -642,7 +641,6 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                 fprintf(file,"\tjmp empty%d\n",utilLabel++);
                                 fprintf(file,"\tzero%d:\n\tpush rbp\n\tmov rdi, falseOutput\n\t\txor rax, rax\n\t\tcall printf\n\tpop rbp\n",utilLabel - 2);
                                 fprintf(file,"\tempty%d:\n",utilLabel - 1);
-
                                 break;
                             }
                         }
@@ -691,7 +689,6 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                         fprintf(file,"\tjmp empty%d\n",utilLabel++);
                                         fprintf(file,"\tzero%d:\n\tpush rbp\n\tmov rdi, bool_false\n\t\txor rax, rax\n\t\tcall printf\n\tpop rbp\n",utilLabel - 2);
                                         fprintf(file,"\tempty%d:\n",utilLabel - 1);
-                                        
                                         i++;
                                         iteration--;
                                     }
@@ -790,8 +787,8 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
 		}
         case whileLoopNode:{
             SymbolTableEntry* wLoop = lookupBlock(&node->node.whileLoopNode.block, table, whileLoopEntry, false);
-           switch(node->sc->type){
-               case idNode:{
+            switch(node->sc->type){
+                case idNode:{
                     SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,table,idEntry, true, node->sc->node.idnode.line_no);
                     fprintf(file,"\t;-----------Code for while Loop----------------\n");
                     fprintf(file,"\twhileLoopEntry%d:\n",whileLoopLabel++);
@@ -808,8 +805,8 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                     fprintf(file,"\tjmp whileLoopEntry%d\n",whileLoopLabel-1);
                     fprintf(file,"\twhileLoopExit%d:\n",whileLoopLabel-1);
                     break;
-               }
-               case opNode:{
+                }
+                case opNode:{
                     fprintf(file,"\t;-----------Code for while Loop----------------\n");
                     fprintf(file,"\twhileLoopEntry%d:\n",whileLoopLabel++);
                     int tempBoolVarNo = processExpression(node->sc, table, file, boolean);
@@ -828,8 +825,8 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                     fprintf(file,"\tjmp whileLoopEntry%d\n",whileLoopLabel-1);
                     fprintf(file,"\twhileLoopExit%d:\n",whileLoopLabel-1);
                     break;
-               }
-               case boolNode:{
+                }
+                case boolNode:{
                     fprintf(file,"\t;-----------Code for while Loop----------------\n");
                     fprintf(file,"\twhileLoopEntry%d:\n",whileLoopLabel++);
                     if(strcmp(node->sc->node.boolNode.token,"TRUE")==0)
@@ -847,10 +844,10 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                     }
                     fprintf(file,"\tjmp whileLoopEntry%d\n",whileLoopLabel-1);
                     fprintf(file,"\twhileLoopExit%d:\n",whileLoopLabel-1);
-                   break;
-               }
-               case arrayIdNode:{
-                   SymbolTableEntry* sym = lookupString(node->sc->sc->node.idnode.lexeme,table,idEntry, true, node->sc->node.idnode.line_no);
+                    break;
+                }
+                case arrayIdNode:{
+                    SymbolTableEntry* sym = lookupString(node->sc->sc->node.idnode.lexeme,table,idEntry, true, node->sc->node.idnode.line_no);
                     if(node->sc->sc->rs->type == idNode){
                         /*fprintf(file,"\t;-----------Code for while Loop----------------\n");
                         fprintf(file,"\twhileLoopEntry%d:\n",whileLoopLabel++);
@@ -900,8 +897,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 fprintf(file,"\tjmp forLoopEntry%d\n",forLoopLabel-1);
                 fprintf(file,"forLoopExit%d:\n",forLoopLabel-1);
             }
-            else if(node->sc->rs->sc->type == idNode && node->sc->rs->sc->rs->type == numNode)    
-            {
+            else if(node->sc->rs->sc->type == idNode && node->sc->rs->sc->rs->type == numNode)    {
                 
             }
             else if(node->sc->rs->sc->type == numNode && node->sc->rs->sc->rs->type == idNode){
@@ -910,7 +906,6 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             else{ // both idNodes
 
             }
-            
             break;
         }
         case nullNode:{
