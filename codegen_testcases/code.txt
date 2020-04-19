@@ -1,12 +1,8 @@
 <<<driver program>>>
 start
-	declare m, temp:integer;	
-	declare A: array[2..5] of integer;
-	get_value(A);
-	for(m in 2..5)
-        start
-		temp:= A[m]*3;
-		print(temp);
-	end
+	declare	low, high: integer;
+	get_value(low);
+	get_value(high);                                               
+	declare A: array[low..high] of integer;
 end
 

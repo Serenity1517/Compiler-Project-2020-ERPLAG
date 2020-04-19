@@ -90,19 +90,19 @@ Typeof* extractTypeOfId(ASTNode* node){
             temp = temp->rs;
             if(strcmp(temp->node.typeNode.token,"INTEGER")==0)
             {
-                Typeof* typeofnode = createTypeof(array,integer,high,-1,NULL,node->sc->rs->sc->sc->node.idnode.lexeme,NULL,-1);
+                Typeof* typeofnode = createTypeof(array,integer,-1,high,node->sc->rs->sc->sc->node.idnode.lexeme,NULL,NULL,-1);
                 node->node.declareNode.typeOfId = *typeofnode; 
                 return typeofnode;
             }
             else if(strcmp(temp->node.typeNode.token,"REAL")==0)
             {
-                Typeof* typeofnode = createTypeof(array,real,high,-1,NULL,node->sc->rs->sc->sc->node.idnode.lexeme,NULL,-1);
+                Typeof* typeofnode = createTypeof(array,real,-1,high,node->sc->rs->sc->sc->node.idnode.lexeme,NULL,NULL,-1);
                 node->node.declareNode.typeOfId = *typeofnode;
                 return typeofnode;
             }
             else if(strcmp(temp->node.typeNode.token,"BOOLEAN")==0)
             {
-                Typeof* typeofnode = createTypeof(array,boolean,high,-1,NULL,node->sc->rs->sc->sc->node.idnode.lexeme,NULL,-1);
+                Typeof* typeofnode = createTypeof(array,boolean,-1,high,node->sc->rs->sc->sc->node.idnode.lexeme,NULL,NULL,-1);
                 node->node.declareNode.typeOfId = *typeofnode;
                 return typeofnode;
             }
@@ -118,19 +118,19 @@ Typeof* extractTypeOfId(ASTNode* node){
             temp = temp->rs;
             if(strcmp(temp->node.typeNode.token,"INTEGER")==0)
             {
-                Typeof* typeofnode = createTypeof(array,integer,-1,low,node->sc->rs->sc->sc->node.idnode.lexeme,NULL,NULL,-1);
+                Typeof* typeofnode = createTypeof(array,integer,low,-1,NULL,node->sc->rs->sc->sc->rs->node.idnode.lexeme,NULL,-1);
                 node->node.declareNode.typeOfId = *typeofnode;
                 return typeofnode;
             }
             else if(strcmp(temp->node.typeNode.token,"REAL")==0)
             {
-                Typeof* typeofnode = createTypeof(array,real,-1,low,node->sc->rs->sc->sc->node.idnode.lexeme,NULL,NULL,-1);
+                Typeof* typeofnode = createTypeof(array,real,low,-1,NULL,node->sc->rs->sc->sc->rs->node.idnode.lexeme,NULL,-1);
                 node->node.declareNode.typeOfId = *typeofnode;
                 return typeofnode;
             }
             else if(strcmp(temp->node.typeNode.token,"BOOLEAN")==0)
             {
-                Typeof* typeofnode = createTypeof(array,boolean,-1,low,node->sc->rs->sc->sc->node.idnode.lexeme,NULL,NULL,-1);
+                Typeof* typeofnode = createTypeof(array,boolean,low,-1,NULL,node->sc->rs->sc->sc->rs->node.idnode.lexeme,NULL,-1);
                 node->node.declareNode.typeOfId = *typeofnode;
                 return typeofnode;
             }
@@ -145,19 +145,19 @@ Typeof* extractTypeOfId(ASTNode* node){
             //temp =temp->rs;
             if(strcmp(temp->sc->rs->node.typeNode.token,"INTEGER")==0)
             {
-                Typeof* typeofnode = createTypeof(array,integer,-1,-1,temp->sc->node.idnode.lexeme,temp->sc->rs->node.idnode.lexeme,NULL,-1);
+                Typeof* typeofnode = createTypeof(array,integer,-1,-1,temp->sc->sc->node.idnode.lexeme,temp->sc->sc->rs->node.idnode.lexeme,NULL,-1);
                 node->node.declareNode.typeOfId = *typeofnode;
                 return typeofnode;
             }
             else if(strcmp(temp->sc->rs->node.typeNode.token,"REAL")==0)
             {
-                Typeof* typeofnode = createTypeof(array,real,-1,-1,temp->sc->node.idnode.lexeme,temp->sc->rs->node.idnode.lexeme,NULL,-1);
+                Typeof* typeofnode = createTypeof(array,real,-1,-1,temp->sc->sc->node.idnode.lexeme,temp->sc->sc->rs->node.idnode.lexeme,NULL,-1);
                 node->node.declareNode.typeOfId = *typeofnode;
                 return typeofnode;
             }
             else if(strcmp(temp->sc->rs->node.typeNode.token,"BOOLEAN")==0)
             {
-                Typeof* typeofnode = createTypeof(array,boolean,-1,-1,temp->sc->node.idnode.lexeme,temp->sc->rs->node.idnode.lexeme,NULL,-1);
+                Typeof* typeofnode = createTypeof(array,boolean,-1,-1,temp->sc->sc->node.idnode.lexeme,temp->sc->sc->rs->node.idnode.lexeme,NULL,-1);
                 node->node.declareNode.typeOfId = *typeofnode;
                 return typeofnode;
             }

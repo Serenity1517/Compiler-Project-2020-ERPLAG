@@ -896,7 +896,7 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
             SymbolTableEntry *floop = lookupBlock(&node->node.forLoopNode.block,table,forLoopEntry,false);
             ASTNode* forStmt =  node->sc->rs->rs;
             ASTNode* ranNode = node->sc->rs;
-            if(strcmp(ranNode->sc->node.numNode.token,"RNUM")==0 || strcmp(ranNode->sc->rs->node.numNode.token,"RNUM")){
+            if(strcmp(ranNode->sc->node.numNode.token,"RNUM")==0 || strcmp(ranNode->sc->rs->node.numNode.token,"RNUM")==0){
                 Error* err = createErrorObject();
                 err->lineNo = ranNode->sc->node.numNode.line_no;
                 strcpy(err->error,"Range of For Loop variables should be integers.");
