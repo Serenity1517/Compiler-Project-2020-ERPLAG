@@ -1,9 +1,10 @@
 
 section .data
 	inputInt: db "Input: Enter an integer value",10,0
+	inputBool: db "Input: Enter an boolean value",10,0
 	output: db "Output: %d", 10, 0
-output_array : db "Output: ",0
-array_value : db " %d",0
+	output_array : db "Output: ",0
+	array_value : db " %d",0
 	Input_Format : db "%d",0
 	Input_Array1 : db "Input: Enter %d elements of ", 0
 	onScreenInt : db "integer", 0
@@ -16,13 +17,14 @@ array_value : db " %d",0
 	runTimeErrorMsg : db "RUN TIME ERROR: Array Index out of bound",10,0
 section .bss
 	int1 : resd 1
+	bool1 : resd 1
 section .text
 	global main
 	extern scanf
 	extern printf
 
 main:
-	sub rsp, 43
+	sub rsp, 58
 	mov rbp, rsp
 
 ;-------code for scanning integer array-------
@@ -53,7 +55,7 @@ main:
 	call scanf
 	pop rbp
 	mov ax, WORD[int1]
-	mov WORD[rbp + 5], ax
+	mov WORD[rbp + 15], ax
 
 ;-----inputting A[7]----
 	push rbp
@@ -63,7 +65,7 @@ main:
 	call scanf
 	pop rbp
 	mov ax, WORD[int1]
-	mov WORD[rbp + 7], ax
+	mov WORD[rbp + 17], ax
 
 ;-----inputting A[8]----
 	push rbp
@@ -73,7 +75,7 @@ main:
 	call scanf
 	pop rbp
 	mov ax, WORD[int1]
-	mov WORD[rbp + 9], ax
+	mov WORD[rbp + 19], ax
 
 ;-----inputting A[9]----
 	push rbp
@@ -83,7 +85,7 @@ main:
 	call scanf
 	pop rbp
 	mov ax, WORD[int1]
-	mov WORD[rbp + 11], ax
+	mov WORD[rbp + 21], ax
 
 ;-----inputting A[10]----
 	push rbp
@@ -93,7 +95,7 @@ main:
 	call scanf
 	pop rbp
 	mov ax, WORD[int1]
-	mov WORD[rbp + 13], ax
+	mov WORD[rbp + 23], ax
 
 ;-------code for scanning integer array-------
 	push rbp
@@ -123,7 +125,7 @@ main:
 	call scanf
 	pop rbp
 	mov ax, WORD[int1]
-	mov WORD[rbp + 16], ax
+	mov WORD[rbp + 26], ax
 
 ;-----inputting B[7]----
 	push rbp
@@ -133,7 +135,7 @@ main:
 	call scanf
 	pop rbp
 	mov ax, WORD[int1]
-	mov WORD[rbp + 18], ax
+	mov WORD[rbp + 28], ax
 
 ;-----inputting B[8]----
 	push rbp
@@ -143,7 +145,7 @@ main:
 	call scanf
 	pop rbp
 	mov ax, WORD[int1]
-	mov WORD[rbp + 20], ax
+	mov WORD[rbp + 30], ax
 
 ;-----inputting B[9]----
 	push rbp
@@ -153,7 +155,7 @@ main:
 	call scanf
 	pop rbp
 	mov ax, WORD[int1]
-	mov WORD[rbp + 22], ax
+	mov WORD[rbp + 32], ax
 
 ;-----inputting B[10]----
 	push rbp
@@ -163,13 +165,52 @@ main:
 	call scanf
 	pop rbp
 	mov ax, WORD[int1]
-	mov WORD[rbp + 24], ax
+	mov WORD[rbp + 34], ax
+
+;-------assignment stmt-----
+	push rax
+	mov ax, 7
+	mov WORD[rbp+4], ax
+	pop rax
+;--------------
 ;---------------Code for ForLoop-------------------
-	mov WORD[rbp + 0], 6
+	mov WORD[rbp + 6], 1
 forLoopEntry0:
-	mov ax, WORD[rbp + 0]
-	cmp ax, 11
+	mov ax, WORD[rbp + 6]
+	cmp ax, 4
 	je forLoopExit0
+;-----code for scanning integer variable----
+	push rbp
+	mov rdi, inputInt
+	xor rax, rax
+	call printf
+	pop rbp
+	push rbp
+	mov rdi, Input_Format
+	lea rsi,[int1]
+	xor rax,rax
+	call scanf
+	pop rbp
+	mov ax, WORD[int1]
+	mov WORD[rbp+0],ax
+;-----------
+
+;-----code for scanning integer variable----
+	push rbp
+	mov rdi, inputInt
+	xor rax, rax
+	call printf
+	pop rbp
+	push rbp
+	mov rdi, Input_Format
+	lea rsi,[int1]
+	xor rax,rax
+	call scanf
+	pop rbp
+	mov ax, WORD[int1]
+	mov WORD[rbp+2],ax
+;-----------
+
 ;-------assignment stmt-----
 	push rax
 
@@ -184,7 +225,7 @@ forLoopEntry0:
 	cmp ax, 10
 	jg runTimeError
 ;----index is within bounds---
-	mov cx,4
+	mov cx,14
 	and rcx,000000000000FFFFh
 	add cx,1
 	and rax,000000000000FFFFh
@@ -193,22 +234,122 @@ forLoopEntry0:
 	mul bx
 	add rcx,rax
 	mov ax,WORD[rbp+rcx]
-	mov WORD[rbp+37], ax
+	mov WORD[rbp+47], ax
 ;------array element fetched and stored in TI1------
 
-	mov ax, WORD[rbp+37];	left operand is TI1
+	mov ax, WORD[rbp+47];	left operand is TI1
 	push rax
 
 ;-------Processing arrayIdNode(array element)-------
 
-;----code for dynamic bound checking of static array element B[m]----
+;----code for dynamic bound checking of static array element B[n]----
+	mov ax, WORD[rbp+2]
+	cmp ax, 6
+	jl runTimeError
+	cmp ax, 10
+	jg runTimeError
+;----index is within bounds---
+	mov cx,25
+	and rcx,000000000000FFFFh
+	add cx,1
+	and rax,000000000000FFFFh
+	sub ax,6
+	mov bx,2
+	mul bx
+	add rcx,rax
+	mov ax,WORD[rbp+rcx]
+	mov WORD[rbp+49], ax
+;------array element fetched and stored in TI2------
+
+	mov bx, WORD[rbp+49];	left operand is TI2
+	pop rax
+	add ax,bx
+	mov WORD[rbp+51], ax
+;------expression computed. result is in TI3------
+
+;-----expression processed, result is stored inside temp number 3 of type 0
+	mov ax, WORD[rbp+51]
+	mov WORD[rbp+8], ax
+	pop rax
+;--------------
+
+;-------assignment stmt-----
+	push rax
+
+;------Processing integer expression-----
+
+;-------Processing arrayIdNode(array element)-------
+
+;----code for dynamic bound checking of static array element A[p]----
+	mov ax, WORD[rbp+4]
+	cmp ax, 6
+	jl runTimeError
+	cmp ax, 10
+	jg runTimeError
+;----index is within bounds---
+	mov cx,14
+	and rcx,000000000000FFFFh
+	add cx,1
+	and rax,000000000000FFFFh
+	sub ax,6
+	mov bx,2
+	mul bx
+	add rcx,rax
+	mov ax,WORD[rbp+rcx]
+	mov WORD[rbp+47], ax
+;------array element fetched and stored in TI1------
+
+	mov ax, WORD[rbp+47];	left operand is TI1
+	push rax
+
+;-------Processing arrayIdNode(array element)-------
+
+;----code for dynamic bound checking of static array element B[n]----
+	mov ax, WORD[rbp+2]
+	cmp ax, 6
+	jl runTimeError
+	cmp ax, 10
+	jg runTimeError
+;----index is within bounds---
+	mov cx,25
+	and rcx,000000000000FFFFh
+	add cx,1
+	and rax,000000000000FFFFh
+	sub ax,6
+	mov bx,2
+	mul bx
+	add rcx,rax
+	mov ax,WORD[rbp+rcx]
+	mov WORD[rbp+49], ax
+;------array element fetched and stored in TI2------
+
+	mov bx, WORD[rbp+49];	left operand is TI2
+	pop rax
+	add ax,bx
+	mov WORD[rbp+51], ax
+;------expression computed. result is in TI3------
+
+;-----expression processed, result is stored inside temp number 3 of type 0
+	mov ax, WORD[rbp+51]
+	mov WORD[rbp+10], ax
+	pop rax
+;--------------
+
+;-------assignment stmt-----
+	push rax
+
+;------Processing integer expression-----
+
+;-------Processing arrayIdNode(array element)-------
+
+;----code for dynamic bound checking of static array element A[m]----
 	mov ax, WORD[rbp+0]
 	cmp ax, 6
 	jl runTimeError
 	cmp ax, 10
 	jg runTimeError
 ;----index is within bounds---
-	mov cx,15
+	mov cx,14
 	and rcx,000000000000FFFFh
 	add cx,1
 	and rax,000000000000FFFFh
@@ -217,24 +358,48 @@ forLoopEntry0:
 	mul bx
 	add rcx,rax
 	mov ax,WORD[rbp+rcx]
-	mov WORD[rbp+39], ax
+	mov WORD[rbp+47], ax
+;------array element fetched and stored in TI1------
+
+	mov ax, WORD[rbp+47];	left operand is TI1
+	push rax
+
+;-------Processing arrayIdNode(array element)-------
+
+;----code for dynamic bound checking of static array element B[p]----
+	mov ax, WORD[rbp+4]
+	cmp ax, 6
+	jl runTimeError
+	cmp ax, 10
+	jg runTimeError
+;----index is within bounds---
+	mov cx,25
+	and rcx,000000000000FFFFh
+	add cx,1
+	and rax,000000000000FFFFh
+	sub ax,6
+	mov bx,2
+	mul bx
+	add rcx,rax
+	mov ax,WORD[rbp+rcx]
+	mov WORD[rbp+49], ax
 ;------array element fetched and stored in TI2------
 
-	mov bx, WORD[rbp+39];	left operand is TI2
+	mov bx, WORD[rbp+49];	left operand is TI2
 	pop rax
 	add ax,bx
-	mov WORD[rbp+41], ax
+	mov WORD[rbp+51], ax
 ;------expression computed. result is in TI3------
 
 ;-----expression processed, result is stored inside temp number 3 of type 0
-	mov ax, WORD[rbp+41]
-	mov WORD[rbp+2], ax
+	mov ax, WORD[rbp+51]
+	mov WORD[rbp+12], ax
 	pop rax
 ;--------------
 
 ;------code for printing integer variable-----
 	push rbp
-	mov ax, WORD[rbp + 2]
+	mov ax, WORD[rbp + 8]
 	mov rdi, output
 	movsx rsi, ax
 	xor rax, rax
@@ -242,94 +407,30 @@ forLoopEntry0:
 	pop rbp
 ;------------
 
-;-------assignment stmt-----
-	push rax
-	mov ax, WORD[rbp+2]
+;------code for printing integer variable-----
+	push rbp
+	mov ax, WORD[rbp + 10]
+	mov rdi, output
+	movsx rsi, ax
+	xor rax, rax
+	call printf
+	pop rbp
+;------------
 
-;----code for dynamic bound checking of static array element C[m]----
-	push rax	;saving rhs result (rax)
-	mov ax, WORD[rbp+0]
-	cmp ax, 6
-	jl runTimeError
-	cmp ax, 10
-	jg runTimeError
-;----index is within bounds----
-	mov cx,26
-	and rcx,000000000000FFFFh
-	add cx,1
-	and rax,000000000000FFFFh
-	sub ax,6
-	mov bx,2
-	mul bx
-	add rcx,rax
-	pop rax	;restoring rhs result into rax
-	mov WORD[rbp+rcx], ax	;performing the assignment to C[m]
-	pop rax
-;--------------
-	mov ax, WORD[rbp + 0]
+;------code for printing integer variable-----
+	push rbp
+	mov ax, WORD[rbp + 12]
+	mov rdi, output
+	movsx rsi, ax
+	xor rax, rax
+	call printf
+	pop rbp
+;------------
+	mov ax, WORD[rbp + 6]
 	inc ax
-	mov WORD[rbp + 0], ax
+	mov WORD[rbp + 6], ax
 	jmp forLoopEntry0
 forLoopExit0:
-
-;-------code for printing static array---------
-	push rbp
-	mov rdi, output_array
-	xor rax, rax
-	call printf
-	pop rbp
-;------------
-;----printing C[6]---
-	push rbp
-	mov ax, WORD[rbp + 27]
-	mov rdi, array_value
-	movsx rsi, ax
-	xor rax, rax
-	call printf
-	pop rbp
-;------------
-;----printing C[7]---
-	push rbp
-	mov ax, WORD[rbp + 29]
-	mov rdi, array_value
-	movsx rsi, ax
-	xor rax, rax
-	call printf
-	pop rbp
-;------------
-;----printing C[8]---
-	push rbp
-	mov ax, WORD[rbp + 31]
-	mov rdi, array_value
-	movsx rsi, ax
-	xor rax, rax
-	call printf
-	pop rbp
-;------------
-;----printing C[9]---
-	push rbp
-	mov ax, WORD[rbp + 33]
-	mov rdi, array_value
-	movsx rsi, ax
-	xor rax, rax
-	call printf
-	pop rbp
-;------------
-;----printing C[10]---
-	push rbp
-	mov ax, WORD[rbp + 35]
-	mov rdi, array_value
-	movsx rsi, ax
-	xor rax, rax
-	call printf
-	pop rbp
-;------------
-;----printing newline character---
-	push rbp
-	mov rdi, newline_char
-	xor rax,rax
-	call printf
-	pop rbx
 
 
 	mov rax, 1

@@ -651,7 +651,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                         switch(sym->symbol.idEntry.type.type.arrayType.t){
                             case integer:{ //integer array
                                 if(sym->symbol.idEntry.type.type.arrayType.low>=0 && sym->symbol.idEntry.type.type.arrayType.high>=0){  //static array
-                                    fprintf(file,"\n;-------code for printing static array---------\n");
+                                    fprintf(file,"\n;-------code for printing static integer array---------\n");
                                     int h = sym->symbol.idEntry.type.type.arrayType.high;
                                     int l = sym->symbol.idEntry.type.type.arrayType.low;
                                     int iteration = h-l+1;
@@ -661,10 +661,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                     
                                     while(iteration > 0){
                                         fprintf(file,";----printing %s[%d]---\n\tpush rbp\n\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.node->node.idnode.lexeme,l+i,(1+ofs + 2*i));
-                                        fprintf(file,"\tcmp al, 1\n\tjne zero%d\n\tpush rbp\n\tmov rdi, trueOutput\n\txor rax, rax\n\tcall printf\n\tpop rbp\n",utilLabel++);
-                                        fprintf(file,"\tjmp empty%d\n",utilLabel++);
-                                        fprintf(file,"\tzero%d:\n\tpush rbp\n\tmov rdi, falseOutput\n\t\txor rax, rax\n\t\tcall printf\n\tpop rbp\n",utilLabel - 2);
-                                        fprintf(file,"\tempty%d:\n",utilLabel - 1);
+                                        fprintf(file, "\tmov rdi, array_value\n\tmovsx rsi, ax\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
                                         i++;
                                         iteration--;
                                     }
@@ -679,7 +676,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                 break;
                             }
                             case boolean:{
-                                    fprintf(file,"\n;-------code for printing static array---------\n");
+                                    fprintf(file,"\n;-------code for printing static boolean array---------\n");
                                     int h = sym->symbol.idEntry.type.type.arrayType.high;
                                     int l = sym->symbol.idEntry.type.type.arrayType.low;
                                     int iteration = h-l+1;
@@ -688,8 +685,12 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                     fprintf(file, "\tpush rbp\n\tmov rdi, output_array\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
                                     
                                     while(iteration > 0){
-                                        fprintf(file,";----printing %s[%d]---\n\tpush rbp\n\tmov al, BYTE[rbp + %d]\n",sym->symbol.idEntry.node->node.idnode.lexeme,l+i,(1+ofs + 2*i));
-                                        fprintf(file, "\tmov rdi, array_value\n\tmovsx rsi, ax\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
+                                        fprintf(file,";----printing %s[%d]---\n\tpush rbp\n\tmov al, BYTE[rbp + %d]\n",sym->symbol.idEntry.node->node.idnode.lexeme,l+i,(1+ofs + i)); 
+                                        fprintf(file,"\tcmp al, 1\n\tjne zero%d\n\tpush rbp\n\tmov rdi, trueOutput\n\txor rax, rax\n\tcall printf\n\tpop rbp\n",utilLabel++);
+                                        fprintf(file,"\tjmp empty%d\n",utilLabel++);
+                                        fprintf(file,"\tzero%d:\n\tpush rbp\n\tmov rdi, falseOutput\n\t\txor rax, rax\n\t\tcall printf\n\tpop rbp\n",utilLabel - 2);
+                                        fprintf(file,"\tempty%d:\n",utilLabel - 1);
+                                        
                                         i++;
                                         iteration--;
                                     }
@@ -921,7 +922,7 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout, "\tfalseOutput : db \"Output: false\",10,0\n");
 	fprintf(fout, "\tnewline_char : db \"\",10,0\n");
     fprintf(fout, "\trunTimeErrorMsg : db \"RUN TIME ERROR: Array Index out of bound\",10,0");
-    fprintf(fout, "\nsection .bss\n\tint1 : resd 1\nsection .text\n\tbool1 : resd 1\n\tglobal main\n\textern scanf\n\textern printf\n");
+    fprintf(fout, "\nsection .bss\n\tint1 : resd 1\n\tbool1 : resd 1\nsection .text\n\tglobal main\n\textern scanf\n\textern printf\n");
     codeGen(root, table, fout);
     fprintf(fout, "\n\n\tmov rax, 1\n\tint 80h\n");   //exit the program
     fprintf(fout, "\n;---runtime error (array index out of bounds)----\nrunTimeError: \n\tpush rbp\n\tmov rdi, runTimeErrorMsg\n\txor rax,rax\n\tcall printf\n\tpop rbp\n\tmov rax, 1\n\tint 80h\n");
