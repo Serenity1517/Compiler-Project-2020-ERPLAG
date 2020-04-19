@@ -2,7 +2,10 @@
 
 <<<driver program>>>
 start
+	declare a:integer;
 	declare A: array[10..15] of integer;
 	get_value(A); 
-	print(A);	
+	a:= A[11]+A[12];
+	print(a);
+	print(A);
 end

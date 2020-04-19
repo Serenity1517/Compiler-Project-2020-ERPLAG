@@ -21,7 +21,7 @@ start
                           
 **Note: Implement get_value(A) using type information of A. Your code template should first inform user of the size, range indices and type of data and read accordingly to populate the memory locations allocated for elements of A**
    
-        y:= a+x+A[13]*2 + A[14]*3 +A[15];                **bound checking at compile time must have been done before code generation**
+        y:= A[10]+A[11]+A[12]+A[13]+A[14]+A[15];                **bound checking at compile time must have been done before code generation**
 	print(y);	
 	print(A);
 

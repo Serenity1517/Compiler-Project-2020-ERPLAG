@@ -44,7 +44,7 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
         else{       //eg: a[3]. bound already checked at compile time
             int relIndex = ((int)node->sc->rs->node.numNode.value) - currType->type.arrayType.low;
             if(currType->type.arrayType.t == integer){  //static integer array
-                fprintf(file,"\tmov ax, WORD[rbp+%d]\n",(sym->symbol.idEntry.offset+(2*relIndex)));
+                fprintf(file,"\tmov ax, WORD[rbp+%d]\n",(sym->symbol.idEntry.offset+(2*relIndex)+1));
                 *currTempNo += 1;
                 char* finalTemp = createTempVarName(*currTempNo, integer);
                 SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
@@ -52,7 +52,7 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
                 return integer;
             }
             else if(currType->type.arrayType.t == boolean){ //static boolean array
-                fprintf(file,"\tmov al, BYTE[rbp+%d]\n",(sym->symbol.idEntry.offset+(2*relIndex)));
+                fprintf(file,"\tmov al, BYTE[rbp+%d]\n",(sym->symbol.idEntry.offset+(2*relIndex)+1));
                 *currTempNo += 1;
                 char* finalTemp = createTempVarName(*currTempNo, boolean);
                 SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
@@ -486,7 +486,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                 fprintf(file,"\tcall scanf\n");
                                 fprintf(file,"\tpop rbp\n");
 								fprintf(file,"\tmov ax, WORD[int1]\n");
-                                fprintf(file,"\tmov WORD[rbp + %d], ax\n",(i*2 + off+1));
+                                fprintf(file,"\tmov WORD[rbp + %d], ax\n",(1+i*2 + off));
                                 i++;
                                 iteration--;
                             }
@@ -577,7 +577,8 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                         fprintf(file, "\tmov rdi, array_value\n\tmovsx rsi, ax\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
                                         i++;
                                         iteration--;
-                                    } 
+                                    }
+									fprintf(file, ";----printing newline character---\n\tpush rbp\n\tmov rdi, newline_char\n\txor rax,rax\n\tcall printf\n\tpop rbx\n"); 
                                 }
                                 else{
                                     //dynamic
@@ -620,7 +621,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 fprintf(file,"forLoopEntry%d:\n",forLoopLabel++);
                 fprintf(file,"\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.offset);
                 fprintf(file,"\tcmp ax, %d\n", (int)node->sc->rs->sc->rs->node.numNode.value+1);
-                fprintf(file, "\tje forLoopExit%d:",forLoopLabel-1);
+                fprintf(file, "\tje forLoopExit%d",forLoopLabel-1);
                 SymbolTableEntry* sym2 = lookupBlock(&node->node.forLoopNode.block, table, forLoopEntry, false);
                 ASTNode* temp = node->sc->rs->rs;
                 if(temp->type != nullNode){
@@ -632,8 +633,8 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 fprintf(file,"\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.offset);
                 fprintf(file,"\tinc ax\n");
                 fprintf(file,"\tmov [rbp + %d], ax\n",sym->symbol.idEntry.offset);
-                fprintf(file,"\tjmp forLoopEntryt%d\n",forLoopLabel-1);
-                fprintf(file,"foLoopExit%d:\n",forLoopLabel-1);
+                fprintf(file,"\tjmp forLoopEntry%d\n",forLoopLabel-1);
+                fprintf(file,"forLoopExit%d:\n",forLoopLabel-1);
             }
             else if(node->sc->rs->sc->type == idNode && node->sc->rs->sc->rs->type == numNode)    
             {
@@ -660,21 +661,21 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
 
 void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     if(root == NULL){
-        printf("\nAST not constructed!!");
+        printf("\nAST not constructed!!\n");
         return;
     }
     if(table == NULL){
-        printf("\nSymbolTable not populated");
+        printf("\nSymbolTable not populated\n");
         return;
     }
     if(file == NULL){
-        printf("\nargv[3] should contain asm code output file name!!");
+        printf("\nargv[3] should contain asm code output file name!!\n");
         return;
     }
 
     ListOfErrors* semanticErrors = getSemanticErrorObject();
     if(!(semanticErrors->numberOfErr == 0 && semanticErrors->head == NULL)){
-        printf("\nCode has semantic errors, cannot generate asm code!!");
+        printf("\nCode has semantic errors, cannot generate asm code!!\n");
         return;
     }
 
@@ -701,9 +702,9 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout, "\tonScreenBool : db \"boolean\", 0\n");
     fprintf(fout, "\tonScreenReal : db \"real\", 0\n");
     fprintf(fout, "\tInput_Array2 : db \" for range %%"); fprintf(fout, "d to %%"); fprintf(fout, "d\", 10, 0\n");
-    fprintf(fout, "\ttrueOutput db \"Output: true\",10,0\n");   //string is terminated by newline followed by null char
-    fprintf(fout, "\tfalseOutput db \"Output: false\",10,0\n");//listen// did you change this
-    fprintf(fout, "\tlenFalseOutput equ 6");
+    fprintf(fout, "\ttrueOutput : db \"Output: true\",10,0\n");   //string is terminated by newline followed by null char
+    fprintf(fout, "\tfalseOutput : db \"Output: false\",10,0\n");
+	fprintf(fout, "\tnewline_char db \"\",10,0\n");
     fprintf(fout, "\nsection .bss\n\tint1 : resd 1\nsection .text\n\tglobal main\n\textern scanf\n\textern printf\n");
     codeGen(root, table, fout);
     fprintf(fout, "\n\n\tmov rax, 1\n\tint 80h\n");   //exit the program
