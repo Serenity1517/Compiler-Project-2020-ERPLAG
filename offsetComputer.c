@@ -243,7 +243,7 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
             else if(t == boolean){
                 sym->symbol.idEntry.offset = offset;
                 sym->symbol.idEntry.width = 1;
-                offset += 2;
+                offset += 1;
             }
             else { // real  
                 sym->symbol.idEntry.offset = offset;
@@ -273,7 +273,7 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
                 else if(t == boolean){
                     sym->symbol.idEntry.offset = offset;
                     sym->symbol.idEntry.width = 1;
-                    offset += 2;
+                    offset += 1;
                 }
                 else { // real  
                     sym->symbol.idEntry.offset = offset;
@@ -338,7 +338,7 @@ void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
                         else if(t == boolean){
                             sym->symbol.idEntry.offset = offset;
                             sym->symbol.idEntry.width = 1;
-                            offset += 2;
+                            offset += 1;
                         }
                         else { // real  
                             sym->symbol.idEntry.offset = offset;

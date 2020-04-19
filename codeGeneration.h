@@ -16,6 +16,7 @@
 #include "parser.h"
 
 char* createTempVarName(int num, PrimitiveType type);
+void printRunTimeExitCode(FILE* file);
 PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, int* currTempNo);
 void processIntegerExpr(ASTNode* node, SymbolTable* table, FILE* file, int* currTempNo);
 void processBooleanExpr(ASTNode* node, SymbolTable* table, FILE* file, int* currTempNo, int* currUtilIntNo);
