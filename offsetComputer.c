@@ -96,7 +96,8 @@ void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbo
         
     int i = 1;
     int count =  currMod->node.moduleNode.maxTempInt-1;
-    
+    if(count <= 0)
+        count = 1;
     while(count > 0)
     {
         SymbolTableEntry* s = createTemporory(i,integer);
@@ -119,6 +120,8 @@ void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbo
     }
     i = 1;
     count =  currMod->node.moduleNode.maxTempBool-1;
+    if(count <= 0)
+        count = 1;
     while(count > 0)
     {
         SymbolTableEntry* s = createTemporory(i,boolean);
@@ -141,6 +144,8 @@ void processTemporaries(ASTNode* currMod, int currOffset, SymbolTable* rootSymbo
     }
     i = 1;
     count = currMod->node.moduleNode.maxTempReal-1;
+    if(count <= 0)
+        count = 1;
     while(count > 0)
     {
         SymbolTableEntry* s = createTemporory(i,real);

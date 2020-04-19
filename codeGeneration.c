@@ -483,7 +483,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             switch(sym->symbol.idEntry.type.tag){
                 case array:{
                     switch(sym->symbol.idEntry.type.type.arrayType.t){
-                        case integer:{  //input integer array..//pehle sirf ye karlo kyuki test case me sirf int arr hai
+                        case integer:{  //input integer array.
                             int h = sym->symbol.idEntry.type.type.arrayType.high;
                             int l = sym->symbol.idEntry.type.type.arrayType.low;
                             int iteration = h-l+1;
@@ -523,6 +523,39 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                             break;
                         }   
                         case boolean:{  //input bool array
+                            int h = sym->symbol.idEntry.type.type.arrayType.high;
+                            int l = sym->symbol.idEntry.type.type.arrayType.low;
+                            int iteration = h-l+1;
+                            fprintf(file,"\n;-------code for scanning integer array-------\n");
+                            fprintf(file,"\tpush rbp\n");
+                            fprintf(file,"\tmov rdi, Input_Array1\n");
+                            fprintf(file,"\tmov rsi, %d\n",iteration);
+                            fprintf(file,"\txor rax, rax\n\tcall printf\n\tpop rbp\n");
+                            //////////////////////////////
+                            fprintf(file,"\tpush rbp\n");
+                            fprintf(file,"\tmov rdi, onScreenBool\n");
+                            fprintf(file,"\txor rax, rax\n\tcall printf\n\tpop rbp\n");
+                            /////////////////////////////
+                            fprintf(file,"\tpush rbp\n");
+                            fprintf(file,"\tmov rdi, Input_Array2\n");
+                            fprintf(file,"\tmov rsi, %d\n",l);
+                            fprintf(file,"\tmov rdx, %d\n",h);
+                            fprintf(file,"\txor rax, rax\n\tcall printf\n\tpop rbp\n");
+                            int i = 0;
+                            int off = sym->symbol.idEntry.offset;
+                            while(iteration > 0)
+                            {
+                                fprintf(file,"\n;-----inputting %s[%d]----\n\tpush rbp\n",sym->symbol.idEntry.node->node.idnode.lexeme,l+i);
+                                fprintf(file,"\tmov rdi, Input_Format\n");
+                                fprintf(file,"\tlea rsi, [bool1]\n");
+                                fprintf(file,"\txor rax, rax\n");
+                                fprintf(file,"\tcall scanf\n");
+                                fprintf(file,"\tpop rbp\n");
+								fprintf(file,"\tmov al, BYTE[bool1]\n");
+                                fprintf(file,"\tmov BYTE[rbp + %d], al\n",(1+i*2 + off));
+                                i++;
+                                iteration--;
+                            }
                             break;
                         }
                     }
@@ -541,7 +574,12 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                         case real:{
                             break;
                         }   
-                        case boolean:{
+                        case boolean:{// boolean variable
+                            fprintf(file, "\n;-----code for scanning boolean variable----\n\tpush rbp\n\tmov rdi, inputBool\n\txor rax, rax\n\tcall printf\n\tpop rbp\n");
+                            //write code for scanning input boolean
+                            fprintf(file, "\tpush rbp\n\tmov rdi, Input_Format\n\tlea rsi,[bool1]\n\txor rax,rax\n\tcall scanf\n\tpop rbp\n");
+                            fprintf(file, "\tmov al, BYTE[bool1]\n");// scanned value now in al
+                            fprintf(file, "\tmov BYTE[rbp + %d],al\n;-----------\n", sym->symbol.idEntry.offset);
                             break;
                         }
                     }
@@ -566,16 +604,6 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                 break;
                             }
                             case boolean:{  
-                                //[rbp+%d], sym->symbol.idEntry.offset --> al
-                                //eg: print(x) where x is a boolean (1 byte).. so use al
-                                //in memory true is stored as 1, false is stored as 0
-                                //same as before.. [rbp+%d], sym->symbol.idEntry,offset
-                                //isme check lagana padega.. whether the value is 1 or 0
-                                //mup me yaad he cmp instruction hota tha.. compare
-                                //uske baad we use jne / je 
-                                //for that you need to create labels
-                                //so
-                                //see upar in this file
                                 fprintf(file, "\n;------code for printing Boolean variable-----\n");
                                 fprintf(file,"\tmov al, BYTE[rbp + %d]\n",sym->symbol.idEntry.offset);
                                 fprintf(file,"\tcmp al, 1\n\tjne zero%d\n\tpush rbp\n\tmov rdi, trueOutput\n\txor rax, rax\n\tcall printf\n\tpop rbp\n",utilLabel++);
@@ -601,7 +629,10 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                     
                                     while(iteration > 0){
                                         fprintf(file,";----printing %s[%d]---\n\tpush rbp\n\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.node->node.idnode.lexeme,l+i,(1+ofs + 2*i));
-                                        fprintf(file, "\tmov rdi, array_value\n\tmovsx rsi, ax\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
+                                        fprintf(file,"\tcmp al, 1\n\tjne zero%d\n\tpush rbp\n\tmov rdi, trueOutput\n\txor rax, rax\n\tcall printf\n\tpop rbp\n",utilLabel++);
+                                        fprintf(file,"\tjmp empty%d\n",utilLabel++);
+                                        fprintf(file,"\tzero%d:\n\tpush rbp\n\tmov rdi, falseOutput\n\t\txor rax, rax\n\t\tcall printf\n\tpop rbp\n",utilLabel - 2);
+                                        fprintf(file,"\tempty%d:\n",utilLabel - 1);
                                         i++;
                                         iteration--;
                                     }
@@ -616,6 +647,22 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                 break;
                             }
                             case boolean:{
+                                    fprintf(file,"\n;-------code for printing static array---------\n");
+                                    int h = sym->symbol.idEntry.type.type.arrayType.high;
+                                    int l = sym->symbol.idEntry.type.type.arrayType.low;
+                                    int iteration = h-l+1;
+                                    int ofs = sym->symbol.idEntry.offset;
+                                    int i = 0;
+                                    fprintf(file, "\tpush rbp\n\tmov rdi, output_array\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
+                                    
+                                    while(iteration > 0){
+                                        fprintf(file,";----printing %s[%d]---\n\tpush rbp\n\tmov al, BYTE[rbp + %d]\n",sym->symbol.idEntry.node->node.idnode.lexeme,l+i,(1+ofs + 2*i));
+                                        fprintf(file, "\tmov rdi, array_value\n\tmovsx rsi, ax\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
+                                        i++;
+                                        iteration--;
+                                    }
+									fprintf(file, ";----printing newline character---\n\tpush rbp\n\tmov rdi, newline_char\n\txor rax,rax\n\tcall printf\n\tpop rbx\n");
+
                                 break;
                             }
                         }
@@ -631,41 +678,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             }
             break;
         }
-        /*
-                mov ax, WORD[ebp+%d];   bring the conditional variable's value into ax
-
-;--processing case no.1---
-    mov bx, WORD[ebp+%d];   bring case variable/constant's value into bx
-    cmp ax,bx
-    jne nextcase1
-    ;;;;;
-    ;;;;;
-    ;CODE FOR case no. 1(process the statements of this caseNode)
-nextcase1:
-
-;--processing case no.2---
-    mov bx, WORD[ebp+%d];   bring case variable/constant's value into bx
-    cmp ax,bx
-    jne nextcase2
-    ;;;;;
-    ;;;;;
-    ;CODE FOR case no. 2(process the statements of this caseNode)
-nextcase2:
-
-;--processing case no.3---
-    mov bx, WORD[ebp+%d];   bring case variable/constant's value into bx
-    cmp ax,bx
-    jne nextcase3
-    ;;;;;
-    ;;;;;
-    ;CODE FOR case no. 3(process the statements of this caseNode)
-nextcase3:
-
-;---processing default case---
-    ;;;;;
-    ;;;;;
-    ;CODE FOR Default case(process the statements of this caseNode)
-        */
+       
         case conditionalNode:{
             fprintf(file, ";---------Code for Switch-Case Statements----------\n");
             SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,table,idNode,true, node->sc->node.idnode.line_no);
@@ -729,6 +742,55 @@ nextcase3:
             break;
         }
         case whileLoopNode:{
+            SymbolTableEntry* wLoop = lookupBlock(&node->node.whileLoopNode.block, table, whileLoopEntry, false);
+           switch(node->sc->type)
+           {
+               case idNode:{
+                    SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,table,idEntry, true, node->sc->node.idnode.line_no);
+                    fprintf(file,"\t;-----------Code for while Loop----------------\n");
+                    fprintf(file,"\twhileLoopEntry%d:\n",whileLoopLabel++);
+                    fprintf(file,"\tmov al, BYTE[ebp + %d]\n",sym->symbol.idEntry.offset);
+                    fprintf(file,"\tcmp al, 1\n");
+                    fprintf(file,"\tjne whileLoopExit%d:\n",whileLoopLabel-1);
+                    codeGen(node->sc->rs, wLoop->table, file);
+                    fprintf(file,"\tjmp whileLoopEntry%d:\n",whileLoopLabel-1);
+                    fprintf(file,"\twhileLoopExit%d:\n",whileLoopLabel-1);
+                    break;
+               }
+               case opNode:{
+                   
+                   break;
+               }
+               case boolNode:{
+                   break;
+               }
+               case arrayIdNode:{
+                   SymbolTableEntry* sym = lookupString(node->sc->sc->node.idnode.lexeme,table,idEntry, true, node->sc->node.idnode.line_no);
+                    if(node->sc->sc->rs->type == idNode)
+                    {
+                        /*fprintf(file,"\t;-----------Code for while Loop----------------\n");
+                        fprintf(file,"\twhileLoopEntry%d:\n",whileLoopLabel++);
+                        fprintf(file,"\tmov al, BYTE[ebp + %d]\n",sym->symbol.idEntry.offset);
+                        fprintf(file,"\tcmp al, 1\n");
+                        fprintf(file,"\tjne whileLoopExit%d:\n",whileLoopLabel-1);
+                        codeGen(node->sc->rs, wLoop->table, file);
+                        fprintf(file,"\tjmp whileLoopEntry%d:\n",whileLoopLabel-1);
+                        fprintf(file,"\twhileLoopExit%d:\n",whileLoopLabel-1);*/
+                    }
+                    else // numNode
+                    {
+                        /*fprintf(file,"\t;-----------Code for while Loop----------------\n");
+                    fprintf(file,"\twhileLoopEntry%d:\n",whileLoopLabel++);
+                    fprintf(file,"\tmov al, BYTE[ebp + %d]\n",sym->symbol.idEntry.offset);
+                    fprintf(file,"\tcmp al, 1\n");
+                    fprintf(file,"\tjne whileLoopExit%d:\n",whileLoopLabel-1);
+                    codeGen(node->sc->rs, wLoop->table, file);
+                    fprintf(file,"\tjmp whileLoopEntry%d:\n",whileLoopLabel-1);
+                    fprintf(file,"\twhileLoopExit%d:\n",whileLoopLabel-1);*/
+                    }
+                   break;
+               }
+           }
            
             break;
         }
@@ -813,9 +875,10 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     //add initial lines of code //:)we need headers....they'll go before this..
     fprintf(fout, "\nsection .data\n");
     fprintf(fout,"\tinputInt: db \"Input: Enter an integer value\",10,0\n");//resume
+    fprintf(fout,"\tinputBool: db \"Input: Enter an boolean value\",10,0\n");
     fprintf(fout,"\toutput: db \"Output: %%"); fprintf(fout, "d\", 10, 0\n");
-    fprintf(fout,"output_array : db \"Output: \",0\n");
-    fprintf(fout,"array_value : db \" %%"); fprintf(fout,"d\",0\n");
+    fprintf(fout,"\toutput_array : db \"Output: \",0\n");
+    fprintf(fout,"\tarray_value : db \" %%"); fprintf(fout,"d\",0\n");
     fprintf(fout, "\tInput_Format : db \"%%"); fprintf(fout, "d\",0\n");
     fprintf(fout, "\tInput_Array1 : db \"Input: Enter %%"); fprintf(fout,"d elements of \", 0\n"); 
     fprintf(fout, "\tonScreenInt : db \"integer\", 0\n");
@@ -826,7 +889,7 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout, "\tfalseOutput : db \"Output: false\",10,0\n");
 	fprintf(fout, "\tnewline_char : db \"\",10,0\n");
     fprintf(fout, "\trunTimeErrorMsg : db \"RUN TIME ERROR: Array Index out of bound\",10,0");
-    fprintf(fout, "\nsection .bss\n\tint1 : resd 1\nsection .text\n\tglobal main\n\textern scanf\n\textern printf\n");
+    fprintf(fout, "\nsection .bss\n\tint1 : resd 1\nsection .text\n\tbool1 : resd 1\n\tglobal main\n\textern scanf\n\textern printf\n");
     codeGen(root, table, fout);
     fprintf(fout, "\n\n\tmov rax, 1\n\tint 80h\n");   //exit the program
     fprintf(fout, "\n;---runtime error (array index out of bounds)----\nrunTimeError: \n\tpush rbp\n\tmov rdi, runTimeErrorMsg\n\txor rax,rax\n\tcall printf\n\tpop rbp\n\tmov rax, 1\n\tint 80h\n");
