@@ -38,8 +38,34 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
     SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, node->sc->node.idnode.line_no);
     Typeof* currType = &(sym->symbol.idEntry.type);
     if(currType->type.arrayType.high>=0 && currType->type.arrayType.low>=0){    //static array
-        if(node->sc->rs->type == idNode){   //eg: a[b]
-
+        if(node->sc->rs->type == idNode){   //eg: a[b]. need to perform bound checking
+            //1. check bounds
+            fprintf(file, "\n;----code for dynamic bound checking of static array element %s[%s]----\n",node->sc->node.idnode.lexeme,node->sc->rs->node.idnode.lexeme);
+            SymbolTableEntry* indexEntry = lookupString(node->sc->rs->node.idnode.lexeme,table,idEntry,true,node->sc->rs->node.idnode.line_no);
+            fprintf(file, "\tmov ax, WORD[rbp+%d]\n", indexEntry->symbol.idEntry.offset);
+            fprintf(file, "\tcmp ax, %d\n\tjl runTimeError\n\tcmp ax, %d\n\tjg runTimeError\n", currType->type.arrayType.low,currType->type.arrayType.high);
+            
+            //2.index is within bounds. now fetch array element
+            if(currType->type.arrayType.t == integer){  //static integer array
+                fprintf(file, "\tmov rdx,rbp\n\tmov ax,%d\n\tand rax,0000000000001111h\n\tsub ax,%d\n\tmul 2\n\tadd ax,1\n\tadd rdx,rax\n\tmov ax,WORD[rdx]\n",sym->symbol.idEntry.offset, currType->type.arrayType.low);
+                *currTempNo += 1;
+                char* finalTemp = createTempVarName(*currTempNo, integer);
+                SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
+                fprintf(file, "\tmov WORD[rbp+%d], ax\n;------array element fetched and stored in %s------\n", sym1->symbol.idEntry.offset, finalTemp);
+                return integer;
+            }
+            else if(currType->type.arrayType.t == boolean){ //static boolean array
+                fprintf(file, "\tmov rdx,rbp\n\tmov ax,%d\n\tand rax,0000000000001111h\n\tsub ax,%d\n\tmul 2\n\tadd rdx,rax\n\tmov al,BYTE[rdx]\n",sym->symbol.idEntry.offset, currType->type.arrayType.low);
+                *currTempNo += 1;
+                char* finalTemp = createTempVarName(*currTempNo, boolean);
+                SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
+                fprintf(file, "\tmov BYTE[rbp+%d], al\n;------array element fetched and stored in %s------\n", sym1->symbol.idEntry.offset, finalTemp);
+                return boolean;
+            }
+            else{
+                //static real array
+                return -1;
+            }
         }
         else{       //eg: a[3]. bound already checked at compile time
             int relIndex = ((int)node->sc->rs->node.numNode.value) - currType->type.arrayType.low;
@@ -48,7 +74,7 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
                 *currTempNo += 1;
                 char* finalTemp = createTempVarName(*currTempNo, integer);
                 SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
-                fprintf(file, "\tmov WORD[rbp+%d], ax\n;------expression computed. result is in %s------\n", sym1->symbol.idEntry.offset, finalTemp);
+                fprintf(file, "\tmov WORD[rbp+%d], ax\n;------array element fetched and stored in %s------\n", sym1->symbol.idEntry.offset, finalTemp);
                 return integer;
             }
             else if(currType->type.arrayType.t == boolean){ //static boolean array
@@ -56,11 +82,12 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
                 *currTempNo += 1;
                 char* finalTemp = createTempVarName(*currTempNo, boolean);
                 SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
-                fprintf(file, "\tmov BYTE[rbp+%d], al\n;------expression computed. result is in %s------\n", sym1->symbol.idEntry.offset, finalTemp);
+                fprintf(file, "\tmov BYTE[rbp+%d], al\n;------array element fetched and stored in %s------\n", sym1->symbol.idEntry.offset, finalTemp);
                 return boolean;
             }
             else{
                 //static real array
+                return -1;
             }
         }
     }
@@ -704,10 +731,12 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout, "\tInput_Array2 : db \" for range %%"); fprintf(fout, "d to %%"); fprintf(fout, "d\", 10, 0\n");
     fprintf(fout, "\ttrueOutput : db \"Output: true\",10,0\n");   //string is terminated by newline followed by null char
     fprintf(fout, "\tfalseOutput : db \"Output: false\",10,0\n");
-	fprintf(fout, "\tnewline_char db \"\",10,0\n");
+	fprintf(fout, "\tnewline_char : db \"\",10,0\n");
+    fprintf(fout, "\trunTimeErrorMsg : db \"RUN TIME ERROR: Array Index out of bound\",10,0");
     fprintf(fout, "\nsection .bss\n\tint1 : resd 1\nsection .text\n\tglobal main\n\textern scanf\n\textern printf\n");
     codeGen(root, table, fout);
     fprintf(fout, "\n\n\tmov rax, 1\n\tint 80h\n");   //exit the program
+    fprintf(fout, "\n;---runtime error (array index out of bounds)----\nrunTimeError: \n\tpush rbp\n\tmov rdi, runTimeErrorMsg\n\txor rax,rax\n\tcall printf\n\tpop rbp\n\tmov rax, 1\n\tint 80h\n");
     fclose(fout);
     return;
 }
