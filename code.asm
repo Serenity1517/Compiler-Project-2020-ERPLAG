@@ -26,6 +26,7 @@ section .text
 	extern printf
 
 main:
+<<<<<<< HEAD
 	sub rsp, 49
 	mov rbp, rsp
 
@@ -50,6 +51,11 @@ main:
 	pop rax
 ;--------------
 
+=======
+	sub rsp, 15
+	mov rbp, rsp
+
+>>>>>>> 1e4466d2c9fe880aecd5e3ef7770a09c40f205f3
 ;-----code for scanning integer variable----
 	push rbp
 	mov rdi, inputInt
@@ -66,24 +72,9 @@ main:
 	mov WORD[rbp+0],ax
 ;-----------
 
-;-----code for scanning integer variable----
-	push rbp
-	mov rdi, inputInt
-	xor rax, rax
-	call printf
-	pop rbp
-	push rbp
-	mov rdi, Input_Format
-	lea rsi,[int1]
-	xor rax,rax
-	call scanf
-	pop rbp
-	mov ax, WORD[int1]
-	mov WORD[rbp+2],ax
-;-----------
-
 ;-------assignment stmt-----
 	push rax
+<<<<<<< HEAD
 
 ;------Processing integer expression-----
 
@@ -138,12 +129,31 @@ main:
 	add ax,bx
 	mov WORD[rbp+29], ax
 ;------expression computed. result is in TI5------
+=======
+	mov ax, 19
+	mov WORD[rbp+2], ax
+	pop rax
+;--------------
+
+;-------assignment stmt-----
+	push rax
+	mov ax, 56
+	mov WORD[rbp+4], ax
+	pop rax
+;--------------
+;---------Code for Switch-Case Statements----------
+	mov ax, WORD[rbp + 0]
+	mov dx, 1
+	cmp ax, dx
+	jne nextCase0:
+>>>>>>> 1e4466d2c9fe880aecd5e3ef7770a09c40f205f3
 
 	mov ax, WORD[rbp+29];	left operand is TI5
 	push rax
 
 ;------Processing integer expression-----
 
+<<<<<<< HEAD
 	mov ax, WORD[rbp+6];	left operand is a
 	push rax
 	mov bx, 2
@@ -178,14 +188,43 @@ main:
 ;-----expression processed, result is stored inside temp number 9 of type 0
 	mov ax, WORD[rbp+37]
 	mov WORD[rbp+4], ax
+=======
+;------Processing integer expression-----
+
+	mov ax, WORD[rbp+0];	left operand is x
+	push rax
+	mov bx, 2
+	pop rax
+	mul bx
+	mov WORD[rbp+6], ax
+;------expression computed. result is in TI1------
+
+	mov ax, WORD[rbp+6];	left operand is TI1
+	push rax
+	mov bx, WORD[rbp+2];	right operand is y
+	pop rax
+	sub ax,bx
+	mov WORD[rbp+8], ax
+;------expression computed. result is in TI2------
+
+;-----expression processed, result is stored inside temp number 2 of type 0
+	mov ax, WORD[rbp+8]
+	mov WORD[rbp+2], ax
+>>>>>>> 1e4466d2c9fe880aecd5e3ef7770a09c40f205f3
 	pop rax
 ;--------------
+	jmp endSwitchCase0:
+	nextCase0:
+	mov dx, 2
+	cmp ax, dx
+	jne nextCase1:
 
 ;-------assignment stmt-----
 	push rax
 
 ;------Processing boolean expression-----
 
+<<<<<<< HEAD
 ;------Processing boolean expression-----
 
 ;------Processing boolean expression-----
@@ -271,18 +310,48 @@ notlesser2:
 ;-----expression processed, result is stored inside temp number 6 of type 2
 	mov al, BYTE[rbp+44]
 	mov BYTE[rbp+13], al
+=======
+;------Processing integer expression-----
+
+	mov ax, WORD[rbp+0];	left operand is x
+	push rax
+	mov bx, 3
+	pop rax
+	mul bx
+	mov WORD[rbp+6], ax
+;------expression computed. result is in TI1------
+
+	mov ax, WORD[rbp+6];	left operand is TI1
+	push rax
+	mov bx, WORD[rbp+4];	right operand is z
+	pop rax
+	sub ax,bx
+	mov WORD[rbp+8], ax
+;------expression computed. result is in TI2------
+
+;-----expression processed, result is stored inside temp number 2 of type 0
+	mov ax, WORD[rbp+8]
+	mov WORD[rbp+4], ax
+>>>>>>> 1e4466d2c9fe880aecd5e3ef7770a09c40f205f3
 	pop rax
 ;--------------
+	jmp endSwitchCase0:
+	nextCase1:
 
 ;------code for printing integer variable-----
 	push rbp
+<<<<<<< HEAD
 	mov ax, WORD[rbp + 4]
+=======
+	mov ax, WORD[rbp + 0]
+>>>>>>> 1e4466d2c9fe880aecd5e3ef7770a09c40f205f3
 	mov rdi, output
 	movsx rsi, ax
 	xor rax, rax
 	call printf
 	pop rbp
 ;------------
+	endSwitchCase0:
 
 ;------code for printing Boolean variable-----
 	mov al, BYTE[rbp + 13]
@@ -394,11 +463,18 @@ notlesser2:
 
 ;-------code for printing static boolean array---------
 	push rbp
+<<<<<<< HEAD
 	mov rdi, output_array
+=======
+	mov ax, WORD[rbp + 4]
+	mov rdi, output
+	movsx rsi, ax
+>>>>>>> 1e4466d2c9fe880aecd5e3ef7770a09c40f205f3
 	xor rax, rax
 	call printf
 	pop rbp
 ;------------
+<<<<<<< HEAD
 ;----printing A[10]---
 	push rbp
 	mov al, BYTE[rbp + 15]
@@ -513,6 +589,8 @@ notlesser2:
 	xor rax,rax
 	call printf
 	pop rbx
+=======
+>>>>>>> 1e4466d2c9fe880aecd5e3ef7770a09c40f205f3
 
 
 	mov rax, 1

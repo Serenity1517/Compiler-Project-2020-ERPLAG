@@ -714,7 +714,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
        
         case conditionalNode:{
             fprintf(file, ";---------Code for Switch-Case Statements----------\n");
-            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,table,idNode,true, node->sc->node.idnode.line_no);
+            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,table,idEntry,true, node->sc->node.idnode.line_no);
             SymbolTableEntry* cond = lookupBlock(&node->node.conditionalNode.block,table,switchCaseEntry,false);
             if(sym->symbol.idEntry.type.type.primitiveType == integer){
                 fprintf(file,"\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.offset);
