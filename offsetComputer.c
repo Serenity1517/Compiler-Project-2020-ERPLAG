@@ -22,6 +22,7 @@
 
 int offset;
 int declaredVarOffset;
+int scrnOffset;
 
 SymbolTableEntry* createTemporory(int i,PrimitiveType p)
 {
@@ -183,15 +184,18 @@ void computeOffsets(ASTNode* root, SymbolTable* rootSymbolTable){
     while(otherMod != NULL){
         offset = 0;
         declaredVarOffset = 0;
+        scrnOffset = 0;
         calcOffsets(otherMod, rootSymbolTable);
         processTemporaries(otherMod, declaredVarOffset, rootSymbolTable);
         otherMod = otherMod->next;
     }
     offset = 0;
+    scrnOffset = 0;
     calcOffsets(driverMod, rootSymbolTable); 
     processTemporaries(driverMod, offset, rootSymbolTable);
     while(otherMod2 != NULL){
         offset = 0;
+        scrnOffset = 0;
         declaredVarOffset = 0;
         calcOffsets(otherMod2, rootSymbolTable); 
         processTemporaries(otherMod2, declaredVarOffset, rootSymbolTable);
@@ -213,7 +217,8 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
    		while(stmtNode != NULL){
             processStatement(stmtNode, currTable);
             stmtNode = stmtNode->next;
-   		} 
+   		}
+        sym->symbol.driverEntry.onScreenARSize = scrnOffset; 
         sym->symbol.driverEntry.activationRecordSize = offset;
         return;			
 	}
@@ -224,36 +229,48 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
         processStatement(stmtNode, currTable);
         stmtNode = stmtNode->next;
     }
+    sym->symbol.functionEntry.onScreenARSize = scrnOffset;
     sym->symbol.functionEntry.activationRecordSize = offset;
     declaredVarOffset = offset;
-
     //process input parameters
     offset = 0;
+    scrnOffset = 0;
     ASTNode* inputParams = currModule->sc->rs;
     while(inputParams != NULL)
     {
         SymbolTableEntry* sym = lookupString(inputParams->sc->node.idnode.lexeme,currTable,idEntry,false,inputParams->sc->node.idnode.line_no);
         if(sym->symbol.idEntry.type.tag == array){
             sym->symbol.idEntry.offset = offset;
+            sym->symbol.idEntry.offsetOnScreen = scrnOffset;
             sym->symbol.idEntry.width = 5;
             offset+=5;
+            scrnOffset += 5;
         }
         else{ // primitive type
             PrimitiveType t = sym->symbol.idEntry.type.type.primitiveType;
             if(t == integer){
                 sym->symbol.idEntry.offset = offset;
+                sym->symbol.idEntry.offsetOnScreen = scrnOffset;
                 sym->symbol.idEntry.width = 2;
+                sym->symbol.idEntry.widthOnScreen = 2;
                 offset += 2;
+                scrnOffset += 2;
             }
             else if(t == boolean){
                 sym->symbol.idEntry.offset = offset;
                 sym->symbol.idEntry.width = 1;
+                sym->symbol.idEntry.offsetOnScreen = scrnOffset;
+                sym->symbol.idEntry.widthOnScreen = 1;
                 offset += 1;
+                scrnOffset += 1;
             }
             else { // real  
                 sym->symbol.idEntry.offset = offset;
                 sym->symbol.idEntry.width = 4;
+                sym->symbol.idEntry.offsetOnScreen = scrnOffset;
+                sym->symbol.idEntry.widthOnScreen = 4;
                 offset += 4;
+                scrnOffset += 4;
             }
         }
         inputParams = inputParams->next;
@@ -273,17 +290,26 @@ void calcOffsets(ASTNode* currModule, SymbolTable* rootSymbolTable){
                 if(t == integer){
                     sym->symbol.idEntry.offset = offset;
                     sym->symbol.idEntry.width = 2;
+                    sym->symbol.idEntry.widthOnScreen = 2;
+                    sym->symbol.idEntry.offsetOnScreen = scrnOffset;
                     offset += 2;
+                    scrnOffset += 2;
                 }
                 else if(t == boolean){
                     sym->symbol.idEntry.offset = offset;
                     sym->symbol.idEntry.width = 1;
+                    sym->symbol.idEntry.widthOnScreen = 1;
+                    sym->symbol.idEntry.offsetOnScreen = scrnOffset;
                     offset += 1;
+                    scrnOffset += 1;
                 }
                 else { // real  
                     sym->symbol.idEntry.offset = offset;
                     sym->symbol.idEntry.width = 4;
+                    sym->symbol.idEntry.widthOnScreen = 4;
+                    sym->symbol.idEntry.offsetOnScreen = scrnOffset;
                     offset += 4;
+                    scrnOffset += 4;
                 }
             }
             outputParams = outputParams->next;
@@ -310,7 +336,10 @@ void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
                             SymbolTableEntry* sym = lookupString(declareId->node.idnode.lexeme,currTable,idEntry,false,declareId->node.idnode.line_no);
                             sym->symbol.idEntry.offset = offset;
                             sym->symbol.idEntry.width = currWidth;
+                            sym->symbol.idEntry.offsetOnScreen = scrnOffset;
+                            sym->symbol.idEntry.widthOnScreen = currWidth;
                             offset += currWidth;
+                            scrnOffset += currWidth;
                         }
                         declareId = declareId->next;
                     }
@@ -322,7 +351,10 @@ void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
                             SymbolTableEntry* sym = lookupString(declareId->node.idnode.lexeme,currTable,idEntry,false,declareId->node.idnode.line_no);
                             sym->symbol.idEntry.offset = offset;
                             sym->symbol.idEntry.width = 8;
+                            sym->symbol.idEntry.widthOnScreen = 1;
+                            sym->symbol.idEntry.offsetOnScreen = scrnOffset;
                             offset += 8;
+                            scrnOffset += 1;
                         }
                         declareId = declareId->next;
                     }
@@ -338,17 +370,26 @@ void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
                         if(t == integer){
                             sym->symbol.idEntry.offset = offset;
                             sym->symbol.idEntry.width = 2;
+                            sym->symbol.idEntry.offsetOnScreen = scrnOffset;
+                            sym->symbol.idEntry.widthOnScreen = 2;
                             offset += 2;
+                            scrnOffset += 2;
                         }
                         else if(t == boolean){
                             sym->symbol.idEntry.offset = offset;
                             sym->symbol.idEntry.width = 1;
+                            sym->symbol.idEntry.offsetOnScreen = scrnOffset;
+                            sym->symbol.idEntry.widthOnScreen = 1;
                             offset += 1;
+                            scrnOffset += 1;
                         }
                         else { // real  
                             sym->symbol.idEntry.offset = offset;
                             sym->symbol.idEntry.width = 4;
+                            sym->symbol.idEntry.widthOnScreen = 4;
+                            sym->symbol.idEntry.offsetOnScreen = scrnOffset;
                             offset += 4;
+                            scrnOffset += 4;
                         }
                     }
                     idtraverse = idtraverse->next; //push karde
@@ -380,7 +421,7 @@ void processStatement(ASTNode* stmtNode, SymbolTable* currTable){
         }
         case conditionalNode:{
             SymbolTableEntry* sym = lookupBlock(&stmtNode->node.conditionalNode.block,currTable,switchCaseEntry,false);
-            SymbolTable* curr = sym->table;
+            SymbolTable* curr = sym->table; 
             ASTNode* caseStmt = stmtNode->sc->rs;
             while(caseStmt != NULL){
                 processStatement(caseStmt, curr);
@@ -428,11 +469,11 @@ void printSymbolTableEntry(SymbolTableEntry* sym,SymbolTable* currTable)
                     ASTNode* temp = sym->symbol.idEntry.node;
                     if(tab->tableType == functionBlock){
                         printf("%s  %s  %d-%d   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end);
-                        printf("%d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.width, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset,nestingLevel);
+                        printf("%d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.widthOnScreen, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offsetOnScreen,nestingLevel);
                     }
                     else{
                         printf("%s  %s  %d-%d   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end);
-                        printf("%d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.width, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset,nestingLevel);
+                        printf("%d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.widthOnScreen, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offsetOnScreen,nestingLevel);
                     }
                 }
                 else{// array node
@@ -446,22 +487,22 @@ void printSymbolTableEntry(SymbolTableEntry* sym,SymbolTable* currTable)
                             printf("%s  %s  %d-%d   yes   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end);
                         }
                         if(sym->symbol.idEntry.type.type.arrayType.low == -1){ //low is idNode
-                            printf("%d  dynamic    [%s", sym->symbol.idEntry.width, temp->node.idnode.lexeme);
+                            printf("%d  dynamic    [%s", sym->symbol.idEntry.widthOnScreen, temp->node.idnode.lexeme);
                         }
                         else{
-                            printf("%d  dynamic    [%s", sym->symbol.idEntry.width, temp->node.numNode.lexeme);
+                            printf("%d  dynamic    [%s", sym->symbol.idEntry.widthOnScreen, temp->node.numNode.lexeme);
                         }
                         if(sym->symbol.idEntry.type.type.arrayType.high == -1){ // high is idnode
-                            printf(",%s]    %s  %d  %d\n", temp->rs->node.idnode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset, nestingLevel);
+                            printf(",%s]    %s  %d  %d\n", temp->rs->node.idnode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offsetOnScreen, nestingLevel);
                         }
                         else{
-                            printf(",%s]    %s  %d  %d\n", temp->rs->node.numNode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset, nestingLevel);
+                            printf(",%s]    %s  %d  %d\n", temp->rs->node.numNode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offsetOnScreen, nestingLevel);
                         }
                     }
                     else //static array
                     {
                         printf("%s  %s  %d-%d  yes  ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end);
-                        printf("%d  static [%d,%d] %s  %d  %d\n", sym->symbol.idEntry.width, sym->symbol.idEntry.type.type.arrayType.low, sym->symbol.idEntry.type.type.arrayType.high, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset,nestingLevel);
+                        printf("%d  static [%d,%d] %s  %d  %d\n", sym->symbol.idEntry.widthOnScreen, sym->symbol.idEntry.type.type.arrayType.low, sym->symbol.idEntry.type.type.arrayType.high, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offsetOnScreen,nestingLevel);
                     }                    
                 }
             } 
@@ -469,10 +510,10 @@ void printSymbolTableEntry(SymbolTableEntry* sym,SymbolTable* currTable)
                 SymbolTableEntry* s = lookupString(table->scope.scope,table->parent,functionEntry,false,-1);
                 if(sym->symbol.idEntry.type.tag == primitive){
                     if(tab->tableType == functionBlock){
-                        printf("%s  %s  %d-%d   %d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.node->node.idnode.lexeme,table->scope.scope,s->symbol.functionEntry.block.start,s->symbol.functionEntry.block.end, sym->symbol.idEntry.width,type_of_element[sym->symbol.idEntry.type.type.primitiveType],sym->symbol.idEntry.offset,nestingLevel);
+                        printf("%s  %s  %d-%d   %d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.node->node.idnode.lexeme,table->scope.scope,s->symbol.functionEntry.block.start,s->symbol.functionEntry.block.end, sym->symbol.idEntry.widthOnScreen,type_of_element[sym->symbol.idEntry.type.type.primitiveType],sym->symbol.idEntry.offsetOnScreen,nestingLevel);
                     }
                     else{    
-                        printf("%s  %s  %d-%d   %d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.node->node.idnode.lexeme,table->scope.scope,tab->scope.block_scope.start, tab->scope.block_scope.end, sym->symbol.idEntry.width,type_of_element[sym->symbol.idEntry.type.type.primitiveType],sym->symbol.idEntry.offset,nestingLevel);
+                        printf("%s  %s  %d-%d   %d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.node->node.idnode.lexeme,table->scope.scope,tab->scope.block_scope.start, tab->scope.block_scope.end, sym->symbol.idEntry.widthOnScreen,type_of_element[sym->symbol.idEntry.type.type.primitiveType],sym->symbol.idEntry.offsetOnScreen,nestingLevel);
                     }
                 }
                 else{ // array node
@@ -488,16 +529,16 @@ void printSymbolTableEntry(SymbolTableEntry* sym,SymbolTable* currTable)
                             printf("%s  %s  %d-%d   yes   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end);
                         }
                         if(sym->symbol.idEntry.type.type.arrayType.low == -1){ //low is idNode
-                            printf("%d  dynamic    [%s", sym->symbol.idEntry.width, temp->node.idnode.lexeme);
+                            printf("%d  dynamic    [%s", sym->symbol.idEntry.widthOnScreen, temp->node.idnode.lexeme);
                         }
                         else{
-                            printf("%d  dynamic    [%s", sym->symbol.idEntry.width, temp->node.numNode.lexeme);
+                            printf("%d  dynamic    [%s", sym->symbol.idEntry.widthOnScreen, temp->node.numNode.lexeme);
                         }
                         if(sym->symbol.idEntry.type.type.arrayType.high == -1){ // high is idnode
-                            printf(",%s]    %s  %d  %d\n", temp->rs->node.idnode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset, nestingLevel);
+                            printf(",%s]    %s  %d  %d\n", temp->rs->node.idnode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offsetOnScreen, nestingLevel);
                         }
                         else{
-                            printf(",%s]    %s  %d  %d\n", temp->rs->node.numNode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset, nestingLevel);
+                            printf(",%s]    %s  %d  %d\n", temp->rs->node.numNode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offsetOnScreen, nestingLevel);
                         }
                     }
                     else //static array
@@ -508,7 +549,7 @@ void printSymbolTableEntry(SymbolTableEntry* sym,SymbolTable* currTable)
                         else{
                             printf("%s  %s  %d-%d   yes  ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end);
                         }
-                        printf("%d  static [%d,%d] %s  %d  %d\n", sym->symbol.idEntry.width, sym->symbol.idEntry.type.type.arrayType.low, sym->symbol.idEntry.type.type.arrayType.high, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offset,nestingLevel);
+                        printf("%d  static [%d,%d] %s  %d  %d\n", sym->symbol.idEntry.widthOnScreen, sym->symbol.idEntry.type.type.arrayType.low, sym->symbol.idEntry.type.type.arrayType.high, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offsetOnScreen,nestingLevel);
                     }
 
                 }
@@ -717,9 +758,9 @@ void printActivationRecord(SymbolTable* root)
         while(tab != NULL)
         {
             if(tab->tag == driverEntry)
-                printf("driver  %d\n",tab->symbol.driverEntry.activationRecordSize);
+                printf("driver  %d\n",tab->symbol.driverEntry.onScreenARSize);
             else
-                printf("%s  %d\n",tab->symbol.functionEntry.functionName,tab->symbol.functionEntry.activationRecordSize);
+                printf("%s  %d\n",tab->symbol.functionEntry.functionName,tab->symbol.functionEntry.onScreenARSize);
             tab = tab->next;
         }
     }

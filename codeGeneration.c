@@ -379,7 +379,49 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             break;
         }
         case declareNode:{
-            //no asm code needs to be generated here. the declared variables are already stored in symboltable and their offsets are available.
+            //only need to handle the case of dynamic arrays
+            if(node->sc->rs->type == arrayTypeNode){
+                if(node->sc->rs->sc->sc->type == idNode && node->sc->rs->sc->sc->rs->type == idNode ||      //array a[low..high]
+                    node->sc->rs->sc->sc->type == numNode && node->sc->rs->sc->sc->rs->type == idNode ||    //array a[2..high]
+                    node->sc->rs->sc->sc->type == numNode && node->sc->rs->sc->sc->rs->type == idNode){     //array a[low..4]
+                    fprintf(file, "\n;-----Dynamic array declaration----\n");
+                    ASTNode* currArrVar = node->sc;
+                    ASTNode* currRangeNode = node->sc->rs->sc;
+                    //1.load value of lower index in bx
+                    if(currRangeNode->sc->type == numNode)
+                        fprintf(file, "\tmov bx,%d\t;-----left index----\n",(int)currRangeNode->sc->node.numNode.value);
+                    else{
+                        SymbolTableEntry* leftVar = lookupString(currRangeNode->sc->node.idnode.lexeme,table,idEntry,true,currRangeNode->sc->node.idnode.line_no);
+                        fprintf(file, "\tmov bx,[rbp+%d]\t;----left index----\n",leftVar->symbol.idEntry.offset);
+                    }
+                    //2.load value of higher index in ax
+                    if(currRangeNode->sc->rs->type == numNode)
+                        fprintf(file, "\tmov ax,%d\t;---right index----\n",(int)currRangeNode->sc->rs->node.numNode.value);
+                    else{
+                        SymbolTableEntry* rightVar = lookupString(currRangeNode->sc->rs->node.idnode.lexeme,table,idEntry,true,currRangeNode->sc->rs->node.idnode.line_no);
+                        fprintf(file, "\tmov ax,[rbp+%d]\t;----right index----\n",rightVar->symbol.idEntry.offset);
+                    }
+                    //3. check if ax<bx (or else runtime error)
+                    fprintf(file, "\tcmp ax,bx\n\tjl runTimeErrorMsg\n");
+
+                    int factor;
+                    if(strcmp(node->sc->rs->sc->rs->node.typeNode.token,"INTEGER")==0)
+                        factor=2;
+                    else if(strcmp(node->sc->rs->sc->rs->node.typeNode.token,"BOOLEAN")==0)
+                        factor=1;                    
+                    else factor=-1;     //real
+                    //Now loop over the following step for all the declared arrays
+                    while(currArrVar != NULL){
+                        SymbolTableEntry* dynArr = lookupString(currArrVar->node.idnode.lexeme,table,idEntry,true,currArrVar->node.idnode.line_no);
+                        //4. increment the stack pointer by (bx-ax)*factor and store rsp at the offset of the array variable
+                        fprintf(file, "\tsub ax,bx\n\tmov dx,%d\n\tmul dx\n\tand ax,000000000000FFFFh\n",factor);
+                        fprintf(file, "\tadd rsp,rax\n\tmov [rbp+%d],rsp\n\tsub rsp,1\n",dynArr->symbol.idEntry.offset);
+                        currArrVar = currArrVar->next;
+                    }
+                    fprintf(file, "\n;--------End of Dynamic array declaration--------\n");
+                }
+                else {break;}   //static
+            }
             break;
         }
         case assignmentNode:{

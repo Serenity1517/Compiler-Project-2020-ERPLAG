@@ -47,6 +47,7 @@ typedef struct IdEntry{
     bool isOutputParam;
     bool isWhileLoopCondition;
     int widthOnScreen;
+    int offsetOnScreen;
 }IdEntry;
 
 /* Driver Module*/
@@ -55,6 +56,7 @@ typedef struct DriverEntry{
     struct ASTNode* driverNode;  //ast node pointer to moduleNode of driver    
     int activationRecordSize;
     int ARSizeWithTemp;
+    int onScreenARSize;
     Block block;
 }DriverEntry;
 
@@ -70,6 +72,7 @@ typedef struct FunctionEntry{
     struct FunctionType inOutType;      //type (input/output) of the function..DONE
     int activationRecordSize;   //size of activation record (basically sum of all offsets in function)
     int ARSizeWithTemp;
+    int onScreenARSize;
     Block block;
 }FunctionEntry;
 

@@ -895,6 +895,50 @@ void analyzeAST(ASTNode* node, SymbolTable* table, ListOfErrors* semanticErrors)
         case forLoopNode : {
             SymbolTableEntry *floop = lookupBlock(&node->node.forLoopNode.block,table,forLoopEntry,false);
             ASTNode* forStmt =  node->sc->rs->rs;
+            ASTNode* ranNode = node->sc->rs;
+            if(strcmp(ranNode->sc->node.numNode.token,"RNUM")==0 || strcmp(ranNode->sc->rs->node.numNode.token,"RNUM")){
+                Error* err = createErrorObject();
+                err->lineNo = ranNode->sc->node.numNode.line_no;
+                strcpy(err->error,"Range of For Loop variables should be integers.");
+                //printf("LINE %d: %s\n",err->lineNo,err->error);
+                Error *temporary = semanticErrors->head;
+                if(temporary == NULL)
+                {
+                    semanticErrors->head = err;    
+                    semanticErrors->numberOfErr += 1; 
+                }
+                else
+                {
+                    while(temporary->next != NULL)
+                        temporary = temporary->next;
+                    temporary->next = err;
+                    semanticErrors->numberOfErr += 1;   
+                }
+                break;
+            }
+            int high = (int)ranNode->sc->rs->node.numNode.value;
+            int low  = (int)ranNode->sc->node.numNode.value;
+            if(low > high)
+            {
+                Error* err = createErrorObject();
+                err->lineNo = ranNode->sc->node.numNode.line_no;
+                strcpy(err->error,"Range of For Loop variable is not defined correctly.");
+                //printf("LINE %d: %s\n",err->lineNo,err->error);
+                Error *temporary = semanticErrors->head;
+                if(temporary == NULL)
+                {
+                    semanticErrors->head = err;    
+                    semanticErrors->numberOfErr += 1; 
+                }
+                else
+                {
+                    while(temporary->next != NULL)
+                        temporary = temporary->next;
+                    temporary->next = err;
+                    semanticErrors->numberOfErr += 1;   
+                }
+                break;
+            }
             if(forStmt->type != nullNode){
                 while(forStmt != NULL)
                 {
