@@ -43,11 +43,12 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
             fprintf(file, "\n;----code for dynamic bound checking of static array element %s[%s]----\n",node->sc->node.idnode.lexeme,node->sc->rs->node.idnode.lexeme);
             SymbolTableEntry* indexEntry = lookupString(node->sc->rs->node.idnode.lexeme,table,idEntry,true,node->sc->rs->node.idnode.line_no);
             fprintf(file, "\tmov ax, WORD[rbp+%d]\n", indexEntry->symbol.idEntry.offset);
-            fprintf(file, "\tcmp ax, %d\n\tjl runTimeError\n\tcmp ax, %d\n\tjg runTimeError\n", currType->type.arrayType.low,currType->type.arrayType.high);
+            fprintf(file, "\tcmp ax, %d\n\tjl runTimeError\n\tcmp ax, %d\n\tjg runTimeError\n;----index is within bounds---\n", currType->type.arrayType.low,currType->type.arrayType.high);
             
             //2.index is within bounds. now fetch array element
             if(currType->type.arrayType.t == integer){  //static integer array
-                fprintf(file, "\tmov rdx,rbp\n\tmov ax,%d\n\tand rax,0000000000001111h\n\tsub ax,%d\n\tmul 2\n\tadd ax,1\n\tadd rdx,rax\n\tmov ax,WORD[rdx]\n",sym->symbol.idEntry.offset, currType->type.arrayType.low);
+                //fprintf(file, "\tmov rdx,rbp\n\tmov cx,%d\n\tand rcx,000000000000FFFFh\n\tadd cx,1\n\tand rax,000000000000FFFFh\n\tsub ax,%d\n\tmov bx,2\n\tmul bx\n\tadd rcx,rax\n\tadd rdx,rcx\n\tmov ax,WORD[rdx]\n",sym->symbol.idEntry.offset, currType->type.arrayType.low);
+				fprintf(file, "\tmov cx,%d\n\tand rcx,000000000000FFFFh\n\tadd cx,1\n\tand rax,000000000000FFFFh\n\tsub ax,%d\n\tmov bx,2\n\tmul bx\n\tadd rcx,rax\n\tmov ax,WORD[rbp+rcx]\n",sym->symbol.idEntry.offset, currType->type.arrayType.low);
                 *currTempNo += 1;
                 char* finalTemp = createTempVarName(*currTempNo, integer);
                 SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
@@ -55,7 +56,7 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
                 return integer;
             }
             else if(currType->type.arrayType.t == boolean){ //static boolean array
-                fprintf(file, "\tmov rdx,rbp\n\tmov ax,%d\n\tand rax,0000000000001111h\n\tsub ax,%d\n\tmul 2\n\tadd rdx,rax\n\tmov al,BYTE[rdx]\n",sym->symbol.idEntry.offset, currType->type.arrayType.low);
+                //fprintf(file, "\tmov rdx,rbp\n\tmov cx,%d\n\tand rcx,000000000000FFFFh\n\tadd cx,1\n\tand rax,000000000000FFFFh\n\tsub ax,%d\n\tadd rcx,rax\n\tadd rdx,rcx\n\tmov al,BYTE[rdx]\n",sym->symbol.idEntry.offset, currType->type.arrayType.low);
                 *currTempNo += 1;
                 char* finalTemp = createTempVarName(*currTempNo, boolean);
                 SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
@@ -78,7 +79,7 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
                 return integer;
             }
             else if(currType->type.arrayType.t == boolean){ //static boolean array
-                fprintf(file,"\tmov al, BYTE[rbp+%d]\n",(sym->symbol.idEntry.offset+(2*relIndex)+1));
+                fprintf(file,"\tmov al, BYTE[rbp+%d]\n",(sym->symbol.idEntry.offset+(relIndex)+1));
                 *currTempNo += 1;
                 char* finalTemp = createTempVarName(*currTempNo, boolean);
                 SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
@@ -454,10 +455,41 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             }
             //2. now perform the assignment
             if(node->sc->type == arrayIdNode){  //lhs -> a[2] or a[b]
-                //a[2] = ...
+                SymbolTableEntry* arrLhs = lookupString(node->sc->sc->node.idnode.lexeme,table,idEntry,true,node->sc->sc->node.idnode.line_no);
+                Typeof* currType = &(arrLhs->symbol.idEntry.type);
+                if(node->sc->sc->rs->type == idNode){	//a[b]
+					//1. check bounds
+                    fprintf(file, "\n;----code for dynamic bound checking of static array element %s[%s]----\n",node->sc->sc->node.idnode.lexeme,node->sc->sc->rs->node.idnode.lexeme);
+                    fprintf(file, "\tpush rax\t;saving rhs result (rax)\n");
+                    SymbolTableEntry* indexEntry = lookupString(node->sc->sc->rs->node.idnode.lexeme,table,idEntry,true,node->sc->sc->rs->node.idnode.line_no);
+                    fprintf(file, "\tmov ax, WORD[rbp+%d]\n", indexEntry->symbol.idEntry.offset);
+                    fprintf(file, "\tcmp ax, %d\n\tjl runTimeError\n\tcmp ax, %d\n\tjg runTimeError\n;----index is within bounds----\n", currType->type.arrayType.low,currType->type.arrayType.high);
+
+                    //2.index is within bounds. now fetch exact offset and perform assignment
+                    if(currType->type.arrayType.t == integer){  //static integer array
+                        fprintf(file, "\tmov cx,%d\n\tand rcx,000000000000FFFFh\n\tadd cx,1\n\tand rax,000000000000FFFFh\n\tsub ax,%d\n\tmov bx,2\n\tmul bx\n\tadd rcx,rax\n",arrLhs->symbol.idEntry.offset, currType->type.arrayType.low);
+                        fprintf(file, "\tpop rax\t;restoring rhs result into rax\n");                
+                        fprintf(file, "\tmov WORD[rbp+rcx], ax\t;performing the assignment to %s[%s]\n", node->sc->sc->node.idnode.lexeme,node->sc->sc->rs->node.idnode.lexeme);
+                    }
+                    else if(currType->type.arrayType.t == boolean){ //static boolean array
+                        fprintf(file, "\tmov cx,%d\n\tand rcx,000000000000FFFFh\n\tadd cx,1\n\tand rax,000000000000FFFFh\n\tsub ax,%d\n\tmov bx,2\n\tmul bx\n\tadd rcx,rax\n",arrLhs->symbol.idEntry.offset, currType->type.arrayType.low);
+                        fprintf(file, "\tpop rax\t;restoring rhs result into rax\n");                
+                        fprintf(file, "\tmov BYTE[rbp+rcx], al\t;performing the assignment to %s[%s]\n", node->sc->sc->node.idnode.lexeme,node->sc->sc->rs->node.idnode.lexeme);
+                    }
+                    else{
+                        //static real array
+                    }
+				}
+				else{		//a[2]. bounds already checked at compile time
+                    int relIndex = ((int)node->sc->rs->node.numNode.value) - currType->type.arrayType.low;
+                    if(currType->type.arrayType.t == integer)  //static integer array
+                        fprintf(file,"\tmov WORD[rbp+%d],ax\t;performing the assignment to %s[%s]\n",(arrLhs->symbol.idEntry.offset+(2*relIndex)+1), node->sc->sc->node.idnode.lexeme,node->sc->sc->rs->node.idnode.lexeme);
+                    else if(currType->type.arrayType.t == boolean) //static boolean array
+                        fprintf(file,"\tmov BYTE[rbp+%d],al\t;performing the assignment to %s[%s]\n",(arrLhs->symbol.idEntry.offset+relIndex+1), node->sc->sc->node.idnode.lexeme,node->sc->sc->rs->node.idnode.lexeme);
+				}
             }
             else{       //idnode
-                SymbolTableEntry* lhsSym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, -1);
+                SymbolTableEntry* lhsSym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, node->sc->node.idnode.line_no);
                 if(type_of_assignment == 0)
                     fprintf(file, "\tmov BYTE[rbp+%d], al\n", lhsSym->symbol.idEntry.offset);
                 else if(type_of_assignment == 1)
@@ -814,7 +846,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 }
                 fprintf(file,"\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.offset);
                 fprintf(file,"\tinc ax\n");
-                fprintf(file,"\tmov [rbp + %d], ax\n",sym->symbol.idEntry.offset);
+                fprintf(file,"\tmov WORD[rbp + %d], ax\n",sym->symbol.idEntry.offset);
                 fprintf(file,"\tjmp forLoopEntry%d\n",forLoopLabel-1);
                 fprintf(file,"forLoopExit%d:\n",forLoopLabel-1);
             }

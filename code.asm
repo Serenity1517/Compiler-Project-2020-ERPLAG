@@ -183,14 +183,16 @@ forLoopEntry0:
 	jl runTimeError
 	cmp ax, 10
 	jg runTimeError
-	mov rdx,rbp
-	mov ax,4
-	and rax,0000000000001111h
+;----index is within bounds---
+	mov cx,4
+	and rcx,000000000000FFFFh
+	add cx,1
+	and rax,000000000000FFFFh
 	sub ax,6
-	mul 2
-	add ax,1
-	add rdx,rax
-	mov ax,WORD[rdx]
+	mov bx,2
+	mul bx
+	add rcx,rax
+	mov ax,WORD[rbp+rcx]
 	mov WORD[rbp+37], ax
 ;------array element fetched and stored in TI1------
 
@@ -205,14 +207,16 @@ forLoopEntry0:
 	jl runTimeError
 	cmp ax, 10
 	jg runTimeError
-	mov rdx,rbp
-	mov ax,15
-	and rax,0000000000001111h
+;----index is within bounds---
+	mov cx,15
+	and rcx,000000000000FFFFh
+	add cx,1
+	and rax,000000000000FFFFh
 	sub ax,6
-	mul 2
-	add ax,1
-	add rdx,rax
-	mov ax,WORD[rdx]
+	mov bx,2
+	mul bx
+	add rcx,rax
+	mov ax,WORD[rbp+rcx]
 	mov WORD[rbp+39], ax
 ;------array element fetched and stored in TI2------
 
@@ -241,11 +245,30 @@ forLoopEntry0:
 ;-------assignment stmt-----
 	push rax
 	mov ax, WORD[rbp+2]
+
+;----code for dynamic bound checking of static array element C[m]----
+	push rax	;saving rhs result (rax)
+	mov ax, WORD[rbp+0]
+	cmp ax, 6
+	jl runTimeError
+	cmp ax, 10
+	jg runTimeError
+;----index is within bounds----
+	mov cx,26
+	and rcx,000000000000FFFFh
+	add cx,1
+	and rax,000000000000FFFFh
+	sub ax,6
+	mov bx,2
+	mul bx
+	add rcx,rax
+	pop rax	;restoring rhs result into rax
+	mov WORD[rbp+rcx], ax	;performing the assignment to C[m]
 	pop rax
 ;--------------
 	mov ax, WORD[rbp + 0]
 	inc ax
-	mov [rbp + 0], ax
+	mov WORD[rbp + 0], ax
 	jmp forLoopEntry0
 forLoopExit0:
 
