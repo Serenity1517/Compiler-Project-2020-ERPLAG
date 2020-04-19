@@ -210,9 +210,12 @@ typedef struct ParseTreeNode{
     struct ParseTreeNode *parent;     //pointer to the parent SymbolNode of the current SymbolNode. NULL if the current node is root node
     struct ParseTreeNode *startChild; //pointer to the first child of the current SymbolNode. NULL if current node is leaf node
     struct ParseTreeNode *rightSibling; //pointer to the next right sibling of the current SymbolNode. NULL if it's the last child or if it's the only child of the parent node
+    struct ParseTreeNode* leftSibling;  //pointer to the next right sibling of the current SymbolNode. NULL if it's the first child or if it's the only child of the parent node
     int rule_no;                    //stores the rule no. by which current nonterminal is expanded. 
     ASTNode *syn;           //synthesized attribute (used during AST creation)
     ASTNode *inh;           //inherited attribute (used during AST creation)
+    ASTNode* inh_offset;    // inherited offset attribute will be used during offset computation 
+    ASTNode* syn_offset;    // sym offset attribute will be used during offset computation
 }ParseTreeNode;
 /*structure that describes a parse tree
 NOTE : the structrure SymbolNode is used to represent the 

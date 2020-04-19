@@ -631,8 +631,101 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             }
             break;
         }
-        case conditionalNode:{
+        /*
+                mov ax, WORD[ebp+%d];   bring the conditional variable's value into ax
 
+;--processing case no.1---
+    mov bx, WORD[ebp+%d];   bring case variable/constant's value into bx
+    cmp ax,bx
+    jne nextcase1
+    ;;;;;
+    ;;;;;
+    ;CODE FOR case no. 1(process the statements of this caseNode)
+nextcase1:
+
+;--processing case no.2---
+    mov bx, WORD[ebp+%d];   bring case variable/constant's value into bx
+    cmp ax,bx
+    jne nextcase2
+    ;;;;;
+    ;;;;;
+    ;CODE FOR case no. 2(process the statements of this caseNode)
+nextcase2:
+
+;--processing case no.3---
+    mov bx, WORD[ebp+%d];   bring case variable/constant's value into bx
+    cmp ax,bx
+    jne nextcase3
+    ;;;;;
+    ;;;;;
+    ;CODE FOR case no. 3(process the statements of this caseNode)
+nextcase3:
+
+;---processing default case---
+    ;;;;;
+    ;;;;;
+    ;CODE FOR Default case(process the statements of this caseNode)
+        */
+        case conditionalNode:{
+            fprintf(file, ";---------Code for Switch-Case Statements----------\n");
+            SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme,table,idNode,true, node->sc->node.idnode.line_no);
+            SymbolTableEntry* cond = lookupBlock(&node->node.conditionalNode.block,table,switchCaseEntry,false);
+            if(sym->symbol.idEntry.type.type.primitiveType == integer){
+                fprintf(file,"\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.offset);
+                ASTNode* cases = node->sc->rs; // cases is a CaseNode
+                while(cases != NULL)
+                {
+                    fprintf(file,"\tmov dx, %d\n",(int)cases->sc->rs->node.numNode.value);
+                    fprintf(file,"\tcmp ax, dx\n");
+                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
+                    codeGen(cases->sc, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tnextCase%d:\n",caseLabel-1);
+                    cases = cases->next;
+                }
+                //default statement
+                ASTNode* deflt = node->sc->rs->rs;
+                codeGen(deflt->sc, cond->table, file);
+                fprintf(file,"\tendSwitchCase%d:\n",utilLabel);
+                utilLabel++;
+            }
+            else  // switching variable is of boolean type 
+            {
+                fprintf(file,"\tmov al, BYTE[rbp + %d]\n",sym->symbol.idEntry.offset);
+                ASTNode* cases = node->sc->rs; // cases is a CaseNode
+                if(strcmp(cases->sc->rs->node.boolNode.token,"TRUE")==0){ // first case is true 
+                    fprintf(file,"\tmov dl, 1\n");
+                    fprintf(file,"\tcmp al, dl\n");
+                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
+                    codeGen(cases->sc, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tnextCase%d:\n",caseLabel-1);
+                    cases = cases->next;
+                    fprintf(file,"\tmov dl, 0\n");
+                    fprintf(file,"\tcmp al, dl\n");
+                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
+                    codeGen(cases->sc, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tnextCase%d:\n",caseLabel-1);
+                }
+                else // first case is false
+                {
+                    fprintf(file,"\tmov dl, 0\n");
+                    fprintf(file,"\tcmp al, dl\n");
+                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
+                    codeGen(cases->sc, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tnextCase%d:\n",caseLabel-1);
+                    cases = cases->next;
+                    fprintf(file,"\tmov dl, 1\n");
+                    fprintf(file,"\tcmp al, dl\n");
+                    fprintf(file,"\tjne nextCase%d:\n",caseLabel++);
+                    codeGen(cases->sc, cond->table, file);
+                    fprintf(file,"\tjmp endSwitchCase%d:\n",utilLabel);
+                    fprintf(file,"\tnextCase%d:\n",caseLabel-1);
+                }
+                
+            }
             break;
         }
         case whileLoopNode:{
