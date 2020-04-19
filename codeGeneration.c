@@ -704,9 +704,23 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                     break;
                 }
                 case numNode:{
+                    fprintf(file,";---code for printing numNode---------------\n");
+                    fprintf(file,"\tmov ax, %d\n",(int)node->node.numNode.value);
+                    fprintf(file, "\tmov rdi, output\n\tmovsx rsi, ax\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
                     break;
                 }
                 case boolNode:{
+                     fprintf(file,";---code for printing boolNode---------------\n");
+                     if(strcmp(node->node.boolNode.token,"TRUE")==0)
+                        fprintf(file,"\tmov al, 1\n");
+                    else
+                        fprintf(file,"\tmov al, 0\n");           
+
+                    fprintf(file,"\tcmp al, 1\n\tjne zero%d\n\tpush rbp\n\tmov rdi, trueOutput\n\txor rax, rax\n\tcall printf\n\tpop rbp\n",utilLabel++);
+                    fprintf(file,"\tjmp empty%d\n",utilLabel++);
+                    fprintf(file,"\tzero%d:\n\tpush rbp\n\tmov rdi, falseOutput\n\t\txor rax, rax\n\t\tcall printf\n\tpop rbp\n",utilLabel - 2);
+                    fprintf(file,"\tempty%d:\n",utilLabel - 1);
+
                     break;
                 }
             }
@@ -881,15 +895,6 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                 fprintf(file,"\tmov WORD[rbp + %d], ax\n",sym->symbol.idEntry.offset);
                 fprintf(file,"\tjmp forLoopEntry%d\n",forLoopLabel-1);
                 fprintf(file,"forLoopExit%d:\n",forLoopLabel-1);
-            }
-            else if(node->sc->rs->sc->type == idNode && node->sc->rs->sc->rs->type == numNode) {
-                
-            }
-            else if(node->sc->rs->sc->type == numNode && node->sc->rs->sc->rs->type == idNode){
-
-            }
-            else{ // both idNodes
-
             }
             break;
         }
