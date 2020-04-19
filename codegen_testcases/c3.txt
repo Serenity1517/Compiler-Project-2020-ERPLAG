@@ -16,7 +16,7 @@ start
 	z:= x + y*b +(a-b)*y+ a*2 - b*x;
 	v:= z > 10 OR a<=b AND x<y AND u;	**follows left to right associativity**
         print(z);
-	print(u);
+	print(v);
 	get_value(A); 
                           
 **Note: Implement get_value(A) using type information of A. Your code template should first inform user of the size, range indices and type of data and read accordingly to populate the memory locations allocated for elements of A**

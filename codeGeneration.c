@@ -33,10 +33,10 @@ char* createTempVarName(int num, PrimitiveType type){
     return res;
 }
 
-void processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, int* currTempNo){
+PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, int* currTempNo){
     fprintf(file, "\n;-------Processing arrayIdNode(array element)-------\n");
-    SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, table, file, true, node->sc->node.idnode.line_no);
-    Typeof* currType = &sym->symbol.idEntry.type;
+    SymbolTableEntry* sym = lookupString(node->sc->node.idnode.lexeme, table, idEntry, true, node->sc->node.idnode.line_no);
+    Typeof* currType = &(sym->symbol.idEntry.type);
     if(currType->type.arrayType.high>=0 && currType->type.arrayType.low>=0){    //static array
         if(node->sc->rs->type == idNode){   //eg: a[b]
 
@@ -44,20 +44,20 @@ void processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, int* curr
         else{       //eg: a[3]. bound already checked at compile time
             int relIndex = ((int)node->sc->rs->node.numNode.value) - currType->type.arrayType.low;
             if(currType->type.arrayType.t == integer){  //static integer array
-                fprintf("\tmov ax, WORD[rbp+%d]\n",(sym->symbol.idEntry.offset+(2*relIndex)));
+                fprintf(file,"\tmov ax, WORD[rbp+%d]\n",(sym->symbol.idEntry.offset+(2*relIndex)));
                 *currTempNo += 1;
                 char* finalTemp = createTempVarName(*currTempNo, integer);
                 SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
                 fprintf(file, "\tmov WORD[rbp+%d], ax\n;------expression computed. result is in %s------\n", sym1->symbol.idEntry.offset, finalTemp);
-                return;
+                return integer;
             }
             else if(currType->type.arrayType.t == boolean){ //static boolean array
-                fprintf("\tmov al, BYTE[rbp+%d]\n",(sym->symbol.idEntry.offset+(2*relIndex)));
+                fprintf(file,"\tmov al, BYTE[rbp+%d]\n",(sym->symbol.idEntry.offset+(2*relIndex)));
                 *currTempNo += 1;
                 char* finalTemp = createTempVarName(*currTempNo, boolean);
                 SymbolTableEntry* sym1 = lookupString(finalTemp, table, idEntry, true, -1);
                 fprintf(file, "\tmov BYTE[rbp+%d], al\n;------expression computed. result is in %s------\n", sym1->symbol.idEntry.offset, finalTemp);
-                return;
+                return boolean;
             }
             else{
                 //static real array
@@ -85,10 +85,10 @@ void processIntegerExpr(ASTNode* node, SymbolTable* table, FILE* file, int* curr
         fprintf(file, "\n\tmov ax, WORD[rbp+%d];\tleft operand is %s\n", sym2->symbol.idEntry.offset, tempName);
     }
     else{   //arrayIdNode
-        processArrayIdNode(node, table, file, currTempNo);
+        processArrayIdNode(node->sc, table, file, currTempNo);
         char* tempName = createTempVarName(*currTempNo, integer);
         SymbolTableEntry* sym9 = lookupString(tempName,table,idEntry,true,-1);
-        fprintf(file, "\n\tmov ax, WORD[rbp+%d];\tleft operand is %s", sym9->symbol.idEntry.offset, tempName);
+        fprintf(file, "\n\tmov ax, WORD[rbp+%d];\tleft operand is %s\n", sym9->symbol.idEntry.offset, tempName);
     }
 
     //2. process right operand and load it in bx 
@@ -106,10 +106,10 @@ void processIntegerExpr(ASTNode* node, SymbolTable* table, FILE* file, int* curr
         fprintf(file, "\tmov bx, WORD[rbp+%d];\tright operand is %s\n", sym4->symbol.idEntry.offset, tempName);
     }
     else{   //arrayIdNdoe
-        processArrayIdNode(node, table, file, currTempNo);
+        processArrayIdNode(node->sc->rs, table, file, currTempNo);
         char* tempName = createTempVarName(*currTempNo, integer);
         SymbolTableEntry* sym9 = lookupString(tempName,table,idEntry,true,-1);
-        fprintf(file, "\n\tmov bx, WORD[rbp+%d];\tleft operand is %s", sym9->symbol.idEntry.offset, tempName);
+        fprintf(file, "\n\tmov bx, WORD[rbp+%d];\tleft operand is %s\n", sym9->symbol.idEntry.offset, tempName);
     }
     
     //3. perform the calculation
@@ -172,10 +172,17 @@ void processBooleanExpr(ASTNode* node, SymbolTable* table, FILE* file, int* curr
         }
     }
     else{
-        processArrayIdNode(node->sc, table, file, currTempNo);
-        char* tempName = createTempVarName(*currTempNo, boolean);
-        SymbolTableEntry* sym9 = lookupString(tempName,table,idEntry,true,-1);
-        fprintf(file, "\n\tmov al, BYTE[rbp+%d];\tleft operand is %s", sym9->symbol.idEntry.offset, tempName);
+        PrimitiveType t = processArrayIdNode(node->sc, table, file, currTempNo);
+		if(t == integer){
+			char* tempName = createTempVarName(*currTempNo, integer);
+	        SymbolTableEntry* sym9 = lookupString(tempName,table,idEntry,true,-1);
+    	    fprintf(file, "\n\tmov ax, WORD[rbp+%d];\tleft operand is %s\n", sym9->symbol.idEntry.offset, tempName);			
+		}
+		else{
+			char* tempName = createTempVarName(*currTempNo, boolean);
+        	SymbolTableEntry* sym9 = lookupString(tempName,table,idEntry,true,-1);
+	        fprintf(file, "\n\tmov al, BYTE[rbp+%d];\tleft operand is %s\n", sym9->symbol.idEntry.offset, tempName);
+		}
     }
     
     //2. process right operand and load it in bx/bl
@@ -217,10 +224,17 @@ void processBooleanExpr(ASTNode* node, SymbolTable* table, FILE* file, int* curr
         }
     }
     else{
-        processArrayIdNode(node->sc->rs, table, file, currTempNo);
-        char* tempName = createTempVarName(*currTempNo, boolean);
-        SymbolTableEntry* sym9 = lookupString(tempName,table,idEntry,true,-1);
-        fprintf(file, "\n\tmov bl, BYTE[rbp+%d];\tleft operand is %s", sym9->symbol.idEntry.offset, tempName);
+        PrimitiveType t = processArrayIdNode(node->sc->rs, table, file, currTempNo);
+		if(t == integer){
+			char* tempName = createTempVarName(*currTempNo, integer);
+	        SymbolTableEntry* sym9 = lookupString(tempName,table,idEntry,true,-1);
+    	    fprintf(file, "\n\tmov bx, WORD[rbp+%d];\tleft operand is %s\n", sym9->symbol.idEntry.offset, tempName);			
+		}
+		else{
+			char* tempName = createTempVarName(*currTempNo, boolean);
+        	SymbolTableEntry* sym9 = lookupString(tempName,table,idEntry,true,-1);
+	        fprintf(file, "\n\tmov bl, BYTE[rbp+%d];\tleft operand is %s\n", sym9->symbol.idEntry.offset, tempName);
+		}
     }
 
     //3. perform the calculation
@@ -465,13 +479,14 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                             int off = sym->symbol.idEntry.offset;
                             while(iteration > 0)
                             {
-                                fprintf(file,"\tpush rbp\n");
+                                fprintf(file,"\n;-----inputting %s[%d]----\n\tpush rbp\n",sym->symbol.idEntry.node->node.idnode.lexeme,l+i);
                                 fprintf(file,"\tmov rdi, Input_Format\n");
                                 fprintf(file,"\tlea rsi, [int1]\n");
                                 fprintf(file,"\txor rax, rax\n");
                                 fprintf(file,"\tcall scanf\n");
                                 fprintf(file,"\tpop rbp\n");
-                                fprintf(file,"\tmov WORD[rbp + %d], ax\n",(i*2 + off));
+								fprintf(file,"\tmov ax, WORD[int1]\n");
+                                fprintf(file,"\tmov WORD[rbp + %d], ax\n",(i*2 + off+1));
                                 i++;
                                 iteration--;
                             }
@@ -558,7 +573,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                     fprintf(file, "\tpush rbp\n\tmov rdi, output_array\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
                                     
                                     while(iteration > 0){
-                                        fprintf(file,"\tpush rbp\n\tmov ax, WORD[rbp + %d]\n",(ofs + 2*i));
+                                        fprintf(file,";----printing %s[%d]---\n\tpush rbp\n\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.node->node.idnode.lexeme,l+i,(1+ofs + 2*i));
                                         fprintf(file, "\tmov rdi, array_value\n\tmovsx rsi, ax\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
                                         i++;
                                         iteration--;
@@ -681,7 +696,7 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout,"output_array : db \"Output: \",0\n");
     fprintf(fout,"array_value : db \" %%"); fprintf(fout,"d\",0\n");
     fprintf(fout, "\tInput_Format : db \"%%"); fprintf(fout, "d\",0\n");
-    fprintf(fout, "\tInput_Array1 : db \"Input: Enter %%"); fprintf(fout,"d elements of\", 0\n"); 
+    fprintf(fout, "\tInput_Array1 : db \"Input: Enter %%"); fprintf(fout,"d elements of \", 0\n"); 
     fprintf(fout, "\tonScreenInt : db \"integer\", 0\n");
     fprintf(fout, "\tonScreenBool : db \"boolean\", 0\n");
     fprintf(fout, "\tonScreenReal : db \"real\", 0\n");
