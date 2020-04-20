@@ -116,7 +116,7 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
             fprintf(file,"%s]----\n\tmov ax,WORD[rbp+%d]\n\tand rax,000000000000FFFFh\n",node->sc->rs->node.idnode.lexeme,  dynArrIndex->symbol.idEntry.offset);
         } 
         //4. check if cx<=ax<=dx
-        fprintf(file, "\tcmp ax,cx\n\tjl runTimeErrorMsg\n\tcmp ax,dx\n\tjg runTimeErrorMsg\n");
+        fprintf(file, "\tcmp ax,cx\n\tjl runTimeError\n\tcmp ax,dx\n\tjg runTimeErrorMsg\n");
 
         //5. bounds are ok, now retrieve the element
         fprintf(file,";----loading rsp value for dynamic array %s into rdx----\n",node->sc->node.idnode.lexeme);
@@ -408,8 +408,8 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             //1. Special case of driver module
             if(node->sc->type == nullNode){
                 SymbolTableEntry* sym = lookupString("driverModule", table->parent, driverEntry, false, -1);
-                fprintf(file, "\tsub rsp, %d\n", sym->symbol.driverEntry.ARSizeWithTemp);
-                fprintf(file, "\tmov rbp, rsp\n");  //for driver, the frame base is same as bottom of stack.(as the frame/activation record for the driver function is located right at the bottom of the stack)
+                fprintf(file, "\tsub rsp, %d\n", sym->symbol.driverEntry.ARSizeWithTemp-1);
+                fprintf(file, "\tmov rbp, rsp\n\tsub rsp,1\n");  //for driver, the frame base is same as bottom of stack.(as the frame/activation record for the driver function is located right at the bottom of the stack)
                 ASTNode* stmt = node->sc->rs->rs->rs;
                 while(stmt != NULL){
                     codeGen(stmt, table, file);
@@ -446,7 +446,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                         fprintf(file, "\tmov ax,WORD[rbp+%d]\t;----right index----\n",rightVar->symbol.idEntry.offset);
                     }
                     //3. check if ax<bx (or else runtime error)
-                    fprintf(file, "\tcmp ax,bx\n\tjl runTimeErrorMsg\n");
+                    fprintf(file, "\tcmp ax,bx\n\tjl runTimeError\n");
 
                     int factor;
                     if(strcmp(node->sc->rs->sc->rs->node.typeNode.token,"INTEGER")==0)
@@ -458,8 +458,8 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                     while(currArrVar != NULL){
                         SymbolTableEntry* dynArr = lookupString(currArrVar->node.idnode.lexeme,table,idEntry,true,currArrVar->node.idnode.line_no);
                         //4. increment the stack pointer by (bx-ax)*factor and store rsp at the offset of the array variable
-                        fprintf(file, "\tsub ax,bx\n\tmov dx,%d\n\tmul dx\n\tand rax,000000000000FFFFh\n",factor);
-                        fprintf(file, "\tsub rsp,rax\n\tmov [rbp+%d],rsp\n\tsub rsp,1\n",dynArr->symbol.idEntry.offset);
+                        fprintf(file, "\tsub ax,bx\n\tinc ax\n\tmov cx,%d\n\tmul cx\n\tand rax,000000000000FFFFh\n",factor);
+                        fprintf(file, "\tsub rsp,rax\n\tinc rsp\n\tmov QWORD[rbp+%d],rsp\n\tdec rsp\n",dynArr->symbol.idEntry.offset);
                         currArrVar = currArrVar->next;
                     }
                     fprintf(file, "\n;--------End of Dynamic array declaration--------\n\n\n");
@@ -619,7 +619,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                 SymbolTableEntry* rightVar = lookupString(currType->type.arrayType.right, table, idEntry, true, -1);
                                 fprintf(file,"\tmov dx, WORD[rbp+%d]\n\tand rdx,000000000000FFFFh\n", rightVar->symbol.idEntry.offset);
                             }
-                            fprintf(file,"\tpush rcx\n");
+                            //fprintf(file,"\tpush rcx\n");
                             //3. print input message. (enter integer array elements from index .. to index.. etc)
                             fprintf(file,"\n;-------code for scanning integer array-------\n");
                             fprintf(file, "\tmov bx,dx\n\tsub bx,cx\n\tadd bx,1\t;bx contains high-low+1 (dx-cx+1)\n"); //bx contains high-low+1
@@ -629,33 +629,46 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                             fprintf(file,"\txor rax, rax\n\tcall printf\n\tpop rbp\n");
                             //////////////////////////////
                             //fprintf(file,"\tpush rbp\n");
-                            fprintf(file,"\tmov rdi, onScreenInt\n");
+                            fprintf(file,"\tpush rbp\n\tmov rdi, onScreenInt\n");
                             fprintf(file,"\txor rax, rax\n\tcall printf\n\tpop rbp\n");
                             //////////////////////////////
-                            fprintf(file,"\tpush rbp\n");
-                            fprintf(file,"\tmov rdi, Input_Array2\n");
+                            
                             //fprintf(file,"\tpop rcx\n");
-                            fprintf(file,"\tmov rsi, rcx\n\t;rdx already contains high (3rd paramrter to printf)\n");
+							if(currType->type.arrayType.low>=0)
+                                fprintf(file,"\tmov cx, %d\n\tand rcx,000000000000FFFFh\n", currType->type.arrayType.low);
+                            else{
+                                SymbolTableEntry* leftVar = lookupString(currType->type.arrayType.left, table, idEntry, true, -1);
+                                fprintf(file,"\tmov cx, WORD[rbp+%d]\n\tand rcx,000000000000FFFFh\n", leftVar->symbol.idEntry.offset);
+                            }
+                            //2.load upper bound in dx
+                            if(currType->type.arrayType.high>=0)
+                                fprintf(file,"\tmov dx, %d\n\tand rdx,000000000000FFFFh\n", currType->type.arrayType.high);
+                            else{
+                                SymbolTableEntry* rightVar = lookupString(currType->type.arrayType.right, table, idEntry, true, -1);
+                                fprintf(file,"\tmov dx, WORD[rbp+%d]\n\tand rdx,000000000000FFFFh\n", rightVar->symbol.idEntry.offset);
+                            }
+							fprintf(file,"\tpush rbp\n\tmov rdi, Input_Array2\n");
+                            fprintf(file,"\tmov rsi, rcx\n");
                             // rdx already has high
                             fprintf(file,"\txor rax, rax\n\tcall printf\n\tpop rbp\n");
                             
                             //4. Take the input for each element
                             //bx->high-low+1 , cx->low , dx->high
                             fprintf(file, "\n;---code for inputing elements of dynamic array---\n");
-                            fprintf(file, "\tmov rdx, [rbp+%d]\n\tmov r8,0\n",sym->symbol.idEntry.offset);  //rdx contains address of first array element
+                            fprintf(file, "\tmov rdx, QWORD[rbp+%d]\n",sym->symbol.idEntry.offset);  //rdx contains address of first array element
                             fprintf(file, "takeInput%d:\n",utilLabel++);
                             fprintf(file, "\tcmp bx,0\n\tje stopInput%d\n",utilLabel-1);
                             
                             //code for scanf
-                            fprintf(file,"\tmov rdi, Input_Format\n");
+                            fprintf(file,"\tpush rbp\n\tmov rdi, Input_Format\n");
                             fprintf(file,"\tlea rsi, [int1]\n");
                             fprintf(file,"\txor rax, rax\n");
                             fprintf(file,"\tcall scanf\n");
                             fprintf(file,"\tpop rbp\n");
 
-                            fprintf(file, "\n\tmov ax,WORD[int1]\n\tmov WORD[rdx+r8],ax\n");
-                            fprintf(file,"\tadd r8,2\n");
-                            fprintf(file, "\tsub bx,1\njmp takeInput%d\n",utilLabel-1);
+                            fprintf(file, "\n\tmov ax,WORD[int1]\n\tmov WORD[rdx],ax\n");
+                            fprintf(file,"\tadd rdx,2\n");
+                            fprintf(file, "\tsub bx,1\n\tjmp takeInput%d\n",utilLabel-1);
                             fprintf(file, "stopInput%d:\n",utilLabel-1);
                         }
                         else{
@@ -778,7 +791,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                         switch(sym->symbol.idEntry.type.type.primitiveType){
                             case integer:{  //eg: print(z) where z is an integer
                                 fprintf(file, "\n;------code for printing integer variable-----\n\tpush rbp\n\tmov ax, WORD[rbp + %d]\n",sym->symbol.idEntry.offset);
-                                fprintf(file, "\tmov rdi, output\n\tmovsx rsi, ax\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
+                                fprintf(file, "\tpush rbp\n\tmov rdi, output\n\tmovsx rsi, ax\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
                                 break;
                             }
                             case real:{
