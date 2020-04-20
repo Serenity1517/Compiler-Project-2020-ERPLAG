@@ -12,16 +12,14 @@ The compiler takes as input any source code file (of .txt format) and can perfor
  
 
 To run on Linux terminal, type :
-
 > make
-
-> ./compiler <testcase> <output>
+> ./compiler 'testcase' 'output'
     
-where <testcase> denotes the relative path of the input source code file (.txt format); eg: codegen_testcases/c5.txt
-and <output> denotes the relative path of the output assembly code file (.asm format); eg: code.asm
+where 'testcase' denotes the relative path of the input source code file (.txt format); eg: codegen_testcases/c5.txt
+and 'output' denotes the relative path of the output assembly code file (.asm format); eg: code.asm
 
 Upon selecting the option to generate assembly code, a .asm file is generated.
-To run the <filename>.asm file on Linux terminal, type:
-> nasm -f elf64 <filename>.asm
-> gcc -no-pie <filenme>.o -o code
+To run the filename.asm file on Linux terminal, type:
+> nasm -f elf64 filename.asm
+> gcc -no-pie filename.o -o code
 > ./code
