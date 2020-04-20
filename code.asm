@@ -95,29 +95,20 @@ main:
 
 ;---code for inputing elements of dynamic array---
 	mov rdx, QWORD[rbp+4]
-	mov WORD[rbp+12], bx
-	mov cx,bx
 takeInput0:
-	cmp cx,0
-	jle stopInput0
-	push rbp
+	cmp bx,0
+	je stopInput0
+	push rdx
 	mov rdi, Input_Format
 	lea rsi, [int1]
 	xor rax, rax
 	call scanf
-	pop rbp
+	pop rdx
 
 	mov ax,WORD[int1]
 	mov WORD[rdx],ax
 	add rdx,2
-	sub cx,1
-	
-	push rbp
-	mov rdi, output
-	movsx rsi, cx
-	xor rax,rax
-	call printf
-	pop rbp
+	sub bx,1
 	jmp takeInput0
 stopInput0:
 

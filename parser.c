@@ -275,7 +275,7 @@ void testAST(char *inputFile, char *parseTreeOutFile){
 	PT = parseInputSourceCode(inputFile, parseTable);
 	if(is_parsetree_valid == 1)	
 	{
-		printParseTree(PT, parseTreeOutFile);
+		//printParseTree(PT, parseTreeOutFile);
         createAST(PT.root);
 	}	
 	else
@@ -1231,6 +1231,7 @@ ParseTree parseInputSourceCode(char *testcaseFile, ParseTableEntry **T){
 void printParseTree(ParseTree PT, char *outFile){
 	//remove(outFile);
 	FILE *f = fopen(outFile, "w");	
+	printf("%-25s\t%s\t%-15s\t RULE NO !!!!  \t\tValue \t\n","lexeme","lineNo","Token");
 	printInorder(PT.root, f);
 	fclose(f);
     return;
@@ -1250,31 +1251,52 @@ void printInorder(ParseTreeNode* curr, FILE *f)
 	//2. Print Parent			//3
 	fprintf(f, "\n");
 	if(curr->startChild == NULL){	//if its a leaf node, print lexeme and line number and token and number
-		fprintf(f,"%s\t",curr->tkn->lexeme);
+		fprintf(f,"%-25s\t",curr->tkn->lexeme);
+		printf("%-25s\t",curr->tkn->lexeme);
+		
 		fprintf(f,"%d\t",curr->tkn->line_no);
-		fprintf(f,"%s\t",curr->tkn->token);
+		printf("%d\t",curr->tkn->line_no);
+		
+		fprintf(f,"%-15s\t",curr->tkn->token);
+		printf("%-15s\t",curr->tkn->token);
+		
 		fprintf(f," RULE NO !!!! %d\t",curr->rule_no);
-		if(curr->tkn->is_num == true)
-			fprintf(f,"%f ",curr->tkn->value);
-		else
+		printf(" RULE NO !!!! %d\t",curr->rule_no);
+		
+		if(curr->tkn->is_num == true){
+			fprintf(f,"\t\t%f ",curr->tkn->value);
+			printf("%f ",curr->tkn->value);
+		}
+		else{
 			fprintf(f,"----\t");
+			printf("----\t");
+		}
 	}
 	else
 	{ 			//if not leaf
 		fprintf(f,"---- ---- ---- ---- ");
+		printf("---- ---- ---- ---- ");
+		
 		fprintf(f,"RULE NO !!! %d\t",curr->rule_no);
+		printf("RULE NO !!! %d\t",curr->rule_no);
 	}	
 	//print parent node symbol
-	if(curr->parent == NULL)	//if root node
+	if(curr->parent == NULL){	//if root node
 		fprintf(f,"ROOT\t");
-	else
-		fprintf(f,"%s\t", nonTerminalMap[curr->parent->node.type.nonterminal]);
-
-	if(curr->startChild == NULL)
-		fprintf(f,"yes\t");
-	else
-		fprintf(f,"no %s\t", nonTerminalMap[curr->node.type.nonterminal]);
-
+		printf("%-15s\t","ROOT");
+	}
+	else{
+		fprintf(f,"%-15s\t", nonTerminalMap[curr->parent->node.type.nonterminal]);
+		printf("%-15s\t", nonTerminalMap[curr->parent->node.type.nonterminal]);
+	}
+	if(curr->startChild == NULL){
+		fprintf(f,"yes\t\n");
+		printf("yes\t\n");
+	}
+	else{
+		fprintf(f,"%15s%-15s\t\n","no", nonTerminalMap[curr->node.type.nonterminal]);
+		printf("%-15s %-15s\t\n", "no", nonTerminalMap[curr->node.type.nonterminal]);
+	}
 	//3. Print remaining right siblings	//4
 	
 	if(curr->startChild == NULL)
