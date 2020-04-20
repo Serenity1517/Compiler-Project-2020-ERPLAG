@@ -26,53 +26,38 @@ section .text
 	extern printf
 
 main:
-	sub rsp, 19
+	sub rsp, 18
 	mov rbp, rsp
+	sub rsp,1
 
-;-----code for scanning integer variable----
-	push rbp
-	mov rdi, inputInt
-	xor rax, rax
-	call printf
-	pop rbp
-	push rbp
-	mov rdi, Input_Format
-	lea rsi,[int1]
-	xor rax,rax
-	call scanf
-	pop rbp
-	mov ax, WORD[int1]
-	mov WORD[rbp+0],ax
-;-----------
+;-------assignment stmt-----
+	push rax
+	mov ax, 2
+	mov WORD[rbp+0], ax
+	pop rax
+;--------------
 
-;-----code for scanning integer variable----
-	push rbp
-	mov rdi, inputInt
-	xor rax, rax
-	call printf
-	pop rbp
-	push rbp
-	mov rdi, Input_Format
-	lea rsi,[int1]
-	xor rax,rax
-	call scanf
-	pop rbp
-	mov ax, WORD[int1]
-	mov WORD[rbp+2],ax
-;-----------
+;-------assignment stmt-----
+	push rax
+	mov ax, 4
+	mov WORD[rbp+2], ax
+	pop rax
+;--------------
 
 ;-----Dynamic array declaration----
 	mov bx,WORD[rbp+0]	;----left index----
 	mov ax,WORD[rbp+2]	;----right index----
 	cmp ax,bx
-	jl runTimeErrorMsg
+	jl runTimeError
 	sub ax,bx
-	mov dx,2
-	mul dx
+	inc ax
+	mov cx,2
+	mul cx
 	and rax,000000000000FFFFh
 	sub rsp,rax
-	mov [rbp+4],rsp
-	sub rsp,1
+	inc rsp
+	mov QWORD[rbp+4],rsp
+	dec rsp
 
 ;--------End of Dynamic array declaration--------
 
@@ -81,7 +66,6 @@ main:
 	and rcx,000000000000FFFFh
 	mov dx, WORD[rbp+2]
 	and rdx,000000000000FFFFh
-	push rcx
 
 ;-------code for scanning integer array-------
 	mov bx,dx
@@ -98,21 +82,25 @@ main:
 	xor rax, rax
 	call printf
 	pop rbp
+	mov cx, WORD[rbp+0]
+	and rcx,000000000000FFFFh
+	mov dx, WORD[rbp+2]
+	and rdx,000000000000FFFFh
 	push rbp
 	mov rdi, Input_Array2
-	pop rcx
 	mov rsi, rcx
-	;rdx already contains high (3rd paramrter to printf)
 	xor rax, rax
 	call printf
 	pop rbp
 
 ;---code for inputing elements of dynamic array---
-	mov rdx, [rbp+4]
-	mov r8,0
+	mov rdx, QWORD[rbp+4]
+	mov WORD[rbp+12], bx
+	mov cx,bx
 takeInput0:
-	cmp bx,0
-	je stopInput0
+	cmp cx,0
+	jle stopInput0
+	push rbp
 	mov rdi, Input_Format
 	lea rsi, [int1]
 	xor rax, rax
@@ -120,10 +108,17 @@ takeInput0:
 	pop rbp
 
 	mov ax,WORD[int1]
-	mov WORD[rdx+r8],ax
-	add r8,2
-	sub bx,1
-jmp takeInput0
+	mov WORD[rdx],ax
+	add rdx,2
+	sub cx,1
+	
+	push rbp
+	mov rdi, output
+	movsx rsi, cx
+	xor rax,rax
+	call printf
+	pop rbp
+	jmp takeInput0
 stopInput0:
 
 

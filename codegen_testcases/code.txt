@@ -1,8 +1,8 @@
 <<<driver program>>>
 start
 	declare	low, high: integer;
-	get_value(low);
-	get_value(high);                                               
+	low:=2;
+	high:=4;                                               
 	declare A: array[low..high] of integer;
 	get_value(A);
 end
