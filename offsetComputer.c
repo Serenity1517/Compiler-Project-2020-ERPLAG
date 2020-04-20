@@ -468,7 +468,7 @@ void printSymbolTableEntry(SymbolTableEntry* sym,SymbolTable* currTable)
                 if(sym->symbol.idEntry.type.tag == primitive){
                     ASTNode* temp = sym->symbol.idEntry.node;
                     if(tab->tableType == functionBlock){
-                        printf("%s  %s  %d-%d   ",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end);
+                        printf("%-25s%-25s%d-%d%-20s",sym->symbol.idEntry.node->node.idnode.lexeme, table->scope.scope,s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end," ");
                         printf("%d  no  --- --- %s  %d  %d\n",sym->symbol.idEntry.widthOnScreen, type_of_element[sym->symbol.idEntry.type.type.primitiveType], sym->symbol.idEntry.offsetOnScreen,nestingLevel);
                     }
                     else{
@@ -632,28 +632,28 @@ void printArrayEntry(SymbolTableEntry* sym,SymbolTable* currTable)
                         ASTNode* temp = sym->symbol.idEntry.node;
                         temp = temp->rs->sc->sc;// range node's first child (low index)
                         if(tab->tableType == functionBlock){
-                            printf("%s  %d-%d   %s  ",table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end,sym->symbol.idEntry.node->node.idnode.lexeme);
+                            printf("%-25s%d-%d%-20s%-25s",table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end," ",sym->symbol.idEntry.node->node.idnode.lexeme);
                         }
                         else{
-                            printf("%s  %d-%d   %s  ", table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end,sym->symbol.idEntry.node->node.idnode.lexeme);
+                            printf("%-25s%d-%d%-20s%-25s", table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end," ",sym->symbol.idEntry.node->node.idnode.lexeme);
                         }
                         if(sym->symbol.idEntry.type.type.arrayType.low == -1){ //low is idNode
-                            printf("dynamic array   [%s", temp->node.idnode.lexeme);
+                            printf("dynamic array%-20s[%s"," ", temp->node.idnode.lexeme);
                         }
                         else{
-                            printf("dynamic array   [%s", temp->node.numNode.lexeme);
+                            printf("dynamic array%-20s[%s"," ", temp->node.numNode.lexeme);
                         }
                         if(sym->symbol.idEntry.type.type.arrayType.high == -1){ // high is idnode
-                            printf(",%s]    %s  \n", temp->rs->node.idnode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType]);
+                            printf(",%s]%-20s%-25s\n", temp->rs->node.idnode.lexeme," ", type_of_element[sym->symbol.idEntry.type.type.primitiveType]);
                         }
                         else{
-                            printf(",%s]    %s  \n", temp->rs->node.numNode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType]);
+                            printf(",%s]%-20s%-25s\n", temp->rs->node.numNode.lexeme," ", type_of_element[sym->symbol.idEntry.type.type.primitiveType]);
                         }
                     }
                     else //static array
                     {
-                        printf("%s  %d-%d  %s  ", table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end,sym->symbol.idEntry.node->node.idnode.lexeme);
-                        printf("static array [%d,%d] %s  \n", sym->symbol.idEntry.type.type.arrayType.low, sym->symbol.idEntry.type.type.arrayType.high, type_of_element[sym->symbol.idEntry.type.type.primitiveType]);
+                        printf("%-25s%d-%d%-20s%-25s", table->scope.scope, s->symbol.driverEntry.block.start, s->symbol.driverEntry.block.end," ",sym->symbol.idEntry.node->node.idnode.lexeme);
+                        printf("static array%-20s[%d,%d]%-20s%-25s \n"," ", sym->symbol.idEntry.type.type.arrayType.low, sym->symbol.idEntry.type.type.arrayType.high," ", type_of_element[sym->symbol.idEntry.type.type.primitiveType]);
                     }                    
                 }
             } 
@@ -668,34 +668,34 @@ void printArrayEntry(SymbolTableEntry* sym,SymbolTable* currTable)
                         ASTNode* temp = sym->symbol.idEntry.node;
                         temp = temp->parent->sc->rs->sc->sc;// range node's first child (low index)
                         if(tab->tableType == functionBlock){
-                            printf("%s  %d-%d   %s  ", table->scope.scope, s->symbol.functionEntry.block.start, s->symbol.functionEntry.block.end,sym->symbol.idEntry.node->node.idnode.lexeme);
+                            printf("%-25s%d-%d%-20s%-25s", table->scope.scope, s->symbol.functionEntry.block.start, s->symbol.functionEntry.block.end," ",sym->symbol.idEntry.node->node.idnode.lexeme);
                         }
                         else
                         {
-                            printf("%s  %d-%d   %s  ", table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end,sym->symbol.idEntry.node->node.idnode.lexeme);
+                            printf("%-25s%d-%d%-20s%-25s  ", table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end," ",sym->symbol.idEntry.node->node.idnode.lexeme);
                         }
                         if(sym->symbol.idEntry.type.type.arrayType.low == -1){ //low is idNode
-                            printf("dynamic array   [%s", temp->node.idnode.lexeme);
+                            printf("dynamic array%-20s[%s", " ",temp->node.idnode.lexeme);
                         }
                         else{
-                            printf("dynamic array   [%s",  temp->node.numNode.lexeme);
+                            printf("dynamic array%-20s[%s"," ",temp->node.numNode.lexeme);
                         }
                         if(sym->symbol.idEntry.type.type.arrayType.high == -1){ // high is idnode
-                            printf(",%s]    %s  \n", temp->rs->node.idnode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType]);
+                            printf(",%s]%-20s%-25s\n", temp->rs->node.idnode.lexeme," " ,type_of_element[sym->symbol.idEntry.type.type.primitiveType]);
                         }
                         else{
-                            printf(",%s]    %s  \n", temp->rs->node.numNode.lexeme, type_of_element[sym->symbol.idEntry.type.type.primitiveType]);
+                            printf(",%s]%-20s%-25s\n", temp->rs->node.numNode.lexeme, " ",type_of_element[sym->symbol.idEntry.type.type.primitiveType]);
                         }
                     }
                     else //static array
                     {
                         if(tab->tableType == functionBlock){
-                            printf("%s  %d-%d   %s  ", table->scope.scope, s->symbol.functionEntry.block.start, s->symbol.functionEntry.block.end,sym->symbol.idEntry.node->node.idnode.lexeme);
+                            printf("%-25s%d-%d%-20s%-25s  ", table->scope.scope, s->symbol.functionEntry.block.start, s->symbol.functionEntry.block.end," ",sym->symbol.idEntry.node->node.idnode.lexeme);
                         }
                         else{
-                            printf("%s  %d-%d   %s  ", table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end,sym->symbol.idEntry.node->node.idnode.lexeme);
+                            printf("%-25s%d-%d%-20s%-25s  ", table->scope.scope, tab->scope.block_scope.start, tab->scope.block_scope.end," ",sym->symbol.idEntry.node->node.idnode.lexeme);
                         }
-                        printf("static array [%d,%d] %s  \n", sym->symbol.idEntry.type.type.arrayType.low, sym->symbol.idEntry.type.type.arrayType.high, type_of_element[sym->symbol.idEntry.type.type.primitiveType]);
+                        printf("static array%-20s[%d,%d]%-20s%-25s  \n"," ", sym->symbol.idEntry.type.type.arrayType.low, sym->symbol.idEntry.type.type.arrayType.high," ", type_of_element[sym->symbol.idEntry.type.type.primitiveType]);
                     }
 
                 }

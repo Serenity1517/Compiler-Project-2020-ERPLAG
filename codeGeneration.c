@@ -459,10 +459,10 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                         SymbolTableEntry* dynArr = lookupString(currArrVar->node.idnode.lexeme,table,idEntry,true,currArrVar->node.idnode.line_no);
                         //4. increment the stack pointer by (bx-ax)*factor and store rsp at the offset of the array variable
                         fprintf(file, "\tsub ax,bx\n\tmov dx,%d\n\tmul dx\n\tand rax,000000000000FFFFh\n",factor);
-                        fprintf(file, "\tadd rsp,rax\n\tmov [rbp+%d],rsp\n\tsub rsp,1\n",dynArr->symbol.idEntry.offset);
+                        fprintf(file, "\tsub rsp,rax\n\tmov [rbp+%d],rsp\n\tsub rsp,1\n",dynArr->symbol.idEntry.offset);
                         currArrVar = currArrVar->next;
                     }
-                    fprintf(file, "\n;--------End of Dynamic array declaration--------\n");
+                    fprintf(file, "\n;--------End of Dynamic array declaration--------\n\n\n");
                 }
                 else {break;}   //static
             }
@@ -619,6 +619,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                 SymbolTableEntry* rightVar = lookupString(currType->type.arrayType.right, table, idEntry, true, -1);
                                 fprintf(file,"\tmov dx, WORD[rbp+%d]\n\tand rdx,000000000000FFFFh\n", rightVar->symbol.idEntry.offset);
                             }
+                            fprintf(file,"\tpush rcx\n");
                             //3. print input message. (enter integer array elements from index .. to index.. etc)
                             fprintf(file,"\n;-------code for scanning integer array-------\n");
                             fprintf(file, "\tmov bx,dx\n\tsub bx,cx\n\tadd bx,1\t;bx contains high-low+1 (dx-cx+1)\n"); //bx contains high-low+1
@@ -627,13 +628,14 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                             fprintf(file,"\tmovsx rsi, bx\n");
                             fprintf(file,"\txor rax, rax\n\tcall printf\n\tpop rbp\n");
                             //////////////////////////////
-                            fprintf(file,"\tpush rbp\n");
+                            //fprintf(file,"\tpush rbp\n");
                             fprintf(file,"\tmov rdi, onScreenInt\n");
                             fprintf(file,"\txor rax, rax\n\tcall printf\n\tpop rbp\n");
                             //////////////////////////////
                             fprintf(file,"\tpush rbp\n");
                             fprintf(file,"\tmov rdi, Input_Array2\n");
-                            fprintf(file,"\tmovsx rsi, cx\n\t;rdx already contains high (3rd paramrter to printf)\n");
+                            //fprintf(file,"\tpop rcx\n");
+                            fprintf(file,"\tmov rsi, rcx\n\t;rdx already contains high (3rd paramrter to printf)\n");
                             // rdx already has high
                             fprintf(file,"\txor rax, rax\n\tcall printf\n\tpop rbp\n");
                             

@@ -4,5 +4,6 @@ start
 	get_value(low);
 	get_value(high);                                               
 	declare A: array[low..high] of integer;
+	get_value(A);
 end
 

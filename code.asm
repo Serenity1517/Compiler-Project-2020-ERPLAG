@@ -69,12 +69,62 @@ main:
 	sub ax,bx
 	mov dx,2
 	mul dx
-	and ax,000000000000FFFFh
-	add rsp,rax
+	and rax,000000000000FFFFh
+	sub rsp,rax
 	mov [rbp+4],rsp
 	sub rsp,1
 
 ;--------End of Dynamic array declaration--------
+
+
+	mov cx, WORD[rbp+0]
+	and rcx,000000000000FFFFh
+	mov dx, WORD[rbp+2]
+	and rdx,000000000000FFFFh
+	push rcx
+
+;-------code for scanning integer array-------
+	mov bx,dx
+	sub bx,cx
+	add bx,1	;bx contains high-low+1 (dx-cx+1)
+	push rbp
+	mov rdi, Input_Array1
+	movsx rsi, bx
+	xor rax, rax
+	call printf
+	pop rbp
+	push rbp
+	mov rdi, onScreenInt
+	xor rax, rax
+	call printf
+	pop rbp
+	push rbp
+	mov rdi, Input_Array2
+	pop rcx
+	mov rsi, rcx
+	;rdx already contains high (3rd paramrter to printf)
+	xor rax, rax
+	call printf
+	pop rbp
+
+;---code for inputing elements of dynamic array---
+	mov rdx, [rbp+4]
+	mov r8,0
+takeInput0:
+	cmp bx,0
+	je stopInput0
+	mov rdi, Input_Format
+	lea rsi, [int1]
+	xor rax, rax
+	call scanf
+	pop rbp
+
+	mov ax,WORD[int1]
+	mov WORD[rdx+r8],ax
+	add r8,2
+	sub bx,1
+jmp takeInput0
+stopInput0:
 
 
 	mov rax, 1
