@@ -12,8 +12,11 @@ The compiler takes as input any source code file (of .txt format) and can perfor
  
 
 To run on Linux terminal, type :
+
 > make
+
 > ./compiler <testcase> <output>
+    
 where <testcase> denotes the relative path of the input source code file (.txt format); eg: codegen_testcases/c5.txt
 and <output> denotes the relative path of the output assembly code file (.asm format); eg: code.asm
 
