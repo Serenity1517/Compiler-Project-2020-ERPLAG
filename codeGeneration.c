@@ -386,7 +386,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             if(mod1->type != nullNode){
                 while(mod1 != NULL){
                     SymbolTableEntry* mod1_entry = lookupString(mod1->sc->node.idnode.lexeme, table, functionEntry, false, -1);
-                    fprintf(file, "\nmodule%d:\n", mod1_entry->symbol.functionEntry.sequenceNumber);
+                    fprintf(file, "\n%s:\n", mod1->sc->node.idnode.lexeme);
                     codeGen(mod1, mod1_entry->table, file);
                 }
             } 
@@ -394,7 +394,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             if(mod2->type != nullNode){
                 while(mod2 != NULL){
                     SymbolTableEntry* mod2_entry = lookupString(mod2->sc->node.idnode.lexeme, table, functionEntry, false, -1);
-                    fprintf(file, "\nmodule%d:\n", mod2_entry->symbol.functionEntry.sequenceNumber);
+                    fprintf(file, "\n%s:\n", mod2->sc->node.idnode.lexeme);
                     codeGen(mod2, mod2_entry->table, file);
                 }
             }   
@@ -418,8 +418,21 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
             }
             //2.Any other module
             else{
-
+                ASTNode* stmt = node->sc->rs->rs->rs;
+                while(stmt != NULL){
+                    codeGen(stmt, table, file);
+                    stmt = stmt->next;
+                }
+                fprintf(file, "\n\tret\n\n");
             }
+            break;
+        }
+        case functionCallNode:{
+            fprintf(file, "\n;----calling function %s-----\n",node->sc->rs->node.idnode.lexeme);
+            fprintf(file, "\tpush rbp\t;---saving rbp----\n");
+            //pushParamters(node,table,file);
+            fprintf(file, "\tcall %s\n",node->sc->rs->node.idnode.lexeme);
+            fprintf(file, "\tpop rbp\t;----restoring rbp\n\n");
             break;
         }
         case declareNode:{
