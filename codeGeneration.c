@@ -673,11 +673,11 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                             fprintf(file, "\tcmp bx,0\n\tje stopInput%d\n",utilLabel-1);
                             
                             //code for scanf
-                            fprintf(file,"\tpush rbp\n\tmov rdi, Input_Format\n");
+                            fprintf(file,"\tpush rdx\n\tmov rdi, Input_Format\n");
                             fprintf(file,"\tlea rsi, [int1]\n");
                             fprintf(file,"\txor rax, rax\n");
                             fprintf(file,"\tcall scanf\n");
-                            fprintf(file,"\tpop rbp\n");
+                            fprintf(file,"\tpop rdx\n");
 
                             fprintf(file, "\n\tmov ax,WORD[int1]\n\tmov WORD[rdx],ax\n");
                             fprintf(file,"\tadd rdx,2\n");

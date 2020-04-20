@@ -27,7 +27,7 @@
 
 bool* isDeclared;
 bool* isCorrect;
-char** modules;
+char modules[20][21];
 int *lines; //lines[i] stores the line number for defiinition of func with seq no. i
 int n;
 
@@ -42,19 +42,20 @@ int moduleSequenceMap(char* moduleName){
 }
 
 void populateModuleSequenceMap(ASTNode* root, SymbolTable* rootSymbolTable){
-    modules = (char**)malloc(sizeof(char*));
+    //modules = (char**)malloc(sizeof(char*));
     int i;
     n=root->node.programNode.noOfModules;
     lines = (int *)malloc(sizeof(int)*n);
-    for(i=0; i<n; i++){
-        modules[i] = (char*)malloc(sizeof(char)*21);
-    }
+    //for(i=0; i<n; i++){
+     //   modules[i] = (char*)malloc(sizeof(char)*21);
+    //}
     ASTNode *trav = root->sc->rs;   // otherModule
 	if(trav->type != nullNode){
 		while(trav != NULL)
 		{
 		    SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1); 
 		    strcpy(modules[sym->symbol.functionEntry.sequenceNumber],trav->sc->node.idnode.lexeme);
+            //sprintf(modules[sym->symbol.functionEntry.sequenceNumber],"%s",trav->sc->node.idnode.lexeme);
             lines[sym->symbol.functionEntry.sequenceNumber] = trav->sc->node.idnode.line_no;
 		    trav = trav->next;
 		}
@@ -62,6 +63,7 @@ void populateModuleSequenceMap(ASTNode* root, SymbolTable* rootSymbolTable){
     // store driver module
     SymbolTableEntry *driv = lookupString("driverModule",rootSymbolTable,driverEntry,false,-1);
     strcpy(modules[driv->symbol.driverEntry.sequenceNumber],"driverModule");
+    //sprintf(modules[driv->symbol.driverEntry.sequenceNumber],"%s","driverModule");
     //otherModules%
     trav = root->sc->rs->rs->rs;   // otherModule%
 	if(trav->type != nullNode){
@@ -69,6 +71,7 @@ void populateModuleSequenceMap(ASTNode* root, SymbolTable* rootSymbolTable){
 		{
 		    SymbolTableEntry* sym = lookupString(trav->sc->node.idnode.lexeme,rootSymbolTable,functionEntry,false,-1); 
 		    strcpy(modules[sym->symbol.functionEntry.sequenceNumber],trav->sc->node.idnode.lexeme);
+            //sprintf(modules[sym->symbol.functionEntry.sequenceNumber],"%s",trav->sc->node.idnode.lexeme);
             lines[sym->symbol.functionEntry.sequenceNumber] = trav->sc->node.idnode.line_no;
 		    trav = trav->next;
 		}
