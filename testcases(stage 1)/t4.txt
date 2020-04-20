@@ -25,10 +25,6 @@ start
 	** check  rules 27 a to e and redefine to preserve the parentheses needs ** 
 	print(res_1);
 end
-<<module test>>
-takes input[zz:real];
-start
-end
 
 **verify the output of the lexical analyzer as well**
 **check the correctness of the parse tree**

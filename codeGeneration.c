@@ -116,14 +116,14 @@ PrimitiveType processArrayIdNode(ASTNode* node, SymbolTable* table, FILE* file, 
             fprintf(file,"%s]----\n\tmov ax,WORD[rbp+%d]\n\tand rax,000000000000FFFFh\n",node->sc->rs->node.idnode.lexeme,  dynArrIndex->symbol.idEntry.offset);
         } 
         //4. check if cx<=ax<=dx
-        fprintf(file, "\tcmp ax,cx\n\tjl runTimeError\n\tcmp ax,dx\n\tjg runTimeErrorMsg\n");
+        fprintf(file, "\tcmp ax,cx\n\tjl runTimeError\n\tcmp ax,dx\n\tjg runTimeError\n");
 
         //5. bounds are ok, now retrieve the element
         fprintf(file,";----loading rsp value for dynamic array %s into rdx----\n",node->sc->node.idnode.lexeme);
         fprintf(file,"\tmov rdx, [rbp+%d]\t;dont need rdx(upper bound)anymore\n", sym->symbol.idEntry.offset);
         fprintf(file,"\tsub ax,cx\t;ax now contains relOffset for this array element\n");
         if(currType->type.arrayType.t == integer){  //integer dynamic array
-            fprintf(file, "\tmov bx,2\n\tmul bx\n\tmov cx,WORD[rdx+rax]\t;now cx contains the required array element\n");
+            fprintf(file, "\tmov bx,2\n\tpush rdx\n\tmul bx\n\tpop rdx\n\tmov cx,WORD[rdx+rax]\t;now cx contains the required array element\n");
             *currTempNo += 1;
             char* tempName = createTempVarName(*currTempNo, integer);
             SymbolTableEntry* tempIntVar = lookupString(tempName, table, idEntry, true, -1);
@@ -615,14 +615,14 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                         fprintf(file,"%s]----\n\tmov ax,WORD[rbp+%d]\n\tand rax,000000000000FFFFh\n",node->sc->rs->node.idnode.lexeme,  dynArrIndex->symbol.idEntry.offset);
                     } 
                     //4. check if cx<=ax<=dx
-                    fprintf(file, "\tcmp ax,cx\n\tjl runTimeError\n\tcmp ax,dx\n\tjg runTimeErrorMsg\n");
+                    fprintf(file, "\tcmp ax,cx\n\tjl runTimeError\n\tcmp ax,dx\n\tjg runTimeError\n");
 
                     //5. bounds are ok, now perform the assignment
                     fprintf(file,";----loading rsp value for dynamic array %s into rdx----\n",node->sc->node.idnode.lexeme);
                     fprintf(file,"\tmov rdx, [rbp+%d]\t;dont need rdx(upper bound)anymore\n", arrLhs->symbol.idEntry.offset);
                     fprintf(file,"\tsub ax,cx\t;ax now contains relOffset for this array element\n");
                     if(currType->type.arrayType.t == integer){  //integer dynamic array
-                        fprintf(file, "\tmov bx,2\n\tmul bx\n\tadd rdx,rax\t;now rdx contains the required array element address\n");
+                        fprintf(file, "\tmov bx,2\n\tpush rdx\n\tmul bx\n\tpop rdx\n\tadd rdx,rax\t;now rdx contains the required array element address\n");
                         fprintf(file, "\tpop rax\t;--restore rhs result\n\tmov WORD[rdx],ax\n");
                     }
                     else{   //boolean dynamic array
@@ -891,7 +891,8 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                         //1.load lower bound in cx
                                         //declare A:array[low..high] of integer;
                                         //get_value(A);
-                                        if(currType->type.arrayType.low>=0)
+										fprintf(file, "\tpush rbp\n\tmov rdi, output_array\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");                                        
+										if(currType->type.arrayType.low>=0)
                                             fprintf(file,"\tmov cx, %d\n\tand rcx,000000000000FFFFh\n", currType->type.arrayType.low);
                                         else{
                                             SymbolTableEntry* leftVar = lookupString(currType->type.arrayType.left, table, idEntry, true, -1);
@@ -904,7 +905,7 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                             SymbolTableEntry* rightVar = lookupString(currType->type.arrayType.right, table, idEntry, true, -1);
                                             fprintf(file,"\tmov dx, WORD[rbp+%d]\n\tand rdx,000000000000FFFFh\n", rightVar->symbol.idEntry.offset);
                                         }
-                                        fprintf(file, "\tpush rbp\n\tmov rdi, output_array\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
+                                        
                                         fprintf(file,"\n;-------code for printing integer array-------\n");
                                         fprintf(file, "\tmov bx,dx\n\tsub bx,cx\n\tadd bx,1\t;bx contains high-low+1 (dx-cx+1)\n");
                                         fprintf(file, "\tmov rdx, QWORD[rbp+%d]\n",sym->symbol.idEntry.offset);  //rdx contains address of first array element
@@ -912,11 +913,11 @@ void codeGen(ASTNode* node, SymbolTable* table, FILE* file){
                                         fprintf(file,"\tcmp bx, 0\n");
                                         fprintf(file,"\tje printOver%d\n",utilLabel-1);
                                         
-                                        fprintf(file,"\npush rbp\t");
+                                        fprintf(file,"\npush rdx\t");
                                         fprintf(file,"\n\tand rsi, 000000000000FFFFh\n");
                                         fprintf(file, "\tmov ax, WORD[rdx]\n");
                                         fprintf(file,"\tmovsx rsi, ax\n");
-                                        fprintf(file, "\tmov rdi, array_value\n\txor rax, rax\n\tcall printf\n\tpop rbp\n;------------\n");
+                                        fprintf(file, "\tmov rdi, array_value\n\txor rax, rax\n\tcall printf\n\tpop rdx\n;------------\n");
 
                                         fprintf(file,"\tadd rdx,2\n");
                                         fprintf(file, "\tsub bx,1\n\tjmp showOutput%d\n",utilLabel-1);
@@ -1199,7 +1200,7 @@ void codeGenControl(ASTNode* root, SymbolTable* table, char* file){
     fprintf(fout,"\tinputBool: db \"Input: Enter an boolean value\",10,0\n");
     fprintf(fout,"\toutput: db \"Output: %%"); fprintf(fout, "d\", 10, 0\n");
     fprintf(fout,"\toutput_array : db \"Output: \",0\n");
-    fprintf(fout,"\tarray_value : db \" %%"); fprintf(fout,"d\",0\n");
+    fprintf(fout,"\tarray_value : db \" %%"); fprintf(fout,"d\",10,0\n");
     fprintf(fout, "\tInput_Format : db \"%%"); fprintf(fout, "d\",0\n");
     fprintf(fout, "\tInput_Array1 : db \"Input: Enter %%"); fprintf(fout,"d elements of \", 0\n"); 
     fprintf(fout, "\tonScreenInt : db \"integer\", 0\n");

@@ -16,6 +16,7 @@
 
 int main (int argc,char **argv)
 {
+	char arr[20] = "out.txt";
     int option;
 	clock_t begin, end;
 	double total_CPU_time,total_CPU_time_in_seconds;
@@ -42,18 +43,18 @@ int main (int argc,char **argv)
             case 1: testLexer(argv[1]);
                     return 0;
 
-            case 2: testParseTree(argv[1], argv[2]);
+            case 2: testParseTree(argv[1], arr);
                     return 0;
 
 			case 3: {
-					testAST(argv[1],argv[2]);
+					testAST(argv[1],arr);
 					ASTNode* root = getAST();
 					printAST(root);
 					return 0;
 			}
 
 			case 4: {
-					testAST(argv[1],argv[2]);
+					testAST(argv[1],arr);
 					int parseNode = getParseTreeNode();
 					int astNodes = getAstNodes();
 					printf("Parse Tree Nodes: %d		Memory Used in Parse tree: %ld\n",parseNode,parseNode*sizeof(ParseTreeNode));
@@ -63,7 +64,7 @@ int main (int argc,char **argv)
 					return 0;
 			}
 			case 5: {
-				testAST(argv[1],argv[2]);
+				testAST(argv[1],arr);
 				semanticAnalyzer();
 				SymbolTable* s = getsymbolTable();
     			printf("variable_name	scope(module_name)	scope(line_numbers)     width	isArray		static_or_dynamic   range_lexemes    type_of_element    offset  nesting_level\n");
@@ -72,14 +73,14 @@ int main (int argc,char **argv)
 			}
 
 			case 6: {
-				testAST(argv[1],argv[2]);
+				testAST(argv[1],arr);
 				semanticAnalyzer();
 				SymbolTable* s = getsymbolTable();
 				printActivationRecord(s);
 				return 0;
 			}
 			case 7: {
-				testAST(argv[1],argv[2]);
+				testAST(argv[1],arr);
 				semanticAnalyzer();
 				SymbolTable* s = getsymbolTable();
 				printArrays(s);
@@ -87,7 +88,7 @@ int main (int argc,char **argv)
 			}
 			case 8:{begin =clock();
                     //double total_CPU_time, total_CPU_time_in_seconds;
-                   	testAST(argv[1],argv[2]);
+                   	testAST(argv[1],arr);
 					semanticAnalyzer();
 					ListOfErrors* error = getSemanticErrorObject();
 					printErrors(error);
@@ -99,9 +100,9 @@ int main (int argc,char **argv)
 				return 0;
 			}
 			case 9:{
-				testAST(argv[1], argv[2]);
+				testAST(argv[1], arr);
 				semanticAnalyzer();
-				codeGenControl(getAST(), getsymbolTable(), argv[3]);
+				codeGenControl(getAST(), getsymbolTable(), argv[2]);
 				return 0;
 			}
             		

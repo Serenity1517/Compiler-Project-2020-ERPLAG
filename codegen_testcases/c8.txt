@@ -9,7 +9,7 @@ Single driver module with multiple levels of nesting
 <<<driver program>>>
 start
 	declare x, y, z:integer;
-	**declare b: boolean;**
+	declare b: boolean;
 	get_value(x);
 	y:= 19;
 	z:= 56;

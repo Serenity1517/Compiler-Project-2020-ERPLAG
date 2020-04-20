@@ -1,4 +1,4 @@
- ** This test case is meant only to test your lexical analyzer 
+** This test case is meant only to test your lexical analyzer 
    and is not correct syntactically. Use this to verify your lexical analyzer **
 
 var_1_, var_2_, var_3_:integer+AND+declare..-23.7e+12um16789+**18.043**
