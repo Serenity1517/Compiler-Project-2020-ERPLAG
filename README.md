@@ -3,12 +3,12 @@ A highly modular Compiler made for a toy language called ERPLAG as part of cours
 The specifications for ERPLAG can be found in the language specifications document. 
 
 The compiler takes as input any source code file (of .txt format) and can perform the following:
-    Lexical Analysis to generate a stream of tokens.
-    Syntax Analyis/Parsing to generate the parse tree for the given code
-    Construction of Abstract Syntax Tree, to compress the parse tree by about 70-75%.
-    Construction of Symbol Table by traversing the AST.
-    Semantic Analysis on the AST to check expression types and other semantics specific to various constructs.
-    Code Generation to generate assembly code for the given input code.
+    -Lexical Analysis to generate a stream of tokens.
+    -Syntax Analyis/Parsing to generate the parse tree for the given code
+    -Construction of Abstract Syntax Tree, to compress the parse tree by about 70-75%.
+    -Construction of Symbol Table by traversing the AST.
+    -Semantic Analysis on the AST to check expression types and other semantics specific to various constructs.
+    -Code Generation to generate assembly code for the given input code.
  
 
 To run on Linux terminal, type :
